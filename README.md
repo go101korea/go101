@@ -1,8 +1,8 @@
 
-<b>[Go 101](https://go101.org)</b> is a series of books on Go programming.
-Currently, the following books are avaliable:
+<b>[Go 101](https://go101.org)</b>은 Go 프로그래밍 서적 시리즈입니다.
+지금까지 공개된 책들은 아래와 같습니다:
 
-* [Go (Fundamentals) 101](https://go101.org/article/101.html), which focuses on Go syntax/semantics (except custom generics related) and all kinds of runtime related things.
+* [보세요Go (Fundamentals) 101](https://go101.org/article/101.html), which focuses on Go syntax/semantics (except custom generics related) and all kinds of runtime related things.
 * [Go Generics 101](https://go101.org/generics/101.html), which explains Go custom generics in detail.
 * [Go Optimizations 101](https://go101.org/optimizations/101.html), which provides some code performance optimization tricks, tips, and suggestions.
 * [Go Details & Tips 101](https://go101.org/details-and-tips/101.html), which collects many details and provides several tips in Go programming.
@@ -10,8 +10,9 @@ Currently, the following books are avaliable:
 These books are expected to help gophers gain a deep and thorough understanding of Go
 and be helpful for both beginner and experienced Go programmers.
 
-To get latest news of Go 101 books, please follow the official twitter account [@go100and1](https://twitter.com/go100and1)
-and join [the Go 101 Slack space](https://go-101.slack.com).
+공식 트위터 계정인 [@go100and1](https://twitter.com/go100and1)을 팔로우하시고
+[Go 101 슬랙](https://go-101.slack.com)에 참여하시면 Go 101 서적의 최신 소식들을
+좀 더 빠르게 만나볼 수 있습니다!
 
 ### Install, Update, and Read Locally
 
@@ -72,7 +73,9 @@ Welcome to improve Go 101 by:
 Current contributors are listed on [this page](https://go101.org/article/acknowledgements.html).
 
 Translations are also welcome. Here is a list of the ongoing translation projects:
+
 * [中文版](https://github.com/golang101/golang101)
+* [한국어](https://github.com/go101korea/go101)
 
 ### License
 
