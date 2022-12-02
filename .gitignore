@@ -10,3 +10,4 @@ app.yaml
 /*.epub
 /*.docx
 /*.doc
+*.swp
