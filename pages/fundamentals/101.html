@@ -1,90 +1,86 @@
 ﻿<h1>Go 101</h1>
 
 <p>
-<i>Go 101</i> is a book focusing on Go syntax/semantics
-(except <a href="../generics/101.html">custom generics</a> related) and
-all kinds of runtime related things
-and tries to help gophers gain a deep and thorough understanding of Go.
-This book also collects many details of Go and in Go programming.
-Many of these details could not be found in official Go documentations.
-It is expected that this book is helpful for both beginner and experienced Go programmers.
+<i>Go 101</i>은 Go 언어의 (<a href="../generics/101.html">사용자 정의 제네릭</a>에
+관련된 내용을 제외한) 구문/의미론과 모든 종류의 런타임에 관련된 항목에
+초점을 맞춘 책으로 Go 언어를 사용하는 개발자들이 Go에 대한 깊고 철처한 이해를
+얻기 위한 도움이 되는 것을 목표로 합니다.
+또한 이 책은 공식 Go 문서에서 찾을 수 없는 Go와 Go 프로그래밍에 관련된 많은
+정보들을 자세히 수집하기 때문에 초보자와 숙련자 모두에게 도움이 될 것입니다.
 </p>
 
 <p>
-The book is Go 1.20 ready now (<a href="100-updates.html">update history</a>).
+이 책은 Go 1.20 버전에 대응합니다 (<a href="100-updates.html">개정 내역</a>).
 </p>
 
 <p><small><i>
-(Please follow Go 101's official Twitter account <a href="https://twitter.com/go100and1">@go100and1</a>
-to get latest Go 101 news and learn all kinds of Go knowledge.)
+(Go 101 최신 소식과 Go와 관련된 다양한 정보를 얻고 싶으시다면 Go 101의 공식
+트위터 계정인 <a href="https://twitter.com/go100and1">@go100and1</a>을 팔로우해주세요
 </i></small></p>
 
 <div class="alert alert-success row item-row">
 	<div class="col-xs-12 col-sm-3 text-center" style="font-size: small;">
 		<img src="res/cover-1000x.jpg" style="width: 160px;" alt="Go 101"></img>
-		<p>(about 500 pages, 350+ examples, 101+ details)</p>
+		<p>(500여쪽, 350개 이상의 예제, 101개 이상의 응용)</p>
 	</div>
 	<div class="col-xs-12 col-sm-9" style="padding-top: 6px;"><small>
 		
-		The book is free to <a href="#index">read online</a>.
-		Ebooks are also available as a way to support Go 101:
+		이 책은 <a href="#index">온라인</a>에서 무료로 읽을 수 있습니다
+		전자책을 구입하시면 Go 101을 지원하실 수도 있습니다:
 
 		<ul>
 		<li>
-			<a href="https://leanpub.com/go101">Leanpub store</a>,
-			<i>$19.99+</i>.
+			<a href="https://leanpub.com/go101">Leanpub</a>,
+			<i>최소 19.99 달러</i>.
 		</li>
 		<!--li>
 			<a href="https://www.amazon.com/dp/B07Q3HWZ98">Amazon Kindle store</a>,
 			<i>$39.99</i>.
 		</li-->
 		<li>
-			<a href="https://books.apple.com/book/id1459984231">Apple Books store</a>,
-			<i>$19.99</i>.
+			<a href="https://books.apple.com/book/id1459984231">애플 북스</a>,
+			<i>19.99 달러</i>.
 		</li>
 		<li>
-			<a href="https://play.google.com/store/books/details?id=Dc1wEAAAQBAJ">Google Play store</a>,
-			<i>$19.99</i>.
+			<a href="https://play.google.com/store/books/details?id=Dc1wEAAAQBAJ">구글 플레이</a>,
+			<i>19.99 달러</i>.
 		</li>
 		</ul>
 		
 		<p>
-		Ebooks are also freely available <a href="https://github.com/go101/go101/releases">here</a>.
+		<a href="https://github.com/go101/go101/releases">여기</a>에서 전자책을 무료로 받을 수도 있습니다.
 		</p>
 
 		<p>
-		Tapir, the author of Go 101, has been on writing the Go 101 series books and maintaining the go101.org website since July 2016.
-		New contents are still being (and will be) continually added to the book series and the website from time to time.
+		Go 101의 저자인 Tapir는 2016년 7월부터 Go 101 시리즈를 집필하면서 go101.org 웹사이트를 관리하고 있습니다.
+		새로운 내용들은 계속해서 책 시리즈와 웹사이트에 수시로 추가되고 있습니다.
 		</p>
 
 		<p>
-		Tapir is also an indie game developer.
-		If you would like to, you can also support the book and the website by
-		playing <a href="https://www.tapirgames.com">Tapir's games</a>
-		(made for both Android and iPhone/iPad).
-		Individual donations are also accepted <a href="https://paypal.me/tapirliu">via PayPal</a>.
+		또한 Tapir는 인도의 게임 개발자입니다.
+		안드로이드와 아이폰/아이패드용으로 만들어진 <a href="https://www.tapirgames.com">Tapir의 게임들</a>을
+		플레이해서 책과 웹사이트를 지원하실 수도 있고, <a href="https://paypal.me/tapirliu">페이팔</a>을 통해서 직접 기부를 하실 수도 있습니다.
 		</p>
 
 		<p>
-		Thanks to
-		<a href="http://reneefrench.blogspot.com">Renee French</a> and Rob Pike
-		for the permission of using the image from
-		<a href="https://talks.golang.org/2012/waza.slide#19">the slide</a>
-		in the book cover.
+		<a href="https://talks.golang.org/2012/waza.slide#19">슬라이드</a>의 이미지를 책 표지로 사용할 수 있도록
+		허락해준 <a href="http://reneefrench.blogspot.com">르네 프렌치</a>씨와 롭 파이크씨에게 감사 말씀을 전합니다.
 		</p>
 	</small></div>
 </div>
 
 <!--
 <div class="alert alert-danger"><small>
-	<i>2022/Sep/02</i>: I'm sorry for the last Erratum, which still doesn't explain panic/recover mechanism well.
-	Please read <a href="panic-and-recover-more.html">the latest version</a> instead.
+	<i>2022년 9월 2일</i>: 마지막 정오표에서도 panic/recover 메커니즘을 잘 설명하지 못해 죄송합니다.
+	대신 <a href="panic-and-recover-more.html">마지막 버전</a>을 참고해주시길 바랍니다.
 </small></div>
 
 <div class="alert alert-danger"><small>
-	<s><i>2022/Aug/16</i>: the article <a href="panic-and-recover-more-newer.html">Explain Panic/Recover Mechanism in Detail</a>
-	is updated to be consistent with the official standard Go runtime.
-	Please read the starting note in <a href="panic-and-recover-more-old.html">the old version of this article</a> for the change.</s>
+	<s>
+            <i>2022년 8월 16일</i>:
+            <a href="panic-and-recover-more-newer.html">패닉/복구 메커니즘에 대한 고찰</a> 항목은 공식 표준 Go 런타임에 맞게 갱신되었습니다.
+	변경된 부분에 대해서는 <a href="panic-and-recover-more-old.html">이전 버전</a>의 시작에 있는 참고란을 읽어주세요.
+        </s>
 </small></div>
 
 <div class="alert alert-danger"><small>
@@ -180,7 +176,7 @@ to get latest Go 101 news and learn all kinds of Go knowledge.)
 
 <div>
 
-<h3 id="index">Index:</h3>
+<h3 id="index">목차:</h3>
 
 <!-- index starts (don't remove) -->
 
@@ -189,30 +185,30 @@ to get latest Go 101 news and learn all kinds of Go knowledge.)
 <!-- kindle starts: 1 -->
 
 <ul class="index part">
-	<li><a class="index" href="101-about.html">About Go 101</a> - why this book is written.</li>
-	<li><a class="index" href="acknowledgements.html">Acknowledgments</a></li>
+	<li><a class="index" href="101-about.html">Go 101에 대해</a> - 이 책이 쓰여진 이유</li>
+	<li><a class="index" href="acknowledgements.html">감사의 말</a></li>
 </ul>
 
 <ul class="index part">
-	<li><a class="index" href="introduction.html">An Introduction of Go</a> - why Go is worth learning.</li>
-	<li><a class="index" href="go-toolchain.html">The Go Toolchain</a> - how to compile and run Go programs.</li>
+	<li><a class="index" href="introduction.html">Go 소개</a> - Go를 배우는 가치</li>
+	<li><a class="index" href="go-toolchain.html">Go 툴체인</a> - Go 프로그램을 컴파일하고 실행하는 방법</li>
 </ul>
 
 <ul class="index part">
 <li>
-Become Familiar With Go Code
+Go 코드에 익숙해지기
 
 	<ul class="index chapters">
-	<li><a class="index" href="basic-code-elements-introduction.html">Introduction of Source Code Elements</a></li>
-	<li><a class="index" href="keywords-and-identifiers.html">Keywords and Identifiers</a></li>
-	<li><a class="index" href="basic-types-and-value-literals.html">Basic Types and Their Value Literals</a></li>
-	<li><a class="index" href="constants-and-variables.html">Constants and Variables</a> - also introduces untyped values and type deductions.</li>
-	<li><a class="index" href="operators.html">Common Operators</a> - also introduces more type deduction rules.</li>
-	<li><a class="index" href="function-declarations-and-calls.html">Function Declarations and Calls</a></li>
-	<li><a class="index" href="packages-and-imports.html">Code Packages and Package Imports</a></li>
-	<li><a class="index" href="expressions-and-statements.html">Expressions, Statements and Simple Statements</a></li>
-	<li><a class="index" href="control-flows.html">Basic Control Flows</a></li>
-	<li><a class="index" href="control-flows-more.html">Goroutines, Deferred Function Calls and Panic/Recover</a></li>
+	<li><a class="index" href="basic-code-elements-introduction.html">소스 코드 요소 소개</a></li>
+	<li><a class="index" href="keywords-and-identifiers.html">키워드와 식별자</a></li>
+	<li><a class="index" href="basic-types-and-value-literals.html">기본 자료형과 기본 값 리터럴</a></li>
+	<li><a class="index" href="constants-and-variables.html">상수와 변수</a> - 무형성(untyped) 값과 자료형 추론 소개를 포함</li>
+	<li><a class="index" href="operators.html">일반 연산자</a> - 더 많은 자료형 추론 규칙 소개를 포함</li>
+	<li><a class="index" href="function-declarations-and-calls.html">함수 선언과 호출</a></li>
+	<li><a class="index" href="packages-and-imports.html">코드 패키지와 패키지 들여오기</a></li>
+	<li><a class="index" href="expressions-and-statements.html">표현식, 구문과 단순 구문</a></li>
+	<li><a class="index" href="control-flows.html">기본 흐름 제어</a></li>
+	<li><a class="index" href="control-flows-more.html">고루틴, 지연된 함수 호출과 패닉/복구</a></li>
 	</ul>
 
 </li>
@@ -220,23 +216,23 @@ Become Familiar With Go Code
 
 <ul class="index part">
 <li>
-Go Type System
+Go 자료형 체계
 
 	<ul class="index chapters">
-	<li><a class="index" href="type-system-overview.html">Go Type System Overview</a> - a must read to master Go programming.</li>
-	<li><a class="index" href="pointer.html">Pointers</a></li>
-	<li><a class="index" href="struct.html">Structs</a></li>
-	<li><a class="index" href="value-part.html">Value Parts</a> - to gain a deeper understanding into Go values.</li>
-	<li><a class="index" href="container.html">Arrays, Slices and Maps</a> - first-class citizen container types.</li>
-	<li><a class="index" href="string.html">Strings</a></li>
-	<li><a class="index" href="function.html">Functions</a> - function types and values, including variadic functions.</li>
-	<li><a class="index" href="channel.html">Channels</a> - the Go way to do concurrency synchronizations.</li>
-	<li><a class="index" href="method.html">Methods</a></li>
-	<li><a class="index" href="interface.html">Interfaces</a> - value boxes used to do reflection and polymorphism.</li>
-	<li><a class="index" href="type-embedding.html">Type Embedding</a> - type extension in the Go way.</li>
-	<li><a class="index" href="unsafe.html">Type-Unsafe Pointers</a></li>
-	<li><a class="index" href="generic.html">Generics</a> - use and read composite types</li>
-	<li><a class="index" href="reflection.html">Reflections</a> - the <code>reflect</code> standard package.</li>
+	<li><a class="index" href="type-system-overview.html">Go 자료형 체계 개요</a> - Go 프로그래밍 숙달을 위해 반드시 읽어봐야 하는</li>
+	<li><a class="index" href="pointer.html">포인터</a></li>
+	<li><a class="index" href="struct.html">구조체</a></li>
+	<li><a class="index" href="value-part.html">변수</a> - Go 변수에 대한 더 깊은 이해</li>
+	<li><a class="index" href="container.html">배열, 슬라이스와 맵</a> - 1급 객체 컨테이너 자료형</li>
+	<li><a class="index" href="string.html">문자열</a></li>
+	<li><a class="index" href="function.html">함수</a> - 함수 자료형과 값, 가변 인자 함수</li>
+	<li><a class="index" href="channel.html">채널</a> - Go에서 동시성 동기화를 하는 방법</li>
+	<li><a class="index" href="method.html">메서드</a></li>
+	<li><a class="index" href="interface.html">인터페이스</a> - 리플렉션과 다형성을 하는 값 상자</li>
+	<li><a class="index" href="type-embedding.html">자료형 임베딩</a> - 자료형을 확장하는 방법</li>
+	<li><a class="index" href="unsafe.html">자료형에 안전하지 않는 포인터</a></li>
+	<li><a class="index" href="generic.html">제네릭</a> - 합성 자료형의 사용과 읽는 법</li>
+	<li><a class="index" href="reflection.html">리플렉션</a> - <code>reflect</code> 표준 패키지</li>
 	</ul>
 </li>
 </ul>
@@ -247,17 +243,17 @@ Go Type System
 
 <ul class="index part">
 <li>
-Some Special Topics
+특별 주제
 
 	<ul class="index chapters">
-	<li><a class="index" href="line-break-rules.html">Line Break Rules</a></li>
-	<li><a class="index" href="defer-more.html">More About Deferred Function Calls</a></li>
-	<li><a class="index" href="panic-and-recover-use-cases.html">Some Panic/Recover Use Cases</a></li>
-	<li><a class="index" href="panic-and-recover-more.html">Explain Panic/Recover Mechanism in Detail</a> - also explains exiting phases of function calls.</li>
-	<li><a class="index" href="blocks-and-scopes.html">Code Blocks and Identifier Scopes</a></li>
-	<li><a class="index" href="evaluation-orders.html">Expression Evaluation Orders</a></li>
-	<li><a class="index" href="value-copy-cost.html">Value Copy Costs in Go</a></li>
-	<li><a class="index" href="bounds-check-elimination.html">Bounds Check Elimination</a></li>
+	<li><a class="index" href="line-break-rules.html">개행 규칙</a></li>
+	<li><a class="index" href="defer-more.html">지연된 함수 호출 더 알아보기</a></li>
+	<li><a class="index" href="panic-and-recover-use-cases.html">패닉/복구 사용 사례</a></li>
+	<li><a class="index" href="panic-and-recover-more.html">패닉/복구 메커니즘에 대한 고찰</a> - 함수 호출 종료 단계를 포함</li>
+	<li><a class="index" href="blocks-and-scopes.html">코드 블록과 식별자 스코프</a></li>
+	<li><a class="index" href="evaluation-orders.html">표현식 평가 순서</a></li>
+	<li><a class="index" href="value-copy-cost.html">Go의 값 복사 비용</a></li>
+	<li><a class="index" href="bounds-check-elimination.html">경계 검사 제거(BCE)</a></li>
 	</ul>
 
 </li>
@@ -265,16 +261,16 @@ Some Special Topics
 
 <ul class="index part">
 <li>
-Concurrent Programming
+동시성 프로그래밍
 
 	<ul class="index chapters">
-	<li><a class="index" href="concurrent-synchronization-overview.html">Concurrency Synchronization Overview</a></li>
-	<li><a class="index" href="channel-use-cases.html">Channel Use Cases</a></li>
-	<li><a class="index" href="channel-closing.html">How to Gracefully Close Channels</a></li>
-	<li><a class="index" href="concurrent-synchronization-more.html">Other Concurrency Synchronization Techniques</a> - the <code>sync</code> standard package.</li>
-	<li><a class="index" href="concurrent-atomic-operation.html">Atomic Operations</a> - the <code>sync/atomic</code> standard package.</li>
-	<li><a class="index" href="memory-model.html">Memory Order Guarantees in Go</a></li>
-	<li><a class="index" href="concurrent-common-mistakes.html">Common Concurrent Programming Mistakes</a></li>
+	<li><a class="index" href="concurrent-synchronization-overview.html">동시성 동기화 개요</a></li>
+	<li><a class="index" href="channel-use-cases.html">채널 사용 사례</a></li>
+	<li><a class="index" href="channel-closing.html">채널을 깔끔하게 닫는 방법</a></li>
+	<li><a class="index" href="concurrent-synchronization-more.html">기타 동시성 동기화 기술</a> - <code>sync</code> 표준 패키지</li>
+	<li><a class="index" href="concurrent-atomic-operation.html">원자적 연산</a> - <code>sync/atomic</code> 표준 패키지</li>
+	<li><a class="index" href="memory-model.html">Go의 메모리 순서 보장</a></li>
+	<li><a class="index" href="concurrent-common-mistakes.html">흔히들 저지르는 동시성 프로그래밍 실수들</a></li>
 	</ul>
 
 </li>
@@ -283,12 +279,12 @@ Concurrent Programming
 
 <ul class="index part">
 <li>
-Memory Related
+메모리 관련
 
 	<ul class="index chapters">
-	<li><a class="index" href="memory-block.html">Memory Blocks</a></li>
-	<li><a class="index" href="memory-layout.html">Memory Layouts</a></li>
-	<li><a class="index" href="memory-leaking.html">Memory Leaking Scenarios</a></li>
+	<li><a class="index" href="memory-block.html">메모리 블록</a></li>
+	<li><a class="index" href="memory-layout.html">메모리 레이아웃</a></li>
+	<li><a class="index" href="memory-leaking.html">메모리 누수 시나리오</a></li>
 	</ul>
 
 </li>
@@ -296,13 +292,13 @@ Memory Related
 
 <ul class="index part">
 <li>
-Some Summaries
+일부 요약
 
 	<ul class="index chapters">
-	<li><a class="index" href="summaries.html">Some Simple Summaries</a></li>
-	<li><a class="index" href="nil.html"><code>nil</code> in Go</a></li>
-	<li><a class="index" href="value-conversions-assignments-and-comparisons.html">Value Conversion, Assignment and Comparison Rules</a></li>
-	<li><a class="index" href="exceptions.html">Syntax/Semantics Exceptions</a></li>
+	<li><a class="index" href="summaries.html">몇 가지 간단한 요약</a></li>
+	<li><a class="index" href="nil.html">Go의 <code>nil</code></a></li>
+	<li><a class="index" href="value-conversions-assignments-and-comparisons.html">값 변환, 할당과 비교 규칙</a></li>
+	<li><a class="index" href="exceptions.html">구문/의미 예외</a></li>
 	<!-- (to remove) for printing -->
 	<li><a class="index" href="details.html">Go Details 101</a></li>
 	<li><a class="index" href="unofficial-faq.html">Go FAQ 101</a></li>
@@ -318,7 +314,7 @@ Some Summaries
 <!-- kindle starts: 0 -->
 
 <ul class="index part">
-<li><a class="index" href="more.html">More Go Related Topics</a></li>
+<li><a class="index" href="more.html">더 많은 토픽</a></li>
 </ul>
 
 <!-- kindle ends: 0 -->
