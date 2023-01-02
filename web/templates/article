@@ -164,17 +164,18 @@
 	</div>
 	{{- end -}}
 	
-	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;" id="theme-switch"><small>Theme: dark/light</small></div>
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;" id="theme-switch"><small>테마: 다크/라이트</small></div>
 
 </div>
 
 <div class="alert alert-warning text-center"><small>
-Three new books, <a href="/optimizations/101.html">Go Optimizations 101</a>,
+현재 3권의 신간들인 <a href="/optimizations/101.html">Go Optimizations 101</a>,
 <a href="/details-and-tips/101.html">Go Details &amp; Tips 101</a>
-and <a href="/generics/101.html">Go Generics 101</a>
-are published now.
-It is most cost-effective to buy all of them through <a href="https://leanpub.com/b/go-optimizations-details-generics">this book bundle</a>
-in the Leanpub book store.
+과 <a href="/generics/101.html">Go Generics 101</a>이 출간되어 있습니다.
+Leanpub 서점에서 <a href="https://leanpub.com/b/go-optimizations-details-generics">번들</a>을 모두 구입하시는 방법이 비용 대비 효율이 가장 좋습니다.
+<p></p>
+Go에 대한 많은 정보들과 Go 101 책들의 최신 소식을 얻으시려면 Go 101 트위터 계정인 <a href="https://twitter.com/go100and1">@Go100and1</a>을
+팔로잉 해주세요.
 </small></div>
 <p>
 </p>
@@ -225,20 +226,16 @@ in the Leanpub book store.
 <div id="contact" class="alert alert-success"><small>
 
 <p>
-The <b><i>Go 101</i></b> project is hosted on
-<a href="https://github.com/go101/go101">Github</a>.
-Welcome to improve <b><i>Go 101</i></b> articles
-by submitting corrections for all kinds of mistakes,
-such as typos, grammar errors, wording inaccuracies,
-description flaws, code bugs and broken links.
+The <b><i>Go 101</i></b> 프로젝트는 <a href="https://github.com/go101/go101">Github</a>
+에서 호스팅됩니다.
+오타, 문법 오류, 부정확한 표현, 설명 결함, 코드 버그, 끊어진 링크와 같은 모든
+종류의 실수에 대한 수정 사항을 제출하여 Go 101을 개선을 돕는 것은 언제나 환영합니다.
 </p>
 
 <p>
-If you would like to learn some Go details and facts every serveral days,
-please follow Go 101's official Twitter account <a href="https://twitter.com/go100and1">@go100and1</a>.
-{{ if false -}}
-or join <a href="https://join.slack.com/t/go-101/shared_invite/zt-y2pvwg00-Oz7lDDJu44l~hZsFRUApiA">Go 101 slack channels</a>.
-{{- end }}
+주기적으로 Go에 대한 깊이 있는 정보를 얻고 싶다면 Go 101의 공식 트위터 계정인
+<a href="https://twitter.com/go100and1">@go100and1</a>을 팔로우하거나
+<a href="https://join.slack.com/t/go-101/shared_invite/zt-y2pvwg00-Oz7lDDJu44l~hZsFRUApiA">Go 101 슬랙 채널</a>에j가입해주세요.
 </p>
 
 </small></div>
@@ -250,90 +247,90 @@ or join <a href="https://join.slack.com/t/go-101/shared_invite/zt-y2pvwg00-Oz7lD
 <div id="ebooks">
 
 	{{- if $is_fundamentals }}
-The digital versions of this book are available at the following places:
+이 책의 디지털 버전은 아래와 같은 곳을 통해서 구매할 수 있습니다.
 <ul>
 <li>
-	<a href="https://leanpub.com/go101">Leanpub store</a>,
-	<i>$19.99+</i>.
+	<a href="https://leanpub.com/go101">Leanpub</a>,
+	<i>최소 19.99 달러</i>.
 </li>
 <li>
-	<!--a href="https://www.amazon.com/dp/B07Q3HWZ98">Amazon Kindle store</a>,
+	<!--a href="https://www.amazon.com/dp/B07Q3HWZ98">아마존 킨틀 스토어</a>,
 	<i>$39.99</i>. -->
-	Amazon Kindle store, <i>(unavailable currently)</i>.
+	아마존 킨들 스토어, <i>(현재는 사용 불가)</i>.
 </li>
 <li>
-	<a href="https://books.apple.com/book/id1459984231">Apple Books store</a>,
-	<i>$19.99</i>.
+	<a href="https://books.apple.com/book/id1459984231">애플 북 스토어</a>,
+	<i>19.99 달러</i>.
 </li>
 <li>
-	<a href="https://play.google.com/store/books/details?id=Dc1wEAAAQBAJ">Google Play store</a>,
-	<i>$19.99</i>.
+	<a href="https://play.google.com/store/books/details?id=Dc1wEAAAQBAJ">구글 플레이 스토어</a>,
+	<i>19.99 달러</i>.
 </li>
 <li>
-	<a href="https://github.com/go101/go101/releases">Free ebooks</a>,
-	including pdf, epub and azw3 formats.
+	<a href="https://github.com/go101/go101/releases">무료 전자책</a>,
+	pdf, epub과 azw3 포맷을 지원
 </li>
 </ul>
 	{{ end -}}
 
 	{{- if $is_optimizations }}
-The digital versions of this book are available at the following places:
+이 책의 디지털 버전은 아래와 같은 곳을 통해서 구매할 수 있습니다.
 <ul>
 <li>
-	<a href="https://leanpub.com/go-optimizations-101">Leanpub store</a>,
-	<i>$7.99+</i> (Or buy this book from <a href="https://leanpub.com/b/go-optimizations-details-generics">this</a> or <a href="https://leanpub.com/b/go-optimizations-details">this</a> book bundle).
+	<a href="https://leanpub.com/go-optimizations-101">Leanpub</a>,
+	<i>최소 7.99 달러</i> (<a href="https://leanpub.com/b/go-optimizations-details-generics">이곳</a>이나 <a href="https://leanpub.com/b/go-optimizations-details">이곳</a>에서 번들로 구매하세요).
 </li>
 <li>
-	<a href="https://books.apple.com/book/id1609924340">Apple Books store</a>,
-	<i>$7.99</i>.
+	<a href="https://books.apple.com/book/id1609924340">애플 북스</a>,
+	<i>7.99 달러</i>.
 </li>
 <li>
-	<a href="https://www.amazon.com/dp/B09NT2HJCM">Amazon Kindle store</a>,
-	<i>$7.99</i>.
+	<a href="https://www.amazon.com/dp/B09NT2HJCM">아마존 킨들 스토어</a>,
+	<i>7.99 달러</i>.
 </li>
 </ul>
 	{{ end -}}
 
 	{{- if $is_details_and_tips }}
-The digital versions of this book are available at the following places:
+이 책의 디지털 버전은 아래와 같은 곳을 통해서 구매할 수 있습니다.
 <ul>
 <li>
-	<a href="https://leanpub.com/go-details-and-tips-101">Leanpub store</a>,
-	<i>$7.99+</i> ($7.99 is the minimum book price at Leanpub. It is more cost-effective to buy this book from <a href="https://leanpub.com/b/go-optimizations-details">this</a> or <a href="https://leanpub.com/b/go-optimizations-details-generics#bundle-page-go-details-and-tips-101">this</a> book bundle).
+	<a href="https://leanpub.com/go-details-and-tips-101">Leanpub</a>,
+	<i>최소 7.99 달러</i> (7.99 달러는 Leanpub에서 판매하는 최소 판매가입니다. <a href="https://leanpub.com/b/go-optimizations-details">이곳</a>이나 <a href="https://leanpub.com/b/go-optimizations-details-generics#bundle-page-go-details-and-tips-101">이곳</a>에서 번들로 구매하는 것이 더 비용 대비 효율이 좋습니다).
 </li>
 <li>
-	<a href="https://www.amazon.com/dp/B09NT56PW8">Amazon Kindle store</a>,
-	<i>$4.99</i>.
+	<a href="https://www.amazon.com/dp/B09NT56PW8">아마존 킨들 스토어</a>,
+	<i>4.99 달러</i>.
 </li>
 <li>
-	<a href="https://books.apple.com/book/id1609931638">Apple Books store</a>,
-	<i>$4.99</i>.
+	<a href="https://books.apple.com/book/id1609931638">애플 북스</a>,
+	<i>4.99 달러</i>.
 </li>
 <li>
-	<a href="https://play.google.com/store/books/details?id=A81wEAAAQBAJ">Google Play store</a>,
-	<i>$4.99</i>.
+	<a href="https://play.google.com/store/books/details?id=A81wEAAAQBAJ">구글 플레이 스토어</a>,
+	<i>4.99 달러</i>.
 </li>
 </ul>
 	{{ end -}}
 
 	{{- if $is_generics }}
-The digital versions of this book are available at the following places:
+이 책의 디지털 버전은 아래와 같은 곳을 통해서 구매할 수 있습니다.
 <ul>
 <li>
 	<a href="https://leanpub.com/go-generics-101">Leanpub store</a>,
-	<i>$7.99+</i> ($7.99 is the minimum book price at Leanpub. It is more cost-effective to buy this book from <a href="https://leanpub.com/b/go-optimizations-details">this</a> or <a href="https://leanpub.com/b/go-optimizations-details-generics#bundle-page-go-details-and-tips-101">this</a> book bundle).
+	<i>최소 7.99 달러</i> (7.99 달러는 Leanpub에서 판매하는 최소 판매가입니다. <a href="https://leanpub.com/b/go-optimizations-details">이곳</a>이나 <a href="https://leanpub.com/b/go-optimizations-details-generics#bundle-page-go-details-and-tips-101">이곳</a>에서 번들로 구매하는 것이 더 비용 대비 효율이 좋습니다).
 </li>
 <li>
 	<a href="https://www.amazon.com/dp/B09XBQNNF2">Amazon Kindle store</a>,
-	<i>$5.99</i>.
+	<i>5.99 달러</i>.
 </li>
 <li>
 	<a href="https://books.apple.com/book/id1618059315">Apple Books store</a>,
-	<i>$5.99</i>.
+	<i>5.99 달러</i>.
 </li>
 <li>
 	<a href="https://play.google.com/store/books/details?id=D81wEAAAQBAJ">Google Play store</a>,
-	<i>$5.99</i>.
+	<i>5.99 달러</i>.
 </li>
 </ul>
 	{{ end -}}
@@ -345,8 +342,18 @@ The digital versions of this book are available at the following places:
 {{- if false }}
 
 <div>
-If you would like to, you can support the book and the website by
-making a donation through Paypal (<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=PJWNSMCJ8XLX8&source=url">$5</a>, <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=EK54M5NSXVFLL&source=url">$9</a>, <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Z7NNPZN28Z6FL&source=url">$15</a>, or <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=3VLHQW5VAVCUY&source=url">$25</a>) or buying Tapir a coffee (<a href="https://ko-fi.com/go_101" target="_blank">way 1</a> and <a href="https://www.buymeacoffee.com/go101" target="_blank">way 2</a>).
+원하신다면 아래의 페이팔 링크를 통해 Go 101 책과 웹사이트에 후원하실 수 있습니다.
+<ul>
+    <li>페이팔</li>
+    <ul>
+        <li><a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=PJWNSMCJ8XLX8&source=url">5 달러</a></li>
+        <li><a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=EK54M5NSXVFLL&source=url">9 달러</a></li>
+        <li><a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Z7NNPZN28Z6FL&source=url">15 달러</a></li>
+        <li><a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=3VLHQW5VAVCUY&source=url">25 달러</a></li>
+    </ul>
+</ul>
+
+혹은 <li><a href="https://ko-fi.com/go_101" target="_blank">Ko-fi</a></li>나 <li><a href="https://www.buymeacoffee.com/go101" target="_blank">Buy Me a Coffee</a></li>를 통해 커피를 사주실 수도 있습니다.
 </div>
 
 {{ end -}}
@@ -354,8 +361,8 @@ making a donation through Paypal (<a href="https://www.paypal.com/cgi-bin/webscr
 
 {{- if false }}
 <div class="text-center" style="padding: 6px; font-size: small;">
-(Paypal donation QR code)<br/>
-<img src="res/paypal-donate-qr-code-5.png" alt="paypal donate QR code"></img>
+(페이팔 기부 QR 코드)<br/>
+<img src="res/paypal-donate-qr-code-5.png" alt="페이팔 기부 QR 코드 "></img>
 </div>
 
 <p></p>
@@ -363,32 +370,31 @@ making a donation through Paypal (<a href="https://www.paypal.com/cgi-bin/webscr
 
 <div>
 
-Tapir, the author of Go 101, has been on writing the Go 101 series books
-and maintaining the go101.org website since 2016 July.
-New contents will be continually added to the book and the website from time to time.
-Tapir is also an indie game developer.
-You can also support Go 101 by playing <a href="https://www.tapirgames.com">Tapir's games</a>
-(made for both Android and iPhone/iPad):
+Go 101의 저자인 Tapir는 2016년 7월부터 Go 101 시리즈 책들을 집필하고 go101.org 웹사이트를 유지 관리하고 있습니다.
+새로운 콘텐츠는 책과 웹사이트에 수시로 추가될 예정입니다.
+Tapir는 인디 게임 개발자이기도 합니다.
+<a href="https://www.tapirgames.com">Tapir의 게임</a>을 플레이하여 Go 101을 지원할 수도 있습니다.
+(안드로이드와 아이폰/아이패드용):
 <ul>
 <li>
-	<a href="https://www.tapirgames.com/App/Color-Infection">Color Infection</a> (★★★★★), a physics based original casual puzzle game. 140+ levels. 
+	<a href="https://www.tapirgames.com/App/Color-Infection">Color Infection</a> (★★★★★), 140개 이상의 단계로 이루어진 물리 기반의 캐주얼 퍼즐 게임
 </li>
 <li>
-	<a href="https://www.tapirgames.com/App/Rectangle-Pushers">Rectangle Pushers</a> (★★★★★), an original casual puzzle game. Two modes, 104+ levels. 
+	<a href="https://www.tapirgames.com/App/Rectangle-Pushers">Rectangle Pushers</a> (★★★★★), 2가지 모드와 104개 이상의 단계로 이루어진 캐주얼 퍼즐 게임
 </li>
 <li>
-	<a href="https://www.tapirgames.com/App/Let-Us-Play-With-Particles">Let's Play With Particles</a>, a casual action original game. Three mini games are included.
+	<a href="https://www.tapirgames.com/App/Let-Us-Play-With-Particles">Let's Play With Particles</a>, 세가지 미니 게임이 있는 캐주얼 액션 게임
 </li>
 </ul>
 </div>
 
-Individual donations <a href="https://paypal.me/tapirliu">via PayPal</a> are also welcome.
+<a href="https://paypal.me/tapirliu">페이팔</a>을 통한 개인 기부도 환영합니다.
 {{- if false }}
-Individual donations <a href="https://paypal.me/tapirliu">via PayPal</a>
-and cryptocurrencies are welcome too:
+<a href="https://paypal.me/tapirliu">페이팔</a>과 암호화폐를 통한 개인 기부도
+환영합니다.:
 <div style="padding-left:30px">
-<i>Bitcoin</i>: 1xucQbv5jujFPPwhyg395ri5yV71hx9g9<br/>
-<i>Ethereum</i>: 0x5dc4aa2c2bbfaadae373dadcfca11b3358912212
+<i>비트코인</i>: 1xucQbv5jujFPPwhyg395ri5yV71hx9g9<br/>
+<i>이더리움</i>: 0x5dc4aa2c2bbfaadae373dadcfca11b3358912212
 </div>
 {{ end -}}
 
@@ -397,7 +403,7 @@ and cryptocurrencies are welcome too:
 {{ if and $show_index .Index -}}
 
 <hr>
-Index:
+색인:
 {{ .Index }}
 
 {{ end }}
