@@ -3,7 +3,7 @@
 지금까지 공개된 책들은 아래와 같습니다:
 
 * [Go (Fundamentals) 101](https://go101.org/article/101.html): Go 구문/의미(맞춤 제네릭 관련 제외) 및 모든 종류의 런타임 관련 항목에 중점을 둡니다.
-* [Go Generics 101](https://go101.org/generics/101.html): Go 제네릭에 대해 자세히 다룹니다.
+* [Go Generics 101](https://go101.org/generics/101.html): Go 사용자 정의 제네릭에 대해 자세히 다룹니다.
 * [Go Optimizations 101](https://go101.org/optimizations/101.html): 코드 성능 최적화 트릭, 팁 및 제안을 제공합니다.
 * [Go Details & Tips 101](https://go101.org/details-and-tips/101.html): 다수의 깊이 있는 정보와 Go 프로그래밍에 대한 팁들을 제공합니다.
 
