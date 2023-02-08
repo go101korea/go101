@@ -42,9 +42,9 @@ jobs:
         run: |
           sudo apt install -y calibre pandoc texlive texlive-xetex
           sudo apt install -y latex-cjk-korean texlive-lang-korean
-          GO111MODULE=off go get go101.org/ebooktool
+          GO111MODULE=off go get -v go101.org/ebooktool
           go build
-          PATH="$GOPATH/bin:$PATH" go run . -gen
+          go run . -gen
 
       - name: Push public branch
         run: |
