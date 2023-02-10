@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Golang online books, articles, tools, etc.">
+		<meta name="author" content="">
+		<meta name="go-version" content="go1.20">
+		<link rel="icon" href="/static/go101/images/101-v1.ico">
+		<link rel="apple-touch-icon" sizes="152x152" href="/static/go101/images/iphone-v1.jpeg">
+	
+		<title>Some Simple Summaries -Go 101</title><link id="css-bs" href="/static/bootstrap/v4.0.3-dark/css/bootstrap.min.css" rel="stylesheet">
+		<link id="css-go101" href="/static/go101/css/v991-dark.css" rel="stylesheet">
+		<link id="css-prism" href="/static/prism/2020-08-03-dark/prism.css" rel="stylesheet">
+		<script id="js-prism" src="/static/prism/2020-08-03-dark/prism.js"></script>
+
+
+		<script src="/static/jquery/jquery.min-v1.11.2.js"></script>
+		<script src="/static/go101/js/v5.js"></script>
+		
+		
+		<style>
+		div, p, ul, li, td, th {line-height: 1.55;}
+		</style>
+
+		<script>
+		var theme = ""
+		</script>
+	</head>
+
+	<body>
+		<div class="container">
+
+		<div class="row nav-bar-with-borders">
+	<div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/"><small>Home</small></a> <span class="new-text"><sup>new!</sup></span>
+	</div><div class="col-xs-6 col-sm-4 nav-item-active">
+		<a href="/article/101.html"><small>Go 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/generics/101.html"><small>Go Generics 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/details-and-tips/101.html"><small>Go Details &amp; Tips 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/optimizations/101.html"><small>Go Optimizations 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/quizzes/101.html"><small>Go Quizzes 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go HowTo 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Practices 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Agg 101</small></div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/blog/101.html"><small>Go 101 Blog</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/apps-and-libs/101.html"><small>Go 101 Apps &amp; Libs</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;" id="theme-switch"><small>테마: 다크/라이트</small></div>
+
+</div>
+
+<div class="alert alert-warning text-center"><small>
+현재 3권의 신간들인 <a href="/optimizations/101.html">Go Optimizations 101</a>,
+<a href="/details-and-tips/101.html">Go Details &amp; Tips 101</a>
+과 <a href="/generics/101.html">Go Generics 101</a>이 출간되어 있습니다.
+Leanpub 서점에서 <a href="https://leanpub.com/b/go-optimizations-details-generics">번들</a>을 모두 구입하시는 방법이 비용 대비 효율이 가장 좋습니다.
+<p></p>
+Go에 대한 많은 정보들과 Go 101 책들의 최신 소식을 얻으시려면 Go 101 트위터 계정인 <a href="https://twitter.com/go100and1">@Go100and1</a>을
+팔로잉 해주세요.
+</small></div>
+<p>
+</p>
+
+
+
+<h1>Some Simple Summaries</h1>
+
+
+
+<div>
+Index
+<ul class="index summaries" id="summaries.html">
+<li><a class="index" href="#type-with-underlyings">Types whose values may have indirect underlying parts</a>.</li>
+<li><a class="index" href="#have-length-types">Types which values can be used as arguments of built-in <code>len</code> function
+	(and <code>cap</code>, <code>close</code>, <code>delete</code>, <code>make</code> functions)</a>.</li>
+<li><a class="index" href="#container-types">Comparison of built-in container types</a>.</li>
+<li><a class="index" href="#composite-literals-types">Types which values can be represented with composite literals (<code>T{...}</code>)</a>.</li>
+<li><a class="index" href="#type-sizes">Value sizes of all kinds of types</a>.</li>
+<li><a class="index" href="#nil-zero-value-types">Types which zero values can be represented with <code>nil</code></a>.</li>
+<li><a class="index" href="#types-can-have-methods">Types we can implement methods for</a>.</li>
+<li><a class="index" href="#types-can-be-embedded">Types which can be embedded in struct types</a>.</li>
+<li><a class="index" href="#compile-time-evaluation">Functions whose calls will/may be evaluated at compile time</a>.</li>
+<li><a class="index" href="#not-addressable">Values that can't be taken addresses</a>.</li>
+<li><a class="index" href="#not-comparable">Types which don't support comparisons</a>.</li>
+<li><a class="index" href="#declared-but-unused">Which code elements are allowed to be declared but not used</a>.</li>
+<li><a class="index" href="#groupable-elements">Named source code elements which can be declared together within <code>()</code></a>.</li>
+<li><a class="index" href="#declaration-places">Named source code elements which can be declared both inside functions and outside any functions</a>.</li>
+<li><a class="index" href="#additional-return">Expressions which evaluation results may contain optional additional values</a>.</li>
+<li><a class="index" href="#block-forever">Ways to block the current goroutine ‎forever by using the channel mechanism</a>.</li>
+<li><a class="index" href="#concatenate-strings">Ways to concatenate strings</a>.</li>
+<li><a class="index" href="#compiler-optimizations">Optimizations made by the standard Go compiler</a>.</li>
+<li><a class="index" href="#panic-cases">Run-time panic and crash cases</a>.</li>
+</ul>
+
+
+
+<p>
+</p>
+
+</div>
+
+<div class="summaries-items">
+
+<a class="anchor" id="type-with-underlyings"></a>
+<h3>
+	Types whose values may have indirect underlying parts
+</h3>
+
+<div>
+Types whose values may have indirect underlying parts:
+<ul>
+<li>string types</li>
+<li>function types</li>
+<li>slice types</li>
+<li>map types</li>
+<li>channel types</li>
+<li>interface types</li>
+</ul>
+
+<p>
+The answer is based on the implementation of the standard Go compiler/runtime.
+In fact, whether or not function values may have indirect underlying parts is hardly to prove,
+and string values and interface values should be viewed as values without indirect underlying parts in logic.
+Please read <a href="value-part.html">value parts</a> for details.
+</p>
+</div>
+
+<a class="anchor" id="have-length-types"></a>
+<h3>
+	Types which values can be used as arguments of built-in <code>len</code> function
+	(and <code>cap</code>, <code>close</code>, <code>delete</code>, <code>make</code> functions)
+</h3>
+
+<table border="1" class="table table-bordered text-center" style="width: auto !important;">
+<thead>
+	<tr>
+	<th class="text-center" valign="bottom" align="center"></th>
+	<th class="text-center" valign="bottom" align="center">len</th>
+	<th class="text-center" valign="bottom" align="center">cap</th>
+	<th class="text-center" valign="bottom" align="center">close</th>
+	<th class="text-center" valign="bottom" align="center">delete</th>
+	<th class="text-center" valign="bottom" align="center">make</th>
+	</tr>
+</thead>
+<tbody>
+	<tr class="active">
+	<th scope="row" class="text-center" valign="middle" align="center">string</th>
+	<td valign="middle" align="center">Yes</td>
+	<td></td>
+	<td></td>
+	<td></td>
+	<td></td>
+	</tr>
+	<tr>
+	<th scope="row" class="text-center" valign="middle" align="center">array<br/>(and array pointer)</th>
+	<td valign="middle" align="center">Yes</td>
+	<td valign="middle" align="center">Yes</td>
+	<td></td>
+	<td></td>
+	<td></td>
+	</tr>
+	<tr class="active">
+	<th scope="row" class="text-center" valign="middle" align="center">slice</th>
+	<td valign="middle" align="center">Yes</td>
+	<td valign="middle" align="center">Yes</td>
+	<td></td>
+	<td></td>
+	<td valign="middle" align="center">Yes</td>
+	</tr>
+	<tr>
+	<th scope="row" class="text-center" valign="middle" align="center">map</th>
+	<td valign="middle" align="center">Yes</td>
+	<td></td>
+	<td></td>
+	<td valign="middle" align="center">Yes</td>
+	<td valign="middle" align="center">Yes</td>
+	</tr>
+	<tr class="active">
+	<th scope="row" class="text-center" valign="middle" align="center">channel</th>
+	<td valign="middle" align="center">Yes</td>
+	<td valign="middle" align="center">Yes</td>
+	<td valign="middle" align="center">Yes</td>
+	<td></td>
+	<td valign="middle" align="center">Yes</td>
+	</tr>
+</tbody>
+</table>
+
+<p>
+Values of above types can also be ranged over in for-range loops.
+</p>
+
+<p>
+Types which values can be used as arguments of built-in function <code>len</code>
+can be called container types in broad sense.
+</p>
+
+<a class="anchor" id="container-types"></a>
+<h3>
+	Comparison of built-in container types
+</h3>
+
+<table border="1" class="table table-bordered text-center" style="width: auto !important;">
+<thead>
+	<tr>
+	<th class="text-center" valign="bottom" align="center">Type</th>
+	<th class="text-center" valign="bottom" align="center">Can New Elements Be Added into Values?</th>
+	<th class="text-center" valign="bottom" align="center">Are Elements of Values Replaceable?</th>
+	<th class="text-center" valign="bottom" align="center">Are Elements of Values Addressable?</th>
+	<th class="text-center" valign="bottom" align="center">Will Element Accesses Modify Value Lengths?</th>
+	<th class="text-center" valign="bottom" align="center">May Values Have Underlying Parts</th>
+	</tr>
+</thead>
+<tbody>
+	<tr class="active">
+	<th scope="row" class="text-center" valign="middle" align="center">string</th>
+	<td valign="middle" align="center">No</td>
+	<td valign="middle" align="center">No</td>
+	<td valign="middle" align="center">No</td>
+	<td valign="middle" align="center">No</td>
+	<td valign="middle" align="center">Yes<sup>(1)</sup></td>
+	</tr>
+	<tr>
+	<th scope="row" class="text-center" valign="middle" align="center">array</th>
+	<td valign="middle" align="center">No</td>
+	<td valign="middle" align="center">Yes<sup>(2)</sup></td>
+	<td valign="middle" align="center">Yes<sup>(2)</sup></td>
+	<td valign="middle" align="center">No</td>
+	<td valign="middle" align="center">No</td>
+	</tr>
+	<tr class="active">
+	<th scope="row" class="text-center" valign="middle" align="center">slice</th>
+	<td valign="middle" align="center">No<sup>(3)</sup></td>
+	<td valign="middle" align="center">Yes</td>
+	<td valign="middle" align="center">Yes</td>
+	<td valign="middle" align="center">No</td>
+	<td valign="middle" align="center">Yes</td>
+	</tr>
+	<tr>
+	<th scope="row" class="text-center" valign="middle" align="center">map</th>
+	<td valign="middle" align="center">Yes</td>
+	<td valign="middle" align="center">Yes</td>
+	<td valign="middle" align="center">No</td>
+	<td valign="middle" align="center">No</td>
+	<td valign="middle" align="center">Yes</td>
+	</tr>
+	<tr class="active">
+	<th scope="row" class="text-center" valign="middle" align="center">channel</th>
+	<td valign="middle" align="center">Yes<sup>(4)</sup></td>
+	<td valign="middle" align="center">No</td>
+	<td valign="middle" align="center">No</td>
+	<td valign="middle" align="center">Yes</td>
+	<td valign="middle" align="center">Yes</td>
+	</tr>
+</tbody>
+</table>
+
+<p>
+<sup>(1)</sup> For the standard Go compiler/runtime.
+<br/>
+<sup>(2)</sup> For addressable array values only.
+<br/>
+<sup>(3)</sup> Generally, a slice value are modified by assigned another slice value to it by overwriting it.
+Here, such cases are not viewed as "add new elements".
+In fact, slice lengths can also be modified separately by calling the <code>reflect.SetLen</code> function.
+Increase the length of a slice by this way is kind of adding new elements into the slice.
+But the <code>reflect.SetLen</code> function is slow, so it is rarely used.
+<br/>
+<sup>(4)</sup> For buffered channels which are still not full.
+</p>
+
+<a class="anchor" id="composite-literals-types"></a>
+<h3>
+	Types which values can be represented with composite literals (<code>T{...}</code>)
+</h3>
+
+<p>
+Values of the following four kinds of types can be represented with composite literals:
+</p>
+
+<table border="1" class="table table-bordered text-center" style="width: auto !important;">
+<thead>
+	<tr>
+	<th class="text-center" valign="bottom" align="center">Type (<code>T</code>)</th>
+	<th class="text-center" valign="bottom" align="center">Is <code>T{}</code> a Zero Value of <code>T</code>?</th>
+	</tr>
+</thead>
+<tbody>
+	<tr class="active">
+	<th scope="row" class="text-center" valign="middle" align="center">struct</th>
+	<td valign="middle" align="center">Yes</td>
+	</tr>
+	<tr>
+	<th scope="row" class="text-center" valign="middle" align="center">array</th>
+	<td valign="middle" align="center">Yes</td>
+	</tr>
+	<tr class="active">
+	<th scope="row" class="text-center" style="vertical-align: middle" valign="middle" align="center">slice</th>
+	<td valign="middle" align="center">No<br/>(zero value is <code>nil</code>)</td>
+	</tr>
+	<tr>
+	<th scope="row" class="text-center" style="vertical-align: middle" valign="middle" align="center">map</th>
+	<td valign="middle" align="center">No<br/>(zero value is <code>nil</code>)</td>
+	</tr>
+</tbody>
+</table>
+
+<a class="anchor" id="type-sizes"></a>
+<h3>
+	Value sizes of all kinds of types
+</h3>
+
+<p>
+Please read <a href="value-copy-cost.html">value copy cost</a> for details.
+</p>
+
+<a class="anchor" id="nil-zero-value-types"></a>
+<h3>
+	Types which zero values can be represented with <code>nil</code>
+</h3>
+
+<p>
+The zero values of the following types can be represented with <code>nil</code>.
+</p>
+
+<table border="1" class="table table-bordered text-center" style="width: auto !important;">
+<thead>
+	<tr>
+	<th class="text-center" valign="bottom" align="center">Type (<code>T</code>)</th>
+	<th class="text-center" valign="bottom" align="center">Size of <code>T(nil)</code></th>
+	</tr>
+</thead>
+<tbody>
+	<tr class="active">
+	<th scope="row" class="text-center" valign="middle" align="center">pointer</th>
+	<td valign="middle" align="center">1 word</td>
+	</tr>
+	<tr>
+	<th scope="row" class="text-center" valign="middle" align="center">slice</th>
+	<td valign="middle" align="center">3 words</td>
+	</tr>
+	<tr class="active">
+	<th scope="row" class="text-center" valign="middle" align="center">map</th>
+	<td valign="middle" align="center">1 word</td>
+	</tr>
+	<tr>
+	<th scope="row" class="text-center" valign="middle" align="center">channel</th>
+	<td valign="middle" align="center">1 word</td>
+	</tr>
+	<tr class="active">
+	<th scope="row" class="text-center" valign="middle" align="center">function</th>
+	<td valign="middle" align="center">1 word</td>
+	</tr>
+	<tr>
+	<th scope="row" class="text-center" valign="middle" align="center">interface</th>
+	<td valign="middle" align="center">2 words</td>
+	</tr>
+</tbody>
+</table>
+
+<p>
+The above listed sizes are for the standard Go compiler.
+One word means 4 bytes on 32-bit architectures and 8 bytes on 64-bit architectures.
+and <a href="value-part.html">the indirect underlying parts</a>
+of a value don't contribute to the size of the value.
+</p>
+
+<p>
+The size of a zero value of a type is the same as any other values of the same type.
+</p>
+
+<a class="anchor" id="types-can-have-methods"></a>
+<h3>
+	Types we can implement methods for
+</h3>
+
+<p>
+Please read <a href="method.html">methods in Go</a> for details.
+</p>
+
+<a class="anchor" id="types-can-be-embedded"></a>
+<h3>
+	Types which can be embedded in struct types
+</h3>
+
+<p>
+Please read <a href="type-embedding.html#embeddable-types">which types
+can be embedded</a> for details.
+</p>
+
+<a class="anchor" id="compile-time-evaluation"></a>
+<h3>
+	Functions whose calls will/may be evaluated at compile time
+</h3>
+
+<p>
+If a function call is evaluated at compile time,
+its return results must be constants.
+</p>
+
+<table border="1" class="table table-bordered text-center" style="width: auto !important;">
+<thead>
+	<tr>
+	<th class="text-center" valign="bottom" align="center">Function</th>
+	<th class="text-center" valign="bottom" align="center">Return Type</th>
+	<th class="text-center" valign="bottom" align="center">Are Calls Always Evaluated at Compile Time?</th>
+	</tr>
+</thead>
+<tbody>
+	<tr class="active">
+	<th scope="row" class="text-center" valign="middle" align="center">unsafe.Sizeof</th>
+	<td rowspan="3" style="vertical-align: middle" valign="middle" align="center"><code>uintptr</code></td>
+	<td rowspan="3" style="vertical-align: middle" valign="middle" align="center">Yes, always.</td>
+	</tr>
+	<tr class="active">
+	<th scope="row" class="text-center" style="vertical-align: middle" valign="middle" align="center">unsafe.Alignof</th>
+	</tr>
+	<tr class="active">
+	<th scope="row" class="text-center" style="vertical-align: middle" valign="middle" align="center">unsafe.Offsetof</th>
+	</tr>
+	<tr>
+	<th scope="row" class="text-center" style="vertical-align: middle" valign="middle" align="center"><br/><br/>len<br/><br/><br/></th>
+	<td rowspan="2" style="vertical-align: middle" valign="middle" align="center"><code>int</code></td>
+	<td rowspan="2" valign="middle" align="center">
+		Not always.
+		<br/><br/>
+		<div class="text-left">
+		From <a href="https://golang.org/ref/spec#Length_and_capacity">Go specification</a>:
+		<ul>
+		<li>
+		the expression <code>len(s)</code> is constant if <code>s</code> is a string constant.
+		</li>
+		<li>
+		the expressions <code>len(s)</code> and <code>cap(s)</code> are constants
+		if the type of <code>s</code> is an array or pointer to an array
+		and the expression <code>s</code> does not contain channel receives or (non-constant) function calls.
+		</li>
+		</ul>
+		</div>
+	</td>
+	</tr>
+	<tr>
+	<th scope="row" class="text-center" style="vertical-align: middle" valign="middle" align="center"><br/><br/>cap<br/><br/><br/></th>
+	</tr>
+	<tr class="active">
+	<th scope="row" class="text-center" style="vertical-align: middle" valign="middle" align="center"><br/>real<br/><br/></th>
+	<td rowspan="2" style="vertical-align: middle" valign="middle" align="center">
+		The result is an untyped value. Its default type is <code>float64</code>.
+	</td>
+	<td rowspan="2" valign="middle" align="center">
+		Not always.
+		<br/><br/>
+		<div class="text-left">
+		From <a href="https://golang.org/ref/spec#Constants">Go spec</a>:
+		the expressions <code>real(s)</code> and <code>imag(s)</code> are constants
+		if <code>s</code> is a complex constant.
+		</div>
+	</td>
+	</tr>
+	<tr class="active">
+	<th scope="row" class="text-center" style="vertical-align: middle" valign="middle" align="center"><br/>imag<br/><br/></th>
+	</tr>
+	<tr>
+	<th scope="row" class="text-center" style="vertical-align: middle" valign="middle" align="center">complex</th>
+	<td style="vertical-align: middle" valign="middle" align="center">
+		The result is an untyped value. Its default type is <code>complex128</code>.
+	</td>
+	<td valign="middle" align="center">
+		Not always.
+		<br/><br/>
+		<div class="text-left">
+		From <a href="https://golang.org/ref/spec#Constants">Go spec</a>:
+		the expression <code>complex(sr, si)</code> is constant
+		if both <code>sr</code> and <code>si</code> are numeric constants.
+		</div>
+	</td>
+	</tr>
+</tbody>
+</table>
+
+<a class="anchor" id="not-addressable"></a>
+<h3>
+	Addressable and unaddressable values
+</h3>
+
+<p>
+Please read <a href="unofficial-faq.html#unaddressable-values">this FAQ item</a>
+to get which values are addressable or unaddressable.
+</p>
+
+<a class="anchor" id="not-comparable"></a>
+<h3>
+	Types which don't support comparisons
+</h3>
+
+<p>
+Please read <a href="unofficial-faq.html#incomparable-types">this FAQ item</a>
+to get which values are addressable or unaddressable.
+</p>
+
+<a class="anchor" id="declared-but-unused"></a>
+<h3>
+	Which code elements are allowed to be declared but not used
+</h3>
+
+<table border="1" class="table table-bordered text-center" style="width: auto !important;">
+<thead>
+	<tr>
+	<th class="text-center" valign="bottom" align="center"></th>
+	<th class="text-center" valign="bottom" align="center">Allowed to Be Declared but Not Used?</th>
+	</tr>
+</thead>
+<tbody>
+	<tr class="active">
+	<th scope="row" class="text-center" valign="middle" align="center">import</th>
+	<td valign="middle" align="center">No</td>
+	</tr>
+	<tr>
+	<th scope="row" class="text-center" valign="middle" align="center">type</th>
+	<td valign="middle" align="center">Yes</td>
+	</tr>
+	<tr class="active">
+	<th scope="row" class="text-center" valign="middle" align="center">variable</th>
+	<td valign="middle" align="center">
+		Yes for package-level variables.
+		<br/>
+		No for local variables (for the standard compiler).
+	</td>
+	</tr>
+	<tr>
+	<th scope="row" class="text-center" valign="middle" align="center">constant</th>
+	<td valign="middle" align="center">Yes</td>
+	</tr>
+	<tr class="active">
+	<th scope="row" class="text-center" valign="middle" align="center">function</th>
+	<td valign="middle" align="center">Yes</td>
+	</tr>
+	<tr>
+	<th scope="row" class="text-center" valign="middle" align="center">label</th>
+	<td valign="middle" align="center">No</td>
+	</tr>
+</tbody>
+</table>
+
+<a class="anchor" id="groupable-elements"></a>
+<h3>
+	Named source code elements which can be declared together within <code>()</code>
+</h3>
+
+<div>
+Following source code elements (of the same kind) can be declared together within <code>()</code>:
+<ul>
+<li>import</li>
+<li>type</li>
+<li>variable</li>
+<li>constant</li>
+</ul>
+</div>
+<p>
+Functions can't be declared together within <code>()</code>. Also labels.
+</p>
+
+<a class="anchor" id="declaration-places"></a>
+<h3>
+	Named source code elements which can be declared both inside functions and outside any functions
+</h3>
+
+<div>
+Following named source code elements can be declared both inside functions and outside any functions:
+<ul>
+<li>type</li>
+<li>variable</li>
+<li>constant</li>
+</ul>
+</div>
+<p>
+Imports must be declared before declarations of other elements (and after the package clause).
+</p>
+<p>
+Functions can only be declared outside any functions.
+Anonymous functions can be defined inside other function bodies,
+but such definitions are not function declarations.
+</p>
+<p>
+Labels must be declared inside functions.
+</p>
+
+<a class="anchor" id="additional-return"></a>
+<h3>
+	Expressions which evaluation results may contain optional additional values
+</h3>
+
+<p>
+The evaluation results of the following expressions may contain optional additional values:
+</p>
+
+<table border="1" class="table table-bordered text-center" style="width: auto !important;">
+<thead>
+	<tr>
+	<th class="text-center" valign="bottom" align="center"></th>
+	<th class="text-center" valign="bottom" align="center">Syntax</th>
+	<th class="text-center" valign="bottom" align="center">Meaning of The Optional Value (<code>ok</code> in the syntax examples)</th>
+	<th class="text-center" valign="bottom" align="center">Will Omitting the Optional Result Affect Program Behavior?</th>
+	</tr>
+</thead>
+<tbody>
+	<tr class="active">
+	<th scope="row" class="text-center" style="vertical-align: middle" valign="middle" align="center">map element access</th>
+	<td style="vertical-align: middle; white-space: nowrap;" class="text-center" valign="middle" align="center">
+		<code>e, ok = aMap[key]</code>
+	</td>
+	<td valign="middle" align="center">whether or not the accessed key is present in the map</td>
+	<td valign="middle" align="center">No</td>
+	</tr>
+	<tr>
+	<th scope="row" class="text-center" style="vertical-align: middle" valign="middle" align="center">channel value receive</th>
+	<td style="vertical-align: middle; white-space: nowrap;" class="text-center" valign="middle" align="center">
+		<code>e, ok = &lt;- aChannel</code>
+	</td>
+	<td valign="middle" align="center">whether or not the received value was sent before the channel was closed</td>
+	<td valign="middle" align="center">No</td>
+	</tr>
+	<tr class="active">
+	<th scope="row" class="text-center" style="vertical-align: middle" valign="middle" align="center">type assertion</th>
+	<td style="vertical-align: middle; white-space: nowrap;" class="text-center" valign="middle" align="center">
+		<code>v, ok = anInterface.(T)</code>
+	</td>
+	<td valign="middle" align="center">whether or not the dynamic type of the interface value matches the asserted type</td>
+	<td valign="middle" align="center">Yes<br/>(when the optional bool result is omitted,
+		a panic occurs if the assertion fails.)</td>
+	</tr>
+</tbody>
+</table>
+
+<a class="anchor" id="block-forever"></a>
+<h3>
+	Ways to block the current goroutine ‎forever by using the channel mechanism
+</h3>
+
+<div>
+Without importing any package, we can use the following ways to make the current goroutine ‎enter (and stay in) blocking state forever:
+<ol>
+<li>send a value to a channel which no ones will receive values from
+	<div>
+<pre class="disable-line-numbers111"><code class="language-go">make(chan struct{}) <- struct{}{}
+// or
+make(chan<- struct{}) <- struct{}{}
+</code></pre>
+	</div>
+</li>
+<li>receive a value from a never-closed channel which no values have been and will be sent to
+	<div>
+<pre class="disable-line-numbers111"><code class="language-go"><-make(chan struct{})
+// or
+<-make(<-chan struct{})
+// or
+for range make(<-chan struct{}) {}
+</code></pre>
+	</div>
+</li>
+<li>receive a value from (or send a value to) a nil channel
+	<div>
+<pre class="disable-line-numbers111"><code class="language-go">chan struct{}(nil) <- struct{}{}
+// or
+<-chan struct{}(nil)
+// or
+for range chan struct{}(nil) {}
+</code></pre>
+	</div>
+</li>
+<li>use a bare select block
+	<div>
+<pre class="disable-line-numbers111"><code class="language-go">select{}
+</code></pre>
+	</div>
+</li>
+</ol>
+</div>
+
+<a class="anchor" id="concatenate-strings"></a>
+<h3>
+	Ways to concatenate strings
+</h3>
+
+<p>
+Please read <a href="string.html#string-concatenation">strings in Go</a> for details.
+</p>
+
+<a class="anchor" id="compiler-optimizations"></a>
+<h3>
+	Optimizations made by the standard Go compiler
+</h3>
+
+<p>
+Please read <a href="https://github.com/go101/go101/wiki/The-perceivable-optimizations-made-by-the-standard-Go-compiler-%28gc%29">the Go 101 wiki article</a> for this summary.
+</p>
+
+<a class="anchor" id="panic-cases"></a>
+<h3>
+	Run-time panic and crash cases
+</h3>
+
+<p>
+Please read <a href="https://github.com/go101/go101/wiki/Panic-and-crash-cases">the Go 101 wiki article</a> for this summary.
+</p>
+
+
+
+
+
+</div> <!-- summaries-items -->
+
+<!--
+
+Fatal errors which can be recovered:
+* https://play.golang.org/p/bYrfLTzXpc_o bad Mutex.Unlock call. unlock of unlocked lock
+* create goroutine with nil function
+* memory allocation fails, out of memory, alloc too large
+* stack overflow
+* map data race operation
+  * concurrent map iteration and map write
+  * concurrent map read and map write
+  * concurrent map writes
+* cgo callback before cgo call
+* thread exhaustion
+	package main
+	import "runtime/debug"
+	import "runtime"
+	func main() {
+		debug.SetMaxThreads(10)
+		c := make(chan int)
+		for i := 0; i < 100; i++ {
+			go func() {
+				runtime.LockOSThread()
+				c <- 0
+				select {}
+			}()
+			<-c
+		}
+	}
+* load bad Go plugins
+* all goroutines are blocked.
+* string concatenation too long
+
+
+short and standard variable declaration comparison
+
+differences between built-in functions and custom functions.
+  * generic
+  * built-in function returns can't be omitted
+  * built-in functions can't be used as values, they have no types.
+  * built-in doon't need to be imported before using them, even their identifiers starts with lower..
+  *
+
+built-in function list
+
+	"append":  predeclaredFunction,
+	"cap":     predeclaredFunction,
+	"close":   predeclaredFunction,
+	"complex": predeclaredFunction,
+	"copy":    predeclaredFunction,
+	"delete":  predeclaredFunction,
+	"imag":    predeclaredFunction,
+	"len":     predeclaredFunction,
+	"make":    predeclaredFunction,
+	"new":     predeclaredFunction,
+	"panic":   predeclaredFunction,
+	"print":   predeclaredFunction,
+	"println": predeclaredFunction,
+	"real":    predeclaredFunction,
+	"recover": predeclaredFunction,
+
+
+#returns-discardable
+return results of calls to which built-in functions can be discarded.
+
+values of which kinds of types can be for-ranged.
+
+ways to return a function: naturally return, return keyword, panic, runtime.Goexit()
+
+the form <code>v[k]</code> can be used to access elements of values of which kinds of types?
+
+
+
+-->
+
+<!--
+todo:
+	kinds of control flow blocks
+	control flow statements
+		return, break, fallthrough, continue, goto
+	which control flow statements can be followed a label.
+	which control flow statements can appear in which control flow blocks
+
+-->
+<hr>
+
+<div class="text-center"><a href="#i-summaries.html">Index↡</a></div>
+
+
+
+<hr>
+
+<div id="contact" class="alert alert-success"><small>
+
+<p>
+The <b><i>Go 101</i></b> 프로젝트는 <a href="https://github.com/go101/go101">Github</a>
+에서 호스팅됩니다.
+오타, 문법 오류, 부정확한 표현, 설명 결함, 코드 버그, 끊어진 링크와 같은 모든
+종류의 실수에 대한 수정 사항을 제출하여 Go 101을 개선을 돕는 것은 언제나 환영합니다.
+</p>
+
+<p>
+주기적으로 Go에 대한 깊이 있는 정보를 얻고 싶다면 Go 101의 공식 트위터 계정인
+<a href="https://twitter.com/go100and1">@go100and1</a>을 팔로우하거나
+<a href="https://join.slack.com/t/go-101/shared_invite/zt-y2pvwg00-Oz7lDDJu44l~hZsFRUApiA">Go 101 슬랙 채널</a>에j가입해주세요.
+</p>
+
+</small></div>
+
+<div class="alert alert-warning"><small>
+
+
+<div id="ebooks">
+이 책의 디지털 버전은 아래와 같은 곳을 통해서 구매할 수 있습니다.
+<ul>
+<li>
+	<a href="https://leanpub.com/go101">Leanpub</a>,
+	<i>최소 19.99 달러</i>.
+</li>
+<li>
+	
+	아마존 킨들 스토어, <i>(현재는 사용 불가)</i>.
+</li>
+<li>
+	<a href="https://books.apple.com/book/id1459984231">애플 북 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://play.google.com/store/books/details?id=Dc1wEAAAQBAJ">구글 플레이 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://github.com/go101/go101/releases">무료 전자책</a>,
+	pdf, epub과 azw3 포맷을 지원
+</li>
+</ul>
+	</div>
+<div>
+
+Go 101의 저자인 Tapir는 2016년 7월부터 Go 101 시리즈 책들을 집필하고 go101.org 웹사이트를 유지 관리하고 있습니다.
+새로운 콘텐츠는 책과 웹사이트에 수시로 추가될 예정입니다.
+Tapir는 인디 게임 개발자이기도 합니다.
+<a href="https://www.tapirgames.com">Tapir의 게임</a>을 플레이하여 Go 101을 지원할 수도 있습니다.
+(안드로이드와 아이폰/아이패드용):
+<ul>
+<li>
+	<a href="https://www.tapirgames.com/App/Color-Infection">Color Infection</a> (★★★★★), 140개 이상의 단계로 이루어진 물리 기반의 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Rectangle-Pushers">Rectangle Pushers</a> (★★★★★), 2가지 모드와 104개 이상의 단계로 이루어진 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Let-Us-Play-With-Particles">Let's Play With Particles</a>, 세가지 미니 게임이 있는 캐주얼 액션 게임
+</li>
+</ul>
+</div>
+
+<a href="https://paypal.me/tapirliu">페이팔</a>을 통한 개인 기부도 환영합니다.</small></div>
+
+<hr>
+색인:
+
+
+<div id="book-index">
+
+<!-- kindle starts: 1 -->
+
+<ul class="index part">
+	<li><a class="index" href="101-about.html">Go 101에 대해</a> - 이 책이 쓰여진 이유</li>
+	<li><a class="index" href="acknowledgements.html">감사의 말</a></li>
+</ul>
+
+<ul class="index part">
+	<li><a class="index" href="introduction.html">Go 소개</a> - Go를 배우는 가치</li>
+	<li><a class="index" href="go-toolchain.html">Go 툴체인</a> - Go 프로그램을 컴파일하고 실행하는 방법</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 코드에 익숙해지기
+
+	<ul class="index chapters">
+	<li><a class="index" href="basic-code-elements-introduction.html">소스 코드 요소 소개</a></li>
+	<li><a class="index" href="keywords-and-identifiers.html">키워드와 식별자</a></li>
+	<li><a class="index" href="basic-types-and-value-literals.html">기본 자료형과 기본 값 리터럴</a></li>
+	<li><a class="index" href="constants-and-variables.html">상수와 변수</a> - 무형성(untyped) 값과 자료형 추론 소개를 포함</li>
+	<li><a class="index" href="operators.html">일반 연산자</a> - 더 많은 자료형 추론 규칙 소개를 포함</li>
+	<li><a class="index" href="function-declarations-and-calls.html">함수 선언과 호출</a></li>
+	<li><a class="index" href="packages-and-imports.html">코드 패키지와 패키지 들여오기</a></li>
+	<li><a class="index" href="expressions-and-statements.html">표현식, 구문과 단순 구문</a></li>
+	<li><a class="index" href="control-flows.html">기본 흐름 제어</a></li>
+	<li><a class="index" href="control-flows-more.html">고루틴, 지연된 함수 호출과 패닉/복구</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 자료형 체계
+
+	<ul class="index chapters">
+	<li><a class="index" href="type-system-overview.html">Go 자료형 체계 개요</a> - Go 프로그래밍 숙달을 위해 반드시 읽어봐야 하는</li>
+	<li><a class="index" href="pointer.html">포인터</a></li>
+	<li><a class="index" href="struct.html">구조체</a></li>
+	<li><a class="index" href="value-part.html">변수</a> - Go 변수에 대한 더 깊은 이해</li>
+	<li><a class="index" href="container.html">배열, 슬라이스와 맵</a> - 1급 객체 컨테이너 자료형</li>
+	<li><a class="index" href="string.html">문자열</a></li>
+	<li><a class="index" href="function.html">함수</a> - 함수 자료형과 값, 가변 인자 함수</li>
+	<li><a class="index" href="channel.html">채널</a> - Go에서 동시성 동기화를 하는 방법</li>
+	<li><a class="index" href="method.html">메서드</a></li>
+	<li><a class="index" href="interface.html">인터페이스</a> - 리플렉션과 다형성을 하는 값 상자</li>
+	<li><a class="index" href="type-embedding.html">자료형 임베딩</a> - 자료형을 확장하는 방법</li>
+	<li><a class="index" href="unsafe.html">자료형에 안전하지 않는 포인터</a></li>
+	<li><a class="index" href="generic.html">제네릭</a> - 합성 자료형의 사용과 읽는 법</li>
+	<li><a class="index" href="reflection.html">리플렉션</a> - <code>reflect</code> 표준 패키지</li>
+	</ul>
+</li>
+</ul>
+
+<!-- kindle ends: 1 -->
+
+<!-- kindle starts: 2 -->
+
+<ul class="index part">
+<li>
+특별 주제
+
+	<ul class="index chapters">
+	<li><a class="index" href="line-break-rules.html">개행 규칙</a></li>
+	<li><a class="index" href="defer-more.html">지연된 함수 호출 더 알아보기</a></li>
+	<li><a class="index" href="panic-and-recover-use-cases.html">패닉/복구 사용 사례</a></li>
+	<li><a class="index" href="panic-and-recover-more.html">패닉/복구 메커니즘에 대한 고찰</a> - 함수 호출 종료 단계를 포함</li>
+	<li><a class="index" href="blocks-and-scopes.html">코드 블록과 식별자 스코프</a></li>
+	<li><a class="index" href="evaluation-orders.html">표현식 평가 순서</a></li>
+	<li><a class="index" href="value-copy-cost.html">Go의 값 복사 비용</a></li>
+	<li><a class="index" href="bounds-check-elimination.html">경계 검사 제거(BCE)</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+동시성 프로그래밍
+
+	<ul class="index chapters">
+	<li><a class="index" href="concurrent-synchronization-overview.html">동시성 동기화 개요</a></li>
+	<li><a class="index" href="channel-use-cases.html">채널 사용 사례</a></li>
+	<li><a class="index" href="channel-closing.html">채널을 깔끔하게 닫는 방법</a></li>
+	<li><a class="index" href="concurrent-synchronization-more.html">기타 동시성 동기화 기술</a> - <code>sync</code> 표준 패키지</li>
+	<li><a class="index" href="concurrent-atomic-operation.html">원자적 연산</a> - <code>sync/atomic</code> 표준 패키지</li>
+	<li><a class="index" href="memory-model.html">Go의 메모리 순서 보장</a></li>
+	<li><a class="index" href="concurrent-common-mistakes.html">흔히들 저지르는 동시성 프로그래밍 실수들</a></li>
+	</ul>
+
+</li>
+</ul>
+
+
+<ul class="index part">
+<li>
+메모리 관련
+
+	<ul class="index chapters">
+	<li><a class="index" href="memory-block.html">메모리 블록</a></li>
+	<li><a class="index" href="memory-layout.html">메모리 레이아웃</a></li>
+	<li><a class="index" href="memory-leaking.html">메모리 누수 시나리오</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+일부 요약
+
+	<ul class="index chapters">
+	<li><b class="index" id="i-summaries.html">몇 가지 간단한 요약</b></li>
+	<li><a class="index" href="nil.html">Go의 <code>nil</code></a></li>
+	<li><a class="index" href="value-conversions-assignments-and-comparisons.html">값 변환, 할당과 비교 규칙</a></li>
+	<li><a class="index" href="exceptions.html">구문/의미 예외</a></li>
+	<!-- (to remove) for printing -->
+	<li><a class="index" href="details.html">Go Details 101</a></li>
+	<li><a class="index" href="unofficial-faq.html">Go FAQ 101</a></li>
+	<li><a class="index" href="tips.html">Go Tips 101</a></li>
+	<!-- (to remove) -->
+	</ul>
+
+</li>
+</ul>
+
+<!-- kindle ends: 2 -->
+
+<!-- kindle starts: 0 -->
+
+<ul class="index part">
+<li><a class="index" href="more.html">더 많은 토픽</a></li>
+</ul>
+
+<!-- kindle ends: 0 -->
+
+</div>
+
+
+
+
+
+
+
+
+		</div>
+	</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

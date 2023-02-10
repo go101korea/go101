@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Golang online books, articles, tools, etc.">
+		<meta name="author" content="">
+		<meta name="go-version" content="go1.20">
+		<link rel="icon" href="/static/go101/images/101-v1.ico">
+		<link rel="apple-touch-icon" sizes="152x152" href="/static/go101/images/iphone-v1.jpeg">
+	
+		<title>Memory Allocations -Go 101</title><link id="css-bs" href="/static/bootstrap/v4.0.3-dark/css/bootstrap.min.css" rel="stylesheet">
+		<link id="css-go101" href="/static/go101/css/v991-dark.css" rel="stylesheet">
+		<link id="css-prism" href="/static/prism/2020-08-03-dark/prism.css" rel="stylesheet">
+		<script id="js-prism" src="/static/prism/2020-08-03-dark/prism.js"></script>
+
+
+		<script src="/static/jquery/jquery.min-v1.11.2.js"></script>
+		<script src="/static/go101/js/v5.js"></script>
+		
+		
+		<style>
+		div, p, ul, li, td, th {line-height: 1.55;}
+		</style>
+
+		<script>
+		var theme = ""
+		</script>
+	</head>
+
+	<body>
+		<div class="container">
+
+		<div class="row nav-bar-with-borders">
+	<div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/"><small>Home</small></a> <span class="new-text"><sup>new!</sup></span>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/article/101.html"><small>Go 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/generics/101.html"><small>Go Generics 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/details-and-tips/101.html"><small>Go Details &amp; Tips 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-active">
+		<a href="/optimizations/101.html"><small>Go Optimizations 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/quizzes/101.html"><small>Go Quizzes 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go HowTo 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Practices 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Agg 101</small></div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/blog/101.html"><small>Go 101 Blog</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/apps-and-libs/101.html"><small>Go 101 Apps &amp; Libs</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;" id="theme-switch"><small>테마: 다크/라이트</small></div>
+
+</div>
+
+<div class="alert alert-warning text-center"><small>
+현재 3권의 신간들인 <a href="/optimizations/101.html">Go Optimizations 101</a>,
+<a href="/details-and-tips/101.html">Go Details &amp; Tips 101</a>
+과 <a href="/generics/101.html">Go Generics 101</a>이 출간되어 있습니다.
+Leanpub 서점에서 <a href="https://leanpub.com/b/go-optimizations-details-generics">번들</a>을 모두 구입하시는 방법이 비용 대비 효율이 가장 좋습니다.
+<p></p>
+Go에 대한 많은 정보들과 Go 101 책들의 최신 소식을 얻으시려면 Go 101 트위터 계정인 <a href="https://twitter.com/go100and1">@Go100and1</a>을
+팔로잉 해주세요.
+</small></div>
+<p>
+</p>
+
+
+
+<h1>Memory Allocations</h1>
+
+
+
+<h2>Memory blocks</h2>
+
+<p>The basic memory allocation units are called memory blocks.
+A memory block is a continuous memory segment.
+As aforementioned, at run time, a value part is carried on a single memory block.</p>
+
+<p>A single memory block might carry multiple value parts.
+The size of a memory block must not be smaller than the size of any value part it carries.</p>
+
+<p>When a memory block is carrying a value part, we may say the value part is referencing the memory bock.</p>
+
+<p>Memory allocation operations will consume some CPU resources to find the suitable memory blocks.
+So the more memory blocks are created (for memory allocations), the more CPU resources are consumed.
+In programming, we should try to avoid unnecessary memory allocations to get better code execution performances.</p>
+
+<h2>Memory allocation places</h2>
+
+<p>Go runtime might find a memory block on the stack (one kind of memory zone) of a goroutine or the heap (the other kind of memory zone) of the whole program to carry some value parts. The finding-out process is called a (memory) allocation.</p>
+
+<p>The memory management manners of stack and heap are quite different.
+For most cases, finding a memory block on stack is much cheaper than on heap.</p>
+
+<p>Collecting stack memory blocks is also much cheaper than collecting heap memory blocks.
+In fact, stack memory blocks don't need to be collected.
+The stack of a goroutine could be actually viewed as a single memory block,
+and it will be collected as a whole when the goroutine exits.</p>
+
+<p>On the other hand, when all the value parts being carried on/by a heap memory block are not used any more (in other words, no alive value part is still referencing the memory block), the memory block will be viewed as garbage and automatically collected eventually, during runtime garbage collection cycles, which might consume certain CPU resources (garbage collection will be talked in detail in a later chapter).
+Generally, the more memory blocks are allocated on heap, the larger pressure is made for garbage collection.</p>
+
+<p>As heap allocations are much more expensive, only heap memory allocations contribute to the allocation metrics in Go code benchmark results.
+But please note that allocating on stack still has a cost, though it is often comparatively much smaller.</p>
+
+<p>The escape analysis module of a Go compiler could detect some value parts will be only used by one goroutine and try to let those value parts allocated on stack at run time if certain extra conditions are satisfied. Stack memory allocations and escape analysis will be explained with more details in the next chapter.</p>
+
+<h2>Memory allocation scenarios</h2>
+
+<p>Generally, each of the following operations will make at least one allocation.</p>
+
+<ul>
+<li>declare variables</li>
+<li>call the built-in <code>new</code> function.</li>
+<li>call the built-in <code>make</code> function.</li>
+<li>modify slices and maps with composite literals.</li>
+<li>convert integers to strings.</li>
+<li>concatenate strings by using use <code>+</code>.</li>
+<li>convert between strings to byte slices, and vice versa.</li>
+<li>convert strings to rune slices.</li>
+<li>box values into interfaces (converting non-interface values into interfaces).</li>
+<li>append elements to a slice and the capacity of the slice is not large enough.</li>
+<li>put new entries into maps and the underlying array (to store entries) of the map is not large enough to store the new entries.</li>
+</ul>
+
+<p>However, the official standard Go compiler makes some special code optimizations
+so that at certain cases, some of the above listed operations will not make allocations.
+These optimizations will be introduced later in this book.</p>
+
+<h2>Memory wasting caused by allocated memory blocks larger than needed</h2>
+
+<p>The sizes of different memory blocks might be different. But they are not arbitrary.
+In the official standard Go runtime implementation, for memory blocks allocated on heap,</p>
+
+<ul>
+<li><a href="https://github.com/golang/go/blob/master/src/runtime/sizeclasses.go">some memory block size classes</a> (no more than 32768 bytes) are predefined. As of the official standard Go compiler v1.20, the smallest size classes are 8, 16, 24, 32, 48, 64, 80 and 96 bytes.</li>
+<li>For memory blocks larger than 32768 bytes, each of them is always composed of multiple memory pages. The memory page size used by the official standard Go runtime (v1.20) is 8192 bytes.</li>
+</ul>
+
+<p>So,</p>
+
+<ul>
+<li>to allocate a (heap) memory block for the value which size is in the range <code>[33, 48]</code>, the size of the memory block is general (must be at least) 48. In other words, there might be up to 15 bytes wasted (if the value size is 33).</li>
+<li>to create a byte slice with 32769 elements on heap, the size of the memory block carrying the elements of the slice is 40960 (32768 + 8192, 5 memory pages). In other words, 8191 bytes are wasted.</li>
+</ul>
+
+<p>In other words, memory blocks are often larger than needed. The strategies are made to manage memory easily and efficiently, but might cause a bit memory wasting sometimes (yes, a trade-off).</p>
+
+<p>These could be proved by the following program:</p>
+
+<pre><code class="language-Go">package main
+
+import &quot;testing&quot;
+import &quot;unsafe&quot;
+
+var t *[5]int64
+var s []byte
+
+func f(b *testing.B) {
+	for i := 0; i &lt; b.N; i++ {
+		t = &amp;[5]int64{}
+	}
+}
+
+func g(b *testing.B) {
+	for i := 0; i &lt; b.N; i++ {
+		s = make([]byte, 32769)
+	}
+}
+
+func main() {
+	println(unsafe.Sizeof(*t))      // 40
+	rf := testing.Benchmark(f)
+	println(rf.AllocedBytesPerOp()) // 48
+	rg := testing.Benchmark(g)
+	println(rg.AllocedBytesPerOp()) // 40960
+}
+</code></pre>
+
+<p>Another example:</p>
+
+<pre><code class="language-Go">package main
+
+import &quot;testing&quot;
+
+var s = []byte{32: 'b'} // len(s) == 33
+var r string
+
+func Concat(b *testing.B) {
+	for i := 0; i &lt; b.N; i++ {
+		r = string(s) + string(s)
+	}
+}
+
+func main() {
+	br := testing.Benchmark(Concat)
+	println(br.AllocsPerOp())       // 3
+	println(br.AllocedBytesPerOp()) // 176
+}
+</code></pre>
+
+<p>There are 3 allocations made within the <code>Concat</code> function.
+Two of them are caused by the byte slice to string conversions <code>string(s)</code>,
+and the sizes of the two memory blocks carrying the underlying bytes of the two result strings are both 48
+(which is the smallest size class which is not smaller than 33).
+The third allocation is caused by the string concatenation,
+and the size of the result memory block is 80
+(the smallest size class which is not smaller than 66).
+The three allocations allocate 176 (48+48+80) bytes totally.
+In the end, 14 bytes are wasted.
+And 44 (15 + 15 + 14) bytes are wasted during executing the <code>Concat</code> function.</p>
+
+<p>In the above example, the results of the <code>string(s)</code> conversions are used temporarily in the string concatenation operation.
+By the current official standard Go compiler/runtime implementation (v1.20), the string bytes are allocated on heap (see below sections for details).
+After the concatenation is done, the memory blocks carrying the string bytes become into memory garbage and will be collected eventually later.</p>
+
+<h2>Reduce memory allocations and save memory</h2>
+
+<p>The less memory (block) allocations are made, the less CPU resources are consumed, and the smaller pressure is made for garbage collection.</p>
+
+<p>Memory is cheap nowadays, but this is not true for the memory sold by cloud computing providers.
+So if we run programs on cloud servers, the more memory is saved by the Go programs, the more money is saved.</p>
+
+<p>The following are some suggestions to reduce memory allocations and save memory in programming.</p>
+
+<h2>Avoid unnecessary allocations by allocating enough in advance</h2>
+
+<p>We often use the built-in <code>append</code> function to push some slice elements.
+In the statement <code>r = append(s, elements...)</code>,
+if the free capacity of <code>s</code> is not large enough to hold all appended elements,
+Go runtime will allocate a new memory block to hold all the elements of the result slice <code>r</code>.</p>
+
+<p>If the <code>append</code> function needs to be called multiple times to push some elements,
+it is best to ensure that the base slice has a large enough capacity,
+to avoid several unnecessary allocations in the whole pushing process.</p>
+
+<p>For example, to merge some slices into one, the following shown
+<code>MergeWithTwoLoops</code> implementation is more efficient than the <code>MergeWithOneLoop</code> implementation,
+because the former one makes less allocations and copies less values.</p>
+
+<pre><code class="language-Go">package allocations
+
+import &quot;testing&quot;
+
+func getData() [][]int {
+	return [][]int{
+		{1, 2},
+		{9, 10, 11},
+		{6, 2, 3, 7},
+		{11, 5, 7, 12, 16},
+		{8, 5, 6},
+	}
+}
+
+func MergeWithOneLoop(data ...[]int) []int {
+	var r []int
+	for _, s := range data {
+		r = append(r, s...)
+	}
+	return r
+}
+
+func MergeWithTwoLoops(data ...[]int) []int {
+	n := 0
+	for _, s := range data {
+		n += len(s)
+	}
+	r := make([]int, 0, n)
+	for _, s := range data {
+		r = append(r, s...)
+	}
+	return r
+}
+
+func Benchmark_MergeWithOneLoop(b *testing.B) {
+	data := getData()
+	b.ResetTimer()
+	for i := 0; i &lt; b.N; i++ {
+		_ = MergeWithOneLoop(data...)
+	}
+}
+
+func Benchmark_MergeWithTwoLoops(b *testing.B) {
+	data := getData()
+	b.ResetTimer()
+	for i := 0; i &lt; b.N; i++ {
+		_ = MergeWithTwoLoops(data...)
+	}
+}
+</code></pre>
+
+<p>The benchmark results:</p>
+
+<pre><code>Benchmark_MergeWithOneLoop-4   636.6 ns/op  352 B/op  4 allocs/op
+Benchmark_MergeWithTwoLoops-4  268.4 ns/op  144 B/op  1 allocs/op
+
+</code></pre>
+
+<p>The benchmark results show that allocations affect code execution performance much.</p>
+
+<p>Let's print some logs to see when each of the 4 allocations happens in a <code>MergeWithOneLoop</code> function call.</p>
+
+<pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func getData() [][]int {
+	return [][]int{
+		{1, 2},
+		{9, 10, 11},
+		{6, 2, 3, 7},
+		{11, 5, 7, 12, 16},
+		{8, 5, 6},
+	}
+}
+
+const format = &quot;Allocate from %v to %v (when append slice#%v).\n&quot;
+
+func MergeWithOneLoop(data [][]int) []int {
+	var oldCap int
+	var r []int
+	for i, s := range data {
+		r = append(r, s...)
+		if oldCap == cap(r) {
+			continue
+		}
+		fmt.Printf(format, oldCap, cap(r), i)
+		oldCap = cap(r)
+	}
+	return r
+}
+
+func main() {
+	MergeWithOneLoop(getData())
+}
+</code></pre>
+
+<p>The outputs (for the official standard Go compiler v1.20):</p>
+
+<pre><code>Allocate from 0 to 2 (when append slice#0).
+Allocate from 2 to 6 (when append slice#1).
+Allocate from 6 to 12 (when append slice#2).
+Allocate from 12 to 24 (when append slice#3).
+</code></pre>
+
+<p>From the outputs, we could get that only the last <code>append</code> call doesn't allocate.</p>
+
+<p>In fact, the <code>Merge_TwoLoops</code> function could be faster in theory.
+As of the official standard Go compiler v1.20, the <code>make</code> call in the <code>Merge_TwoLoop</code> function will zero all just created elements, <a href="https://github.com/go101/go101/wiki/Go-is-not-C%2C-so-there-is-not-an-extreme-fast-way-to-merge-slices">which is actually unnecessary</a>. Compiler optimizations in future versions might avoid the zero operation.</p>
+
+<p>BTW, the above implementation of the <code>Merge_TwoLoops</code> function has an imperfection.
+It doesn't handle the integer overflowing case.
+The following is a better implementation.</p>
+
+<pre><code class="language-Go">func Merge_TwoLoops(data ...[][]byte) []byte {
+	n := 0
+	for _, s := range data {
+		if k := n + len(s); k &lt; n {
+			panic(&quot;slice length overflows&quot;)
+		} else {
+			n = k
+		}
+	}
+	r := make([]int, 0, n)
+	...
+}
+</code></pre>
+
+<h2>Avoid allocations if possible</h2>
+
+<p>Allocating less is better, but allocating none is the best.</p>
+
+<p>The following is another example to show the performance differences between two implementations.
+One of the implementations makes no allocations, the other one makes one allocation.</p>
+
+<pre><code class="language-Go">package allocations
+
+import &quot;testing&quot;
+
+func buildOrginalData() []int {
+	s := make([]int, 1024)
+	for i := range s {
+		s[i] = i
+	}
+	return s
+}
+
+func check(v int) bool {
+	return v%2 == 0
+}
+
+func FilterOneAllocation(data []int) []int {
+	var r = make([]int, 0, len(data))
+	for _, v := range data {
+		if check(v) {
+			r = append(r, v)
+		}
+	}
+	return r
+}
+
+func FilterNoAllocations(data []int) []int {
+	var k = 0
+	for i, v := range data {
+		if check(v) {
+			data[i] = data[k]
+			data[k] = v
+			k++
+		}
+	}
+	return data[:k]
+}
+
+
+func Benchmark_FilterOneAllocation(b *testing.B) {
+	data := buildOrginalData()
+	b.ResetTimer()
+	for i := 0; i &lt; b.N; i++ {
+		_ = FilterOneAllocation(data)
+	}
+}
+
+func Benchmark_FilterNoAllocations(b *testing.B) {
+	data := buildOrginalData()
+	b.ResetTimer()
+	for i := 0; i &lt; b.N; i++ {
+		_ = FilterNoAllocations(data)
+	}
+}
+</code></pre>
+
+<p>The benchmark results:</p>
+
+<pre><code>Benchmark_FilterOneAllocation-4  7263 ns/op   8192 B/op  1 allocs/op
+Benchmark_FilterNoAllocations-4   903.3 ns/op    0 B/op  0 allocs/op
+</code></pre>
+
+<p>From the benchmark results, we could get that the <code>FilterNoAllocations</code> implementation is more performant.
+(Surely, if the input data is not allowed to be modified, then we have to choose an implementation which makes allocations.)</p>
+
+<h2>Save memory and reduce allocations by combining memory blocks</h2>
+
+<p>Sometimes, we could allocate one large memory block to carry many value parts instead of allocating a small memory block for each value part.
+Doing this will reduce many memory allocations, so less CPU resources are consumed and GC pressure is relieved to some extend.
+Sometimes, doing this could decrease memory wasting, but this is not always true.</p>
+
+<p>Let's view an example:</p>
+
+<pre><code class="language-Go">package allocations
+
+import &quot;testing&quot;
+
+const N = 100
+
+type Book struct {
+	Title  string
+	Author string
+	Pages  int
+}
+
+//go:noinline
+func CreateBooksOnOneLargeBlock(n int) []*Book {
+	books := make([]Book, n)
+	pbooks := make([]*Book, n)
+	for i := range pbooks {
+		pbooks[i] = &amp;books[i]
+	}
+	return pbooks
+}
+
+//go:noinline
+func CreateBooksOnManySmallBlocks(n int) []*Book {
+	books := make([]*Book, n)
+	for i := range books {
+		books[i] = new(Book)
+	}
+	return books
+}
+
+func Benchmark_CreateBooksOnOneLargeBlock(b *testing.B) {
+	for i := 0; i &lt; b.N; i++ {
+		_ = CreateBooksOnOneLargeBlock(N)
+	}
+}
+
+func Benchmark_CreateBooksOnManySmallBlocks(b *testing.B) {
+	for i := 0; i &lt; b.N; i++ {
+		_ = CreateBooksOnManySmallBlocks(N)
+	}
+}
+</code></pre>
+
+<p>Run the benchmarks, we get:</p>
+
+<pre><code>Benchmark_CreateOnOneLargeBlock-4     4372 ns/op  4992 B/op    2 allocs/op
+Benchmark_CreateOnManySmallBlocks-4  18017 ns/op  5696 B/op  101 allocs/op
+</code></pre>
+
+<p>From the results, we could get that allocating many small value parts on one large memory block</p>
+
+<ol>
+<li>spends much less CPU time.</li>
+<li>consumes a bit less memory.</li>
+</ol>
+
+<p>The first conclusion is easy to understand. Two allocation operations spend much less time than 101 allocation operations.</p>
+
+<p>The second conclusion has actually already been explained before.
+As aforementioned, when the size of a small value (part) doesn't exactly match any memory block classes supported by the official standard Go runtime, then a bit larger memory block than needed will be allocated for the small value (part) if the small value (part) is created individually.
+The size of the <code>Book</code> type is 40 bytes (on 64-bit architectures), whereas the size of the smallest memory block size class larger than 40 is 48. So allocating a <code>Book</code> value individually will waste 8 bytes.</p>
+
+<p>In fact, the second conclusion is only right under certain conditions.
+Specifically, the conclusion is not right when the value N is in the range from 820 to 852.
+In particular, when N == 820, the benchmark results show allocating many small value parts on one large memory block consumes 3.5% more memory.</p>
+
+<pre><code>Benchmark_CreateOnOneLargeBlock-4     30491 ns/op  47744 B/op    2 allocs/op
+Benchmark_CreateOnManySmallBlocks-4  145204 ns/op  46144 B/op  821 allocs/op
+</code></pre>
+
+<p>Why does the <code>CreateBooksOnOneLargeBlock</code> function consume more memory when N == 820?
+Because it needs to allocate a memory block with the minimum size as 32800 (820 * 40), which is larger than the largest small memory block class 32768. So the memory block needs 5 memory pages, which total size is 40960 (8192 * 5). In other words, 8160 (40960 - 32800) bytes are wasted.</p>
+
+<p>Despite it sometimes wastes more memory, generally speaking, allocating many small value parts on one large memory block is comparatively better than allocating each of them on a separated memory block. This is especially true when the life times of the small value parts are almost the same, in which case allocating many small value parts on one large memory block could often effectively avoid memory fragmentation.</p>
+
+<h2>Use value cache pool to avoid some allocations</h2>
+
+<p>Sometimes, we need to frequently allocate and discard values of a specified type from time to time. It is a good idea to reuse allocated values to avoid a large quantity of allocations.</p>
+
+<p>For example, there are many non-player characters (NPC) in RTS games.
+A large quantity of NPCs will be spawned and destroyed from time to time in a game session.
+The related code is like</p>
+
+<pre><code class="language-Go">type NPC struct {
+	name       [64]byte
+	nameLen    uint16
+	blood      uint16
+	properties uint32
+	x, y       float64
+}
+
+func SpawnNPC(name string, x, y float64) *NPC {
+	var npc = newNPC()
+	npc.nameLen = uint16(copy(npc.name[:], name))
+	npc.x = x
+	npc.y = y
+	return npc
+}
+
+func newNPC() *NPC {
+	return &amp;NPC{}
+}
+
+func releaseNPC(npc *NPC) {
+}
+</code></pre>
+
+<p>As Go supports automatic GC, the <code>releaseNPC</code> function may do nothing.
+However, such implementation will lead to a large quantity of allocations in game playing and cause large pressure for
+garbage collection, so that it is hard to guarantee a good game FPS (frames per second).</p>
+
+<p>We could instead use a cache pool to reduce allocations, like the code shown below.</p>
+
+<pre><code class="language-Go">import &quot;container/list&quot;
+
+var npcPool = struct {
+	sync.Mutex
+	*list.List
+}{
+	List: list.New(),
+}
+
+func newNPC() *NPC {
+	npcPool.Lock()
+	defer npcPool.Unlock()
+	if npcPool.Len() == 0 {
+		return &amp;NPC{}
+	}
+	return npcPool.Remove(npcPool.Front()).(*NPC)
+}
+
+func releaseNPC(npc *NPC) {
+	npcPool.Lock()
+	defer npcPool.Unlock()
+	*npc = NPC{} // zero the released NPC
+	npcPool.PushBack(npc)
+}
+</code></pre>
+
+<p>By using the pool (also called free list), allocations of <code>NPC</code> values will be reduced much,
+which is very helpful to keep a smooth FPS (frames per second) in game playing.</p>
+
+<p>If the cache pool is used in only one goroutine,
+then concurrency synchronizations are not necessary in the implementation.</p>
+
+<p>We could also set a max size for the pool to avoid the pool occupies too much memory.</p>
+
+<p>The standard <code>sync</code> package provides a <code>Pool</code> type to provide similar functionalities but with several design differences:</p>
+
+<ul>
+<li>a free object in the a <code>sync.Pool</code> will be automatically garbage collected if it is found to be unused in two successive garbage collection cycles. This means the max size of a <code>sync.Pool</code> is dynamic and depends on the demand at run time.</li>
+<li>the types and sizes of the objects in a <code>sync.Pool</code> could be different. But the best practice is to make sure the objects put in the same <code>sync.Pool</code> are of the some type and have the same size.</li>
+</ul>
+
+<p>Personally, I find the design of <code>sync.Pool</code> seldom satisfies the needs in practice.
+So I often use custom value cache pool implementations in my Go projects.</p>
+<hr>
+
+<div class="text-center"><a href="#i-0.3-memory-allocations.html">Index↡</a></div>
+
+
+
+<hr>
+
+<div id="contact" class="alert alert-success"><small>
+
+<p>
+The <b><i>Go 101</i></b> 프로젝트는 <a href="https://github.com/go101/go101">Github</a>
+에서 호스팅됩니다.
+오타, 문법 오류, 부정확한 표현, 설명 결함, 코드 버그, 끊어진 링크와 같은 모든
+종류의 실수에 대한 수정 사항을 제출하여 Go 101을 개선을 돕는 것은 언제나 환영합니다.
+</p>
+
+<p>
+주기적으로 Go에 대한 깊이 있는 정보를 얻고 싶다면 Go 101의 공식 트위터 계정인
+<a href="https://twitter.com/go100and1">@go100and1</a>을 팔로우하거나
+<a href="https://join.slack.com/t/go-101/shared_invite/zt-y2pvwg00-Oz7lDDJu44l~hZsFRUApiA">Go 101 슬랙 채널</a>에j가입해주세요.
+</p>
+
+</small></div>
+
+<div class="alert alert-warning"><small>
+
+
+<div id="ebooks">
+이 책의 디지털 버전은 아래와 같은 곳을 통해서 구매할 수 있습니다.
+<ul>
+<li>
+	<a href="https://leanpub.com/go-optimizations-101">Leanpub</a>,
+	<i>최소 7.99 달러</i> (<a href="https://leanpub.com/b/go-optimizations-details-generics">이곳</a>이나 <a href="https://leanpub.com/b/go-optimizations-details">이곳</a>에서 번들로 구매하세요).
+</li>
+<li>
+	<a href="https://books.apple.com/book/id1609924340">애플 북스</a>,
+	<i>7.99 달러</i>.
+</li>
+<li>
+	<a href="https://www.amazon.com/dp/B09NT2HJCM">아마존 킨들 스토어</a>,
+	<i>7.99 달러</i>.
+</li>
+</ul>
+	</div>
+<div>
+
+Go 101의 저자인 Tapir는 2016년 7월부터 Go 101 시리즈 책들을 집필하고 go101.org 웹사이트를 유지 관리하고 있습니다.
+새로운 콘텐츠는 책과 웹사이트에 수시로 추가될 예정입니다.
+Tapir는 인디 게임 개발자이기도 합니다.
+<a href="https://www.tapirgames.com">Tapir의 게임</a>을 플레이하여 Go 101을 지원할 수도 있습니다.
+(안드로이드와 아이폰/아이패드용):
+<ul>
+<li>
+	<a href="https://www.tapirgames.com/App/Color-Infection">Color Infection</a> (★★★★★), 140개 이상의 단계로 이루어진 물리 기반의 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Rectangle-Pushers">Rectangle Pushers</a> (★★★★★), 2가지 모드와 104개 이상의 단계로 이루어진 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Let-Us-Play-With-Particles">Let's Play With Particles</a>, 세가지 미니 게임이 있는 캐주얼 액션 게임
+</li>
+</ul>
+</div>
+
+<a href="https://paypal.me/tapirliu">페이팔</a>을 통한 개인 기부도 환영합니다.</small></div>
+
+<hr>
+색인:
+
+
+<div id="book-index">
+	
+<ul class="index part">
+	<li><a class="index" href="0.0-acknowledgements.html">Acknowledgments</a></li>
+	<li><a class="index" href="0.1-introduction.html">About Go Optimizations 101</a></li>
+	<li>Value Parts and Value Sizes <sup><small>(available in <a href="#ebooks">the paid ebooks</a>)</small></sup></li>
+	<ul>
+		<li>value/type sizes</li>
+		<li>memory alignments</li>
+		<li>struct padding</li>
+		<li>avoid larger copy costs</li>
+	</ul>
+	<li><b class="index" id="i-0.3-memory-allocations.html">Memory Allocations</b></li>
+	<li>Stack and Escape Analysis <sup><small>(available in <a href="#ebooks">the paid ebooks</a>)</small></sup></li>
+	<ul>
+		<li>escape analysis</li>
+		<li>how to control value allocation places</li>
+		<li>stacks growth and shrinkage</li>
+		<li>how to reduce stack grow times</li>
+	</ul>
+	<li>Garbage Collection <sup><small>(available in <a href="#ebooks">the paid ebooks</a>)</small></sup></li>
+	<ul>
+		<li>GC pacer</li>
+		<li>how to reduce GC pressure</li>
+		<li>control GC frequency</li>
+	</ul>
+	<li><a class="index" href="1-pointer.html">Pointers</a></li>
+	<li>Structs <sup><small>(available in <a href="#ebooks">the paid ebooks</a>)</small></sup></li>
+	<ul>
+		<li>3 facts/suggestions</li>
+	</ul>
+	<li>Arrays and Slices <sup><small>(available in <a href="#ebooks">the paid ebooks</a>)</small></sup></li>
+	<ul>
+		<li>10+ facts/suggestions</li>
+	</ul>
+	<li>String and Byte Slices <sup><small>(available in <a href="#ebooks">the paid ebooks</a>)</small></sup></li>
+	<ul>
+		<li>10+ facts/suggestions</li>
+	</ul>
+	<li>BCE (Bound Check Eliminate) <sup><small>(available in <a href="#ebooks">the paid ebooks</a>)</small></sup></li>
+	<ul>
+		<li>the cases BCE works for</li>
+		<li>the cases BCE doesn't work for</li>
+		<li>the cases BCE works for when given hints</li>
+	</ul>
+	<li><a class="index" href="6-map.html">Maps</a></li>
+	<li>Channels <sup><small>(available in <a href="#ebooks">the paid ebooks</a>)</small></sup></li>
+	<ul>
+		<li>3 facts/suggestions</li>
+	</ul>
+	<li>Functions <sup><small>(available in <a href="#ebooks">the paid ebooks</a>)</small></sup></li>
+	<ul>
+		<li>how to make a function inline-able</li>
+		<li>how to make a function not inline-able</li>
+		<li>pointer parameters/results vs. non-pointer ones</li>
+		<li>named results vs. anonymous ones</li>
+		<li>10+ facts/suggestions</li>
+	</ul>
+	<li>Interfaces <sup><small>(available in <a href="#ebooks">the paid ebooks</a>)</small></sup></li>
+	<ul>
+		<li>value boxing costs</li>
+		<li>3+ facts/suggestions</li>
+	</ul>
+</ul>
+
+
+</div>
+
+
+
+
+
+
+
+
+		</div>
+	</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

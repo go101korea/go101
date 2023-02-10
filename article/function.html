@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Golang online books, articles, tools, etc.">
+		<meta name="author" content="">
+		<meta name="go-version" content="go1.20">
+		<link rel="icon" href="/static/go101/images/101-v1.ico">
+		<link rel="apple-touch-icon" sizes="152x152" href="/static/go101/images/iphone-v1.jpeg">
+	
+		<title>Functions in Go -Go 101</title><link id="css-bs" href="/static/bootstrap/v4.0.3-dark/css/bootstrap.min.css" rel="stylesheet">
+		<link id="css-go101" href="/static/go101/css/v991-dark.css" rel="stylesheet">
+		<link id="css-prism" href="/static/prism/2020-08-03-dark/prism.css" rel="stylesheet">
+		<script id="js-prism" src="/static/prism/2020-08-03-dark/prism.js"></script>
+
+
+		<script src="/static/jquery/jquery.min-v1.11.2.js"></script>
+		<script src="/static/go101/js/v5.js"></script>
+		
+		
+		<style>
+		div, p, ul, li, td, th {line-height: 1.55;}
+		</style>
+
+		<script>
+		var theme = ""
+		</script>
+	</head>
+
+	<body>
+		<div class="container">
+
+		<div class="row nav-bar-with-borders">
+	<div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/"><small>Home</small></a> <span class="new-text"><sup>new!</sup></span>
+	</div><div class="col-xs-6 col-sm-4 nav-item-active">
+		<a href="/article/101.html"><small>Go 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/generics/101.html"><small>Go Generics 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/details-and-tips/101.html"><small>Go Details &amp; Tips 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/optimizations/101.html"><small>Go Optimizations 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/quizzes/101.html"><small>Go Quizzes 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go HowTo 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Practices 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Agg 101</small></div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/blog/101.html"><small>Go 101 Blog</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/apps-and-libs/101.html"><small>Go 101 Apps &amp; Libs</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;" id="theme-switch"><small>테마: 다크/라이트</small></div>
+
+</div>
+
+<div class="alert alert-warning text-center"><small>
+현재 3권의 신간들인 <a href="/optimizations/101.html">Go Optimizations 101</a>,
+<a href="/details-and-tips/101.html">Go Details &amp; Tips 101</a>
+과 <a href="/generics/101.html">Go Generics 101</a>이 출간되어 있습니다.
+Leanpub 서점에서 <a href="https://leanpub.com/b/go-optimizations-details-generics">번들</a>을 모두 구입하시는 방법이 비용 대비 효율이 가장 좋습니다.
+<p></p>
+Go에 대한 많은 정보들과 Go 101 책들의 최신 소식을 얻으시려면 Go 101 트위터 계정인 <a href="https://twitter.com/go100and1">@Go100and1</a>을
+팔로잉 해주세요.
+</small></div>
+<p>
+</p>
+
+
+
+<h1>Functions in Go</h1>
+
+
+
+<p>
+<a href="function-declarations-and-calls.html">Function declarations and calls</a>
+have been explained before.
+The current article will touch more function related concepts and details in Go.
+</p>
+
+<p>
+In fact, function is one kind of first-class citizen types in Go.
+In other words, we can use functions as values.
+Although Go is a static language, Go functions are very flexible.
+The feeling of using Go functions is much like using many dynamic languages.
+</p>
+
+<p>
+There are some built-in functions in Go.
+These functions are documented in <code>builtin</code> and <code>unsafe</code>
+standard code packages.
+Built-in functions have several differences from custom functions.
+These differences will be mentioned below.
+</p>
+
+<h3>Function Signatures and Function Types</h3>
+
+<div>
+
+<p>
+The literal of a function type is composed of the <code>func</code> keyword
+and a function signature literal.
+A function signature is composed of two type list,
+one is the input parameter type list, the other is the output result type lists.
+Parameter and result names can appear in function type and signature literals,
+but the names are not important.
+</p>
+
+<p>
+In practice, the <code>func</code> keyword can be presented in signature literals, or not.
+For this reason, we can think function type and function signature as the same concept.
+</p>
+
+Here is a literal of a function type:
+<pre class="disable-line-numbers111"><code class="language-go">func (a int, b string, c string) (x int, y int, z bool)
+</code></pre>
+
+From the article <a href="function-declarations-and-calls.html">function declarations and calls</a>,
+we have learned that consecutive parameters and results of the same type can be declared together.
+So the above literal is equivalent to
+<pre class="disable-line-numbers111"><code class="language-go">func (a int, b, c string) (x, y int, z bool)
+</code></pre>
+
+As parameter names and result names are not important in the literals
+(as long as there are no duplicate non-blank names),
+the above ones are equivalent to the following one.
+<pre class="disable-line-numbers111"><code class="language-go">func (x int, y, z string) (a, b int, c bool)
+</code></pre>
+
+Variable (parameter and result) names can be blank identifier <code>_</code>.
+The above ones are equivalent to the following one.
+<pre class="disable-line-numbers111"><code class="language-go">func (_ int, _, _ string) (_, _ int, _ bool)
+</code></pre>
+
+The parameter names must be either all present or all absent (anonymous).
+The same rule is for result names.
+The above ones are equivalent to the following ones.
+<pre class="disable-line-numbers111"><code class="language-go">func (int, string, string) (int, int, bool) // the standard form
+func (a int, b string, c string) (int, int, bool)
+func (x int, _ string, z string) (int, int, bool)
+func (int, string, string) (x int, y int, z bool)
+func (int, string, string) (a int, b int, _ bool)
+</code></pre>
+
+<p>
+All of the above function type literals denote the same (unnamed) function type.
+</p>
+
+Each parameter list must be enclosed in a <code>()</code> in a literal,
+even if the parameter list is blank.
+If a result list of a function type is blank, then it can be omitted from literal of the function type.
+When a result list has most one result, then the result list doesn't need to be enclosed in a <code>()</code>
+if the literal of the result list contains no result names.
+
+<pre class="disable-line-numbers111"><code class="language-go">// The following three function types are identical.
+func () (x int)
+func () (int)
+func () int
+
+// The following two function types are identical.
+func (a int, b string) ()
+func (a int, b string)
+</code></pre>
+
+<p>
+</p>
+</div>
+
+<a class="anchor" id="variadic-parameter"></a>
+<h4>Variadic parameters and variadic function types</h4>
+
+<div>
+The last parameter of a function can be a variadic parameter.
+Each function can have at most one variadic parameter.
+The type of a variadic parameter is always a slice type.
+To indicate the last parameter is variadic,
+just prefix three dots <code>...</code> to the element type of its (slice) type
+in its declaration. Example:
+<pre class="disable-line-numbers111"><code class="language-go">func (values ...int64) (sum int64)
+func (sep string, tokens ...string) string
+</code></pre>
+
+<p>
+A function type with variadic parameter can be called a variadic function type.
+A variadic function type and a non-variadic function type are absolutely not identical.
+</p>
+
+<p>
+Some variadic functions examples will be shown in a below section.
+</p>
+</div>
+
+<h4>Function types are incomparable types</h4>
+
+<p>
+It has been <a href="type-system-overview.html#types-not-support-comparison">mentioned</a>
+several times in Go 101 that function types are incomparable types.
+But like map and slice values, function values can compare with the untyped bare <code>nil</code> identifier.
+(Function values will be explained in the last section of the current article.)
+</p>
+
+<p>
+As function types are incomparable types,
+they can't be used as the key types of map types.
+</p>
+
+<a class="anchor" id="prototype"></a>
+<h3>Function Prototypes</h3>
+
+<div>
+<p>
+A function prototype is composed of a function name and a function type (or signature).
+Its literal is composed of the <code>func</code> keyword,
+a function name and the literal of a function signature literal.
+</p>
+
+A function prototype literal example:
+<pre class="disable-line-numbers111"><code class="language-go">func Double(n int) (result int)
+</code></pre>
+
+<p>
+In other words, a function prototype is a function declaration without
+the body portion.
+A function declaration is composed of a function prototype and a function body.
+</p>
+
+</div>
+
+<a class="anchor" id="variadic-function"></a>
+<h3>Variadic Function Declarations and Variadic Function Calls</h3>
+
+<p>
+General function declarations and calls have been explained in
+<a href="function-declarations-and-calls.html">function declarations and calls</a>.
+Here introduces how to declare and call variadic functions.
+</p>
+
+<h4>Variadic function declarations</h4>
+
+<div>
+Variadic function declarations are similar to general function declarations.
+The difference is that the last parameter of a variadic function must be variadic parameter.
+Note, the variadic parameter of a variadic function will be treated as a slice
+within the body of the variadic function.
+
+<pre class="line-numbers"><code class="language-go">// Sum and return the input numbers.
+func Sum(values ...int64) (sum int64) {
+	// The type of values is []int64.
+	sum = 0
+	for _, v := range values {
+		sum += v
+	}
+	return
+}
+
+// An inefficient string concatenation function.
+func Concat(sep string, tokens ...string) string {
+	// The type of tokens is []string.
+	r := ""
+	for i, t := range tokens {
+		if i != 0 {
+			r += sep
+		}
+		r += t
+	}
+	return r
+}
+</code></pre>
+
+<p>
+From the above two variadic function declarations,
+we can find that if a variadic parameter is declared with type portion as <code>...T</code>,
+then the type of the parameter is <code>[]T</code> actually.
+</p>
+
+In fact, the <code>Print</code>, <code>Println</code> and <code>Printf</code>
+functions in the <code>fmt</code> standard package are all variadic functions.
+
+<pre class="line-numbers must-line-numbers"><code class="language-go">func Print(a ...interface{}) (n int, err error)
+func Printf(format string, a ...interface{}) (n int, err error)
+func Println(a ...interface{}) (n int, err error)
+</code></pre>
+
+<p>
+The variadic parameter types of the three functions are all <code>[]interface{}</code>,
+which element type <code>interface{}</code> is an interface types.
+Interface types and values will be explained <a href="interface.html">interfaces in Go</a> later.
+</p>
+
+</div>
+
+<a class="anchor" id="variadic-call"></a>
+<h4>Variadic function calls</h4>
+
+<div>
+There are two manners to pass arguments to a variadic parameter of type <code>[]T</code>:
+<ol>
+<li>
+	pass a slice value as the only argument.
+	The slice must be assignable to values of type <code>[]T</code>,
+	and the slice must be followed by three dots <code>...</code>.
+	The passed slice is called as a variadic argument.
+</li>
+<li>
+	pass zero or more arguments which are assignable to values of type <code>T</code>.
+	These arguments will be copied (or converted) as the elements of
+	a new allocated slice value of type <code>[]T</code>,
+	then the new allocated slice will be passed to the variadic parameter.
+</li>
+</ol>
+
+<p>
+Note, the two manners can't be mixed in the same variadic function call.
+</p>
+
+An example program which uses some variadic function calls:
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+func Sum(values ...int64) (sum int64) {
+	sum = 0
+	for _, v := range values {
+		sum += v
+	}
+	return
+}
+
+func main() {
+	a0 := Sum()
+	a1 := Sum(2)
+	a3 := Sum(2, 3, 5)
+	// The above three lines are equivalent to
+	// the following three respective lines.
+	b0 := Sum([]int64{}...) // <=> Sum(nil...)
+	b1 := Sum([]int64{2}...)
+	b3 := Sum([]int64{2, 3, 5}...)
+	fmt.Println(a0, a1, a3) // 0 2 10
+	fmt.Println(b0, b1, b3) // 0 2 10
+}
+</code></pre>
+
+<p>
+</p>
+
+Another example:
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+func Concat(sep string, tokens ...string) (r string) {
+	for i, t := range tokens {
+		if i != 0 {
+			r += sep
+		}
+		r += t
+	}
+	return
+}
+
+func main() {
+	tokens := []string{"Go", "C", "Rust"}
+	// manner 1
+	langsA := Concat(",", tokens...)
+	// manner 2
+	langsB := Concat(",", "Go", "C","Rust")
+	fmt.Println(langsA == langsB) // true
+}
+</code></pre>
+
+<p>
+</p>
+
+The following example doesn't compile,
+for the two variadic function call manners are mixed.
+<pre class="line-numbers"><code class="language-go">package main
+
+// See above examples for the full declarations
+// of the following two functions.
+func Sum(values ...int64) (sum int64)
+func Concat(sep string, tokens ...string) string
+
+func main() {
+	// The following two lines both fail
+	// to compile, for the same error:
+	// too many arguments in call.
+	_ = Sum(2, []int64{3, 5}...)
+	_ = Concat(",", "Go", []string{"C", "Rust"}...)
+}
+</code></pre>
+
+<p>
+</p>
+</div>
+
+<h3>More About Function Declarations and Calls</h3>
+
+<h4>Functions whose names can be duplicate</h4>
+
+<div>
+
+Generally, the names of the functions declared in the same code package
+can't be duplicate. But there are two exceptions.
+<ol>
+<li>
+	One exception is each code package can declare several functions
+	with <a href="packages-and-imports.html#init">the same name <code>init</code>
+	and the same type <code>func ()</code></a>.
+</li>
+<li>
+	The other exception is multiple functions can be declared with names
+	as the blank identifier <code>_</code>, in which cases,
+	the declared functions can never be called.
+</li>
+</ol>
+
+</div>
+
+<a class="anchor" id="compile-time-evaluated-calls"></a>
+<h4>Some function calls are evaluated at compile time</h4>
+
+<p>
+Most function calls are evaluated at run time.
+But calls to the functions of the <code>unsafe</code> standard package
+are always evaluated at compile time.
+Calls to some other built-in functions,
+such as <code>len</code> and <code>cap</code>,
+<a href="summaries.html#compile-time-evaluation">may be evaluated at
+either compile time or run time</a>, depending on the passed arguments.
+The results of the function calls evaluated at compile time can be
+assigned to constants.
+</p>
+
+<h4>All function arguments are passed by copy</h4>
+
+<p>
+Let's repeat it again, like all value assignments in Go,
+all function arguments are passed by copy in Go.
+When a value is copied, <a href="value-part.html#about-value-copy">only
+its direct part is copied</a> (a.k.a., a shallow copy).
+</p>
+
+<h4>Function declarations without bodies</h4>
+
+<p>
+We can implement a function in <a href="https://golang.org/doc/asm">Go assembly</a>.
+Go assembly source files are stored in <code>*.a</code> files.
+A function implemented in Go assembly is still needed to be declared in a
+<code>*.go</code> file, but the only the prototype of the function is needed
+to be present. The body portion of the declaration of the function
+must be omitted in the <code>*.go</code> file.
+</p>
+
+<h4>Some functions with results are not required to return</h4>
+
+<div>
+If a function has return results, then the last statement in its declaration
+body must be a <a href="https://golang.org/ref/spec#Terminating_statements">terminating statement</a>.
+Other than <code>return</code> terminating statement, there are some other kinds of terminating statements.
+So a function body is not required to contain a return statement. For example,
+<pre class="line-numbers"><code class="language-go">func fa() int {
+	a:
+	goto a
+}
+
+func fb() bool {
+	for{}
+}
+</code></pre>
+
+<p>
+</p>
+</div>
+
+<h4>The results of calls to custom function can be discarded, not true for calls to some built-in functions</h4>
+
+<p>
+The return results of a custom function call can be all discarded together.
+However, the return results of calls to built-in functions, except <code>recover</code>
+and <code>copy</code>, can't be discarded,
+though they can be ignored by assigning them to some blank identifiers.
+Function calls whose results can't be discarded can't be used as deferred
+function calls or goroutine calls.
+</p>
+
+<a class="anchor" id="call-as-expression"></a>
+<h4>Use function calls as expressions</h4>
+
+<div>
+
+<p>
+A call to a function with single return result can always be used as a single
+value. For example, it can be nested in another function call as an argument,
+and can also be used as a single value to appear in any other
+expressions and statements.
+</p>
+
+If the return results of a call to a multi-result function are not discarded,
+then the call can only be used as a multi-value expression in two scenarios.
+<ol>
+<li>
+	The call can be used in an assignment as source values.
+	But the call can't mix with other source values in the assignment.
+</li>
+<li>
+	The call can be nested in another function call as arguments.
+	But the call can't mix with other arguments.
+</li>
+</ol>
+
+An example:
+<pre class="line-numbers"><code class="language-go">package main
+
+func HalfAndNegative(n int) (int, int) {
+	return n/2, -n
+}
+
+func AddSub(a, b int) (int, int) {
+	return a+b, a-b
+}
+
+func Dummy(values ...int) {}
+
+func main() {
+	// These lines compile okay.
+	AddSub(HalfAndNegative(6))
+	AddSub(AddSub(AddSub(7, 5)))
+	AddSub(AddSub(HalfAndNegative(6)))
+	Dummy(HalfAndNegative(6))
+	_, _ = AddSub(7, 5)
+
+	// The following lines fail to compile.
+	/*
+	_, _, _ = 6, AddSub(7, 5)
+	Dummy(AddSub(7, 5), 9)
+	Dummy(AddSub(7, 5), HalfAndNegative(6))
+	*/
+}
+</code></pre>
+
+<p>
+Note, for the standard Go compiler,
+<a href="exceptions.html#nest-function-calls">some built-in functions break the universality</a>
+of the just described rules above.
+</p>
+
+</div>
+
+<h3>Function Values</h3>
+
+<div>
+<p>
+As mentioned above, function types are one kind of types in Go.
+A value of a function type is called a function value.
+The zero values of function types are represented with
+the predeclared <code>nil</code>.
+</p>
+
+<p>
+When we declare a custom function, we also declared an immutable function value actually.
+The function value is identified by the function name.
+The type of the function value is represented as the literal
+by omitting the function name from the function prototype literal.
+</p>
+
+<p>
+Note, built-in functions can't be used as values.
+<code>init</code> functions also can't be used as values.
+</p>
+
+<p>
+Any function value can be invoked just like a declared function.
+It is fatal error to call a nil function to start a new goroutine.
+The fatal error is not recoverable and will make the whole program crash.
+For other situations, calls to nil function values will produce
+recoverable panics, including deferred function calls.
+</p>
+
+<p>
+From the article <a href="value-part.html">value parts</a>,
+we know that non-nil function values are multi-part values.
+After one function value is assigned to another,
+the two functions share the same underlying parts(s).
+In other words, the two functions represent the same internal function object.
+The effects of invoking two functions are the same.
+</p>
+
+An example:
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+func Double(n int) int {
+	return n + n
+}
+
+func Apply(n int, f func(int) int) int {
+	return f(n) // the type of f is "func(int) int"
+}
+
+func main() {
+	fmt.Printf("%T\n", Double) // func(int) int
+	// Double = nil // error: Double is immutable.
+
+	var f func(n int) int // default value is nil.
+	f = Double
+	g := Apply // let compile deduce the type of g
+	fmt.Printf("%T\n", g) // func(int, func(int) int) int
+
+	fmt.Println(f(9))         // 18
+	fmt.Println(g(6, Double)) // 12
+	fmt.Println(Apply(6, f))  // 12
+}
+</code></pre>
+
+<p>
+In the above example, <code>g(6, Double)</code> and <code>Apply(6, f)</code> are equivalent.
+</p>
+
+In practice, we often assign anonymous functions to function variables,
+so that we can call the anonymous functions multiple times.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+func main() {
+	// This function returns a function (a closure).
+	isMultipleOfX := func (x int) func(int) bool {
+		return func(n int) bool {
+			return n%x == 0
+		}
+	}
+
+	var isMultipleOf3 = isMultipleOfX(3)
+	var isMultipleOf5 = isMultipleOfX(5)
+	fmt.Println(isMultipleOf3(6))  // true
+	fmt.Println(isMultipleOf3(8))  // false
+	fmt.Println(isMultipleOf5(10)) // true
+	fmt.Println(isMultipleOf5(12)) // false
+
+	isMultipleOf15 := func(n int) bool {
+		return isMultipleOf3(n) && isMultipleOf5(n)
+	}
+	fmt.Println(isMultipleOf15(32)) // false
+	fmt.Println(isMultipleOf15(60)) // true
+}
+</code></pre>
+
+<p>
+</p>
+
+<p>
+All functions in Go can be viewed as closures.
+This is why user experiences of all kinds of Go functions are so uniform
+and why Go functions are as flexible as those in dynamic languages.
+</p>
+
+</div>
+
+<hr>
+
+<div class="text-center"><a href="#i-function.html">Index↡</a></div>
+
+
+
+<hr>
+
+<div id="contact" class="alert alert-success"><small>
+
+<p>
+The <b><i>Go 101</i></b> 프로젝트는 <a href="https://github.com/go101/go101">Github</a>
+에서 호스팅됩니다.
+오타, 문법 오류, 부정확한 표현, 설명 결함, 코드 버그, 끊어진 링크와 같은 모든
+종류의 실수에 대한 수정 사항을 제출하여 Go 101을 개선을 돕는 것은 언제나 환영합니다.
+</p>
+
+<p>
+주기적으로 Go에 대한 깊이 있는 정보를 얻고 싶다면 Go 101의 공식 트위터 계정인
+<a href="https://twitter.com/go100and1">@go100and1</a>을 팔로우하거나
+<a href="https://join.slack.com/t/go-101/shared_invite/zt-y2pvwg00-Oz7lDDJu44l~hZsFRUApiA">Go 101 슬랙 채널</a>에j가입해주세요.
+</p>
+
+</small></div>
+
+<div class="alert alert-warning"><small>
+
+
+<div id="ebooks">
+이 책의 디지털 버전은 아래와 같은 곳을 통해서 구매할 수 있습니다.
+<ul>
+<li>
+	<a href="https://leanpub.com/go101">Leanpub</a>,
+	<i>최소 19.99 달러</i>.
+</li>
+<li>
+	
+	아마존 킨들 스토어, <i>(현재는 사용 불가)</i>.
+</li>
+<li>
+	<a href="https://books.apple.com/book/id1459984231">애플 북 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://play.google.com/store/books/details?id=Dc1wEAAAQBAJ">구글 플레이 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://github.com/go101/go101/releases">무료 전자책</a>,
+	pdf, epub과 azw3 포맷을 지원
+</li>
+</ul>
+	</div>
+<div>
+
+Go 101의 저자인 Tapir는 2016년 7월부터 Go 101 시리즈 책들을 집필하고 go101.org 웹사이트를 유지 관리하고 있습니다.
+새로운 콘텐츠는 책과 웹사이트에 수시로 추가될 예정입니다.
+Tapir는 인디 게임 개발자이기도 합니다.
+<a href="https://www.tapirgames.com">Tapir의 게임</a>을 플레이하여 Go 101을 지원할 수도 있습니다.
+(안드로이드와 아이폰/아이패드용):
+<ul>
+<li>
+	<a href="https://www.tapirgames.com/App/Color-Infection">Color Infection</a> (★★★★★), 140개 이상의 단계로 이루어진 물리 기반의 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Rectangle-Pushers">Rectangle Pushers</a> (★★★★★), 2가지 모드와 104개 이상의 단계로 이루어진 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Let-Us-Play-With-Particles">Let's Play With Particles</a>, 세가지 미니 게임이 있는 캐주얼 액션 게임
+</li>
+</ul>
+</div>
+
+<a href="https://paypal.me/tapirliu">페이팔</a>을 통한 개인 기부도 환영합니다.</small></div>
+
+<hr>
+색인:
+
+
+<div id="book-index">
+
+<!-- kindle starts: 1 -->
+
+<ul class="index part">
+	<li><a class="index" href="101-about.html">Go 101에 대해</a> - 이 책이 쓰여진 이유</li>
+	<li><a class="index" href="acknowledgements.html">감사의 말</a></li>
+</ul>
+
+<ul class="index part">
+	<li><a class="index" href="introduction.html">Go 소개</a> - Go를 배우는 가치</li>
+	<li><a class="index" href="go-toolchain.html">Go 툴체인</a> - Go 프로그램을 컴파일하고 실행하는 방법</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 코드에 익숙해지기
+
+	<ul class="index chapters">
+	<li><a class="index" href="basic-code-elements-introduction.html">소스 코드 요소 소개</a></li>
+	<li><a class="index" href="keywords-and-identifiers.html">키워드와 식별자</a></li>
+	<li><a class="index" href="basic-types-and-value-literals.html">기본 자료형과 기본 값 리터럴</a></li>
+	<li><a class="index" href="constants-and-variables.html">상수와 변수</a> - 무형성(untyped) 값과 자료형 추론 소개를 포함</li>
+	<li><a class="index" href="operators.html">일반 연산자</a> - 더 많은 자료형 추론 규칙 소개를 포함</li>
+	<li><a class="index" href="function-declarations-and-calls.html">함수 선언과 호출</a></li>
+	<li><a class="index" href="packages-and-imports.html">코드 패키지와 패키지 들여오기</a></li>
+	<li><a class="index" href="expressions-and-statements.html">표현식, 구문과 단순 구문</a></li>
+	<li><a class="index" href="control-flows.html">기본 흐름 제어</a></li>
+	<li><a class="index" href="control-flows-more.html">고루틴, 지연된 함수 호출과 패닉/복구</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 자료형 체계
+
+	<ul class="index chapters">
+	<li><a class="index" href="type-system-overview.html">Go 자료형 체계 개요</a> - Go 프로그래밍 숙달을 위해 반드시 읽어봐야 하는</li>
+	<li><a class="index" href="pointer.html">포인터</a></li>
+	<li><a class="index" href="struct.html">구조체</a></li>
+	<li><a class="index" href="value-part.html">변수</a> - Go 변수에 대한 더 깊은 이해</li>
+	<li><a class="index" href="container.html">배열, 슬라이스와 맵</a> - 1급 객체 컨테이너 자료형</li>
+	<li><a class="index" href="string.html">문자열</a></li>
+	<li><b class="index" id="i-function.html">함수</b> - 함수 자료형과 값, 가변 인자 함수</li>
+	<li><a class="index" href="channel.html">채널</a> - Go에서 동시성 동기화를 하는 방법</li>
+	<li><a class="index" href="method.html">메서드</a></li>
+	<li><a class="index" href="interface.html">인터페이스</a> - 리플렉션과 다형성을 하는 값 상자</li>
+	<li><a class="index" href="type-embedding.html">자료형 임베딩</a> - 자료형을 확장하는 방법</li>
+	<li><a class="index" href="unsafe.html">자료형에 안전하지 않는 포인터</a></li>
+	<li><a class="index" href="generic.html">제네릭</a> - 합성 자료형의 사용과 읽는 법</li>
+	<li><a class="index" href="reflection.html">리플렉션</a> - <code>reflect</code> 표준 패키지</li>
+	</ul>
+</li>
+</ul>
+
+<!-- kindle ends: 1 -->
+
+<!-- kindle starts: 2 -->
+
+<ul class="index part">
+<li>
+특별 주제
+
+	<ul class="index chapters">
+	<li><a class="index" href="line-break-rules.html">개행 규칙</a></li>
+	<li><a class="index" href="defer-more.html">지연된 함수 호출 더 알아보기</a></li>
+	<li><a class="index" href="panic-and-recover-use-cases.html">패닉/복구 사용 사례</a></li>
+	<li><a class="index" href="panic-and-recover-more.html">패닉/복구 메커니즘에 대한 고찰</a> - 함수 호출 종료 단계를 포함</li>
+	<li><a class="index" href="blocks-and-scopes.html">코드 블록과 식별자 스코프</a></li>
+	<li><a class="index" href="evaluation-orders.html">표현식 평가 순서</a></li>
+	<li><a class="index" href="value-copy-cost.html">Go의 값 복사 비용</a></li>
+	<li><a class="index" href="bounds-check-elimination.html">경계 검사 제거(BCE)</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+동시성 프로그래밍
+
+	<ul class="index chapters">
+	<li><a class="index" href="concurrent-synchronization-overview.html">동시성 동기화 개요</a></li>
+	<li><a class="index" href="channel-use-cases.html">채널 사용 사례</a></li>
+	<li><a class="index" href="channel-closing.html">채널을 깔끔하게 닫는 방법</a></li>
+	<li><a class="index" href="concurrent-synchronization-more.html">기타 동시성 동기화 기술</a> - <code>sync</code> 표준 패키지</li>
+	<li><a class="index" href="concurrent-atomic-operation.html">원자적 연산</a> - <code>sync/atomic</code> 표준 패키지</li>
+	<li><a class="index" href="memory-model.html">Go의 메모리 순서 보장</a></li>
+	<li><a class="index" href="concurrent-common-mistakes.html">흔히들 저지르는 동시성 프로그래밍 실수들</a></li>
+	</ul>
+
+</li>
+</ul>
+
+
+<ul class="index part">
+<li>
+메모리 관련
+
+	<ul class="index chapters">
+	<li><a class="index" href="memory-block.html">메모리 블록</a></li>
+	<li><a class="index" href="memory-layout.html">메모리 레이아웃</a></li>
+	<li><a class="index" href="memory-leaking.html">메모리 누수 시나리오</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+일부 요약
+
+	<ul class="index chapters">
+	<li><a class="index" href="summaries.html">몇 가지 간단한 요약</a></li>
+	<li><a class="index" href="nil.html">Go의 <code>nil</code></a></li>
+	<li><a class="index" href="value-conversions-assignments-and-comparisons.html">값 변환, 할당과 비교 규칙</a></li>
+	<li><a class="index" href="exceptions.html">구문/의미 예외</a></li>
+	<!-- (to remove) for printing -->
+	<li><a class="index" href="details.html">Go Details 101</a></li>
+	<li><a class="index" href="unofficial-faq.html">Go FAQ 101</a></li>
+	<li><a class="index" href="tips.html">Go Tips 101</a></li>
+	<!-- (to remove) -->
+	</ul>
+
+</li>
+</ul>
+
+<!-- kindle ends: 2 -->
+
+<!-- kindle starts: 0 -->
+
+<ul class="index part">
+<li><a class="index" href="more.html">더 많은 토픽</a></li>
+</ul>
+
+<!-- kindle ends: 0 -->
+
+</div>
+
+
+
+
+
+
+
+
+		</div>
+	</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

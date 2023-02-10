@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Golang online books, articles, tools, etc.">
+		<meta name="author" content="">
+		<meta name="go-version" content="go1.20">
+		<link rel="icon" href="/static/go101/images/101-v1.ico">
+		<link rel="apple-touch-icon" sizes="152x152" href="/static/go101/images/iphone-v1.jpeg">
+	
+		<title>Generic Instantiations and Type Argument Inferences -Go 101</title><link id="css-bs" href="/static/bootstrap/v4.0.3-dark/css/bootstrap.min.css" rel="stylesheet">
+		<link id="css-go101" href="/static/go101/css/v991-dark.css" rel="stylesheet">
+		<link id="css-prism" href="/static/prism/2020-08-03-dark/prism.css" rel="stylesheet">
+		<script id="js-prism" src="/static/prism/2020-08-03-dark/prism.js"></script>
+
+
+		<script src="/static/jquery/jquery.min-v1.11.2.js"></script>
+		<script src="/static/go101/js/v5.js"></script>
+		
+		
+		<style>
+		div, p, ul, li, td, th {line-height: 1.55;}
+		</style>
+
+		<script>
+		var theme = ""
+		</script>
+	</head>
+
+	<body>
+		<div class="container">
+
+		<div class="row nav-bar-with-borders">
+	<div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/"><small>Home</small></a> <span class="new-text"><sup>new!</sup></span>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/article/101.html"><small>Go 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-active">
+		<a href="/generics/101.html"><small>Go Generics 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/details-and-tips/101.html"><small>Go Details &amp; Tips 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/optimizations/101.html"><small>Go Optimizations 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/quizzes/101.html"><small>Go Quizzes 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go HowTo 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Practices 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Agg 101</small></div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/blog/101.html"><small>Go 101 Blog</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/apps-and-libs/101.html"><small>Go 101 Apps &amp; Libs</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;" id="theme-switch"><small>테마: 다크/라이트</small></div>
+
+</div>
+
+<div class="alert alert-warning text-center"><small>
+현재 3권의 신간들인 <a href="/optimizations/101.html">Go Optimizations 101</a>,
+<a href="/details-and-tips/101.html">Go Details &amp; Tips 101</a>
+과 <a href="/generics/101.html">Go Generics 101</a>이 출간되어 있습니다.
+Leanpub 서점에서 <a href="https://leanpub.com/b/go-optimizations-details-generics">번들</a>을 모두 구입하시는 방법이 비용 대비 효율이 가장 좋습니다.
+<p></p>
+Go에 대한 많은 정보들과 Go 101 책들의 최신 소식을 얻으시려면 Go 101 트위터 계정인 <a href="https://twitter.com/go100and1">@Go100and1</a>을
+팔로잉 해주세요.
+</small></div>
+<p>
+</p>
+
+
+
+<h1>Generic Instantiations and Type Argument Inferences</h1>
+
+
+
+<p>In the last two chapters, we have used several instantiations of generic types and functions.
+Here, this chapter makes a formal introduction for instantiated types and functions.</p>
+
+<h2>Generic type/function instantiations</h2>
+
+<p>Generic types must be instantiated to be used as types of values, and
+generic functions must be instantiated to be called or used as function values.</p>
+
+<p>A generic function (type) is instantiated by substituting a type argument list
+for the type parameter list of its declaration (specification).
+The lengths of the (full) type argument list is the same as the type parameter list.
+Each type argument corresponds a type parameter and is passed to that type parameter.
+Assume the constraint of the corresponding type parameter of a type argument is <code>C</code>,
+then the type argument must be</p>
+
+<ul>
+<li>either an ordinary type (a non-interface type or a basic interface type)
+which <a href="555-type-constraints-and-parameters.html#implementation-vs-satisfaction">satisfies</a> (but is not required to implement) <code>C</code>;</li>
+<li>or a type parameter which <a href="555-type-constraints-and-parameters.html#type-sets-and-implementations">implements</a> <code>C</code> if the instantiation
+is within a containing generic function declaration or type specification.
+The type parameter is declared by the containing generic function
+declaration or type specification.</li>
+</ul>
+
+<p>Instantiated functions are non-generic functions.
+Instantiated types are named ordinary value types.</p>
+
+<p>Same as type parameter lists, a type argument list is also enclosed in square brackets
+and type arguments are also comma-separated in the type argument list.
+The comma insertion rule for type argument lists is also the same as type parameter lists.</p>
+
+<p>Two type argument lists are identical if the lengths of their full forms are equal and all of their corresponding argument types are identical.
+Two instantiated types are identical if they are instantiated from the same generic type and with the same full-from type argument list.</p>
+
+<p>As indicated several times in the above descriptions, a type argument list might be partial.
+Please read the following &quot;type argument inferences&quot; section for details.</p>
+
+<p>In the following program, the generic type <code>Data</code> is instantiated four times.
+Three of the four instantiations have the same type argument list
+(please note that the predeclared <code>byte</code> is an alias of the predeclared <code>uint8</code> type).
+So the type of variable <code>x</code>, the type denoted by alias <code>Z</code>, and the underlying type of
+the defined type <code>W</code> are the same type.</p>
+
+<pre><code class="language-Go">package main
+
+import (
+	&quot;fmt&quot;	
+	&quot;reflect&quot;
+)
+
+type Data[A int64 | int32, B byte | bool, C comparable] struct {
+	a A
+	b B
+	c C
+}
+
+var x = Data[int64, byte, [8]byte]{1&lt;&lt;62, 255, [8]byte{}}
+type Y = Data[int32, bool, string]
+type Z = Data[int64, uint8, [8]uint8]
+type W Data[int64, byte, [8]byte]
+
+// The following line fails to compile because
+// []uint8 doesn't satisfy the comparable constraint.
+// type T = Data[int64, uint8, []uint8] // error
+
+func main() {
+	println(reflect.TypeOf(x) == reflect.TypeOf(Z{})) // true
+	println(reflect.TypeOf(x) == reflect.TypeOf(Y{})) // false
+	fmt.Printf(&quot;%T\n&quot;, x)   // main.Data[int64,uint8,[8]uint8]
+	fmt.Printf(&quot;%T\n&quot;, Z{}) // main.Data[int64,uint8,[8]uint8]
+}
+</code></pre>
+
+<p>The following is an example using some instantiated functions
+of a generic function.</p>
+
+<pre><code class="language-Go">package main
+
+type Ordered interface {
+	~int | ~uint | ~int8 | ~uint8 | ~int16 | ~uint16 |
+	~int32 | ~uint32 | ~int64 | ~uint64 | ~uintptr |
+	~float32 | ~float64 | ~string
+}
+
+func Max[S ~[]E, E Ordered](vs S) E {
+	if len(vs) == 0 {
+		panic(&quot;no elements&quot;)
+	}
+	
+	var r = vs[0]
+	for i := range vs[1:] {
+		if vs[i] &gt; r {
+			r = vs[i]
+		}
+	}
+	return r
+}
+
+type Age int
+var ages = []Age{99, 12, 55, 67, 32, 3}
+
+var langs = []string {&quot;C&quot;, &quot;Go&quot;, &quot;C++&quot;}
+
+func main() {
+	var maxAge = Max[[]Age, Age]
+	println(maxAge(ages)) // 99
+	
+	var maxStr = Max[[]string, string]
+	println(maxStr(langs)) // Go
+}
+</code></pre>
+
+<p>In the above example, the generic function <code>Max</code> is instantiated twice.</p>
+
+<ul>
+<li>The first instantiation <code>Max[[]Age, Age]</code> results in a <code>func([]Age] Age</code> function value.</li>
+<li>The second one, <code>Max[[]string, string]</code>, results in a <code>func([]string) string</code> function value.</li>
+</ul>
+
+<h2 id="type-argument-inferences">Type argument inferences for generic function instantiations</h2>
+
+<p>In the generic function example shown in the last section,
+the two function instantiations are called full form instantiations,
+in which all type arguments are presented in their containing type argument lists.
+Go supports type inferences for generic function instantiations,
+which means the type argument list of an instantiated function
+may be partial or even be omitted totally,
+as long as the missing type arguments could be inferred from value parameters
+and presented type arguments.</p>
+
+<p>For example, the <code>main</code> function of the last example in the last section could be rewritten as</p>
+
+<pre><code class="language-Go">func main() {
+	var maxAge = Max[[]Age] // partial argument list
+	println(maxAge(ages)) // 99
+	
+	var maxStr = Max[[]string] // partial argument list
+	println(maxStr(langs)) // Go
+}
+</code></pre>
+
+<p>A partial type argument list must be a prefix of the full argument list.
+In the above code, the second arguments are both omitted,
+because they could be inferred from the first ones.</p>
+
+<p>If an instantiated function is called directly and some suffix type arguments
+could be inferred from the value argument types, then the type argument list
+could be also partial or even be omitted totally.
+For example, the <code>main</code> function could be also rewritten as</p>
+
+<pre><code class="language-Go">func main() {
+	println(Max(ages))  // 99
+	println(Max(langs)) // Go
+}
+</code></pre>
+
+<p>The rewritten <code>main</code> function shows that the calls to
+generics functions could be as clean as ordinary functions (at least sometimes),
+even if generics function declarations are more verbose.</p>
+
+<p>Please note that, type argument lists may be omitted totally but may not be blank.
+The following code is illegal.</p>
+
+<pre><code class="language-Go">func main() {
+	println(Max[](ages))  // syntax error
+	println(Max[](langs)) // syntax error
+}
+</code></pre>
+
+<p>The inferred type arguments in a type argument list must be a suffix of the type argument list.
+For example, the following code fails to compile.</p>
+
+<pre><code class="language-Go">package main
+
+func foo[A, B, C any](v B) {}
+
+func main() {
+	// error: cannot use _ as value or type
+	foo[int, _, bool](&quot;Go&quot;)
+}
+</code></pre>
+
+<p>Type arguments could be inferred from element types, field types,
+parameter types and result types of value arguments.
+For example,</p>
+
+<pre><code class="language-Go">package main
+
+func luk[E any](v struct{x E}) {}
+func kit[E any](v []E) {} 
+func wet[E any](v func() E) {}
+
+func main() {
+	luk(struct{x int}{123})        // okay
+	kit([]string{&quot;go&quot;, &quot;c&quot;})       // okay
+	wet(func() bool {return true}) // okay
+}
+</code></pre>
+
+<p>If the type set of the constraint of a type parameter contains only one type
+and the type parameter is used as a value parameter type in a generic function,
+then compilers will attempt to infer the type of an untyped value argument
+passed to the value parameter as that only one type. If the attempt fails,
+then that untyped value argument is viewed as invalid.</p>
+
+<p>For example, in the following program, only the first function call compiles.</p>
+
+<pre><code class="language-Go">package main
+
+func foo[T int](x T) {}
+func bar[T ~int](x T) {}
+
+func main() {
+	// The default type of 1.0 is float64, but
+	// 1.0 is also representable as integer values.
+
+	foo(1.0)  // okay
+	foo(1.23) // error: cannot use 1.23 as int
+
+	bar(1.0) // error: float64 does not implement ~int
+	bar(1.2) // error: float64 does not implement ~int
+}
+</code></pre>
+
+<p>Sometimes, the inference process might be more complicate.
+For example, the following code compiles okay.
+The type of the instantiated function is <code>func([]Ints, Ints)</code>.
+A <code>[]int</code> value argument is <a href="https://go101.org/article/value-conversions-assignments-and-comparisons.html">allowed to be passed</a> to an <code>Ints</code> value parameter,
+which is why the code compiles okay.</p>
+
+<pre><code class="language-Go">func pat[P ~[]T, T any](x P, y T) bool { return true }
+
+type Ints []int
+var vs = []Ints{}
+var v = []int{}
+
+var _ = pat[[]Ints, Ints](vs, v) // okay
+</code></pre>
+
+<p>But both of the following two calls don't compile.
+The reason is the missing type arguments are inferred from value arguments,
+so the second type arguments are inferred as <code>[]int</code>
+and the first type arguments are (or are inferred as) <code>[]Ints</code>.
+The two type arguments together don't satisfy the type parameter list.</p>
+
+<pre><code class="language-Go">// error: []Ints does not implement ~[][]int
+var _ = pat[[]Ints](vs, v)
+var _ = pat(vs, v)
+</code></pre>
+
+<p>Please read Go specification for <a href="https://go.dev/ref/spec#Type_inference">the detailed type argument inference rules</a>.</p>
+
+<h2>Type argument inferences don't work for generic type instantiations</h2>
+
+<p>Currently (Go 1.20), inferring type arguments of instantiated types from value literals is not supported.
+That means the type argument list of a generic type instantiation must be always in full form.</p>
+
+<p>For example, in the following code snippet, the declaration line for variable <code>y</code> is invalid,
+even if it is possible to infer the type argument as <code>int16</code>.</p>
+
+<pre><code class="language-Go">type Set[E comparable] map[E]bool
+
+// compiles okay
+var x = Set[int16]{123: false, 789: true}
+
+// error: cannot use generic type without instantiation.
+var y = Set{int16(123): false, int16(789): true}
+</code></pre>
+
+<p>Another example:</p>
+
+<pre><code class="language-Go">import &quot;sync&quot;
+
+type Lockable[T any] struct {
+	sync.Mutex
+	Data T
+}
+
+// compiles okay
+var a = Lockable[float64]{Data: 1.23}
+
+// error: cannot use generic type without instantiation
+var b = Lockable{Data: float64(1.23)} // error
+</code></pre>
+
+<p>It is unclear whether or not <a href="https://github.com/golang/go/issues/50482">type argument inferences
+for generic type instantiations</a>
+will be supported in future Go versions.</p>
+
+<p>For the same reason, the following code doesn't compile (as of Go toolchain 1.20).</p>
+
+<pre><code class="language-Go">type Getter[T any] interface {
+	Get() T
+}
+
+type Age[T uint8 | int16] struct {
+	n T
+}
+
+func (a Age[T]) Get() T {
+	return a.n
+}
+
+func doSomething[T any](g Getter[T]) T {
+	return g.Get()
+}
+
+// The twol lines fail to compile.
+var z = doSomething(Age[uint8]{255}) // error
+var w = doSomething(Age[int16]{256}) // error
+
+// The two lines compile okay.
+var x = doSomething[uint8](Age[uint8]{255})
+var y = doSomething[int16](Age[int16]{256})
+</code></pre>
+
+<h2>Differences between passing type parameters and ordinary types as type arguments</h2>
+
+<p>The above has mentioned that,</p>
+
+<ul>
+<li>when an ordinary type is used as a type argument, the ordinary type
+is only required to <a href="555-type-constraints-and-parameters.html#implementation-vs-satisfaction">satisfy</a> the constraint of the corresponding
+type parameter. This is a change made in Go 1.20.</li>
+<li>when a type parameter is used as a type argument, the type parameter
+is required to <a href="555-type-constraints-and-parameters.html#type-sets-and-implementations">implement</a> the constraint of the corresponding
+type parameter.</li>
+</ul>
+
+<p>For example, since Go 1.20, all instantiations in the following program are valid
+(they are invalid before Go 1.20).
+None of the type arguments, which are all ordinary types,
+implement the <code>comparable</code> constraints, but they all satisfy the constraints.</p>
+
+<pre><code class="language-Go">package main
+
+type Base[T comparable] []T
+
+type _ Base[any]
+type _ Base[error]
+type _ Base[[2]any]
+type _ Base[struct{x any}]
+
+func Gf[T comparable](x T) {}
+
+var _ = Gf[any]
+var _ = Gf[error]
+var _ = Gf[[2]any]
+var _ = Gf[struct{x any}]
+
+func main() {
+	Gf[any](123)
+	Gf[error](nil)
+	Gf[[2]any]([2]any{})
+	Gf[struct{x any}](struct{x any}{})
+}
+</code></pre>
+
+<p>On the other hand, all the instantiations in the following program are invalid.
+All the type arguments are type parameters, and none of them implement
+the <code>comparable</code> constraints, which is why they are all invalid type arguments.</p>
+
+<pre><code class="language-Go">package main
+
+type Base[T comparable] []T
+
+func Gf[T comparable](x T) {}
+
+func vut[T any]() {
+	_ = Gf[T]     // T does not implement comparable
+	var _ Base[T] // T does not implement comparable
+}
+
+func law[T struct{x any}]() {
+	_ = Gf[T]     // T does not implement comparable
+	var _ Base[T] // T does not implement comparable
+}
+
+func pod[T [2]any]() {
+	_ = Gf[T]     // T does not implement comparable
+	var _ Base[T] // T does not implement comparable
+}
+
+func main() {}
+</code></pre>
+
+<p>All the type arguments used in the following program are valid.
+They are all type parameters and implement the <code>comparable</code> constraints.</p>
+
+<pre><code class="language-Go">package main
+
+type Base[T comparable] []T
+
+func Gf[T comparable](x T) {}
+
+func vut[T comparable]() {
+	_ = Gf[T]
+	var _ Base[T]
+}
+
+func law[T struct{x int}]() {
+	_ = Gf[T]
+	var _ Base[T] 
+}
+
+func pod[T [2]string]() {
+	_ = Gf[T]
+	var _ Base[T]
+}
+
+func main() {}
+</code></pre>
+
+<h2>More about instantiated types</h2>
+
+<p>As an instantiated type is an ordinary type,</p>
+
+<ul>
+<li>it may be used as union terms if it is an non-interface type.</li>
+<li>it may be used as union terms if it is an interface type without methods.</li>
+<li>it may be used as type constraints if it is an interface type.</li>
+<li>it may be embedded in struct types if it satisfies
+<a href="https://go101.org/article/type-embedding.html">the requirements for the embedded fields</a>.</li>
+</ul>
+
+<p>The generic type declarations <code>C1</code> and <code>C2</code> in the following code are both valid.</p>
+
+<pre><code class="language-Go">package main
+
+type Slice[T any] []T
+
+type C1[E any] interface {
+	Slice[E] // an ordinary type name
+}
+
+type C2[E any] interface {
+	[]E | Slice[E] // okay
+}
+
+func foo[E any, T C2[E]](x T) {}
+
+func main() {
+	var x Slice[bool]
+	var y Slice[string]
+	foo(x)
+	foo(y)
+}
+</code></pre>
+
+<p>The following code shows an ordinary struct type declaration
+which embeds two instantiations of the generic type <code>Set</code>.
+To avoid duplicate field names, one of the embedded fields
+uses an alias to an instantiation of the generic type.</p>
+
+<pre><code class="language-Go">package main
+
+type Set[T comparable] map[T]struct{}
+
+type Strings = Set[string]
+
+type MyData struct {
+	Set[int]
+	Strings
+}
+
+func main() {
+	var md = MyData {
+		Set:     Set[int]{},
+		Strings: Strings{},
+	}
+	md.Set[123] = struct{}{}
+	md.Strings[&quot;Go&quot;] = struct{}{}
+}
+</code></pre>
+
+<h2>About the instantiation syntax inconsistency between custom generics and built-in generics</h2>
+
+<p>From previous contents, we could find that the instantiation syntax of Go custom generics
+is inconsistent with Go built-in generics.</p>
+
+<pre><code class="language-Go">type TreeMap[K comparable, V any] struct {
+	// ... // internal implementation
+}
+
+func MyNew[T any]() *T {
+	return new(T)
+}
+
+// The manners of two instantiations differ.
+var _ map[string]int
+var _ TreeMap[string, int]
+
+// The manners of two instantiations differ.
+var _ = new(bool)
+var _ = MyNew[bool]()
+</code></pre>
+
+<p>Personally, I think the inconsistency is pity and it increases the load of cognition burden in Go programming.
+On the other hand, I admit that it is hard (or even impossible) to make the syntax consistent.
+It is a pity that Go didn't support custom generics from the start.</p>
+<hr>
+
+<div class="text-center"><a href="#i-666-generic-instantiations-and-type-argument-inferences.html">Index↡</a></div>
+
+
+
+<hr>
+
+<div id="contact" class="alert alert-success"><small>
+
+<p>
+The <b><i>Go 101</i></b> 프로젝트는 <a href="https://github.com/go101/go101">Github</a>
+에서 호스팅됩니다.
+오타, 문법 오류, 부정확한 표현, 설명 결함, 코드 버그, 끊어진 링크와 같은 모든
+종류의 실수에 대한 수정 사항을 제출하여 Go 101을 개선을 돕는 것은 언제나 환영합니다.
+</p>
+
+<p>
+주기적으로 Go에 대한 깊이 있는 정보를 얻고 싶다면 Go 101의 공식 트위터 계정인
+<a href="https://twitter.com/go100and1">@go100and1</a>을 팔로우하거나
+<a href="https://join.slack.com/t/go-101/shared_invite/zt-y2pvwg00-Oz7lDDJu44l~hZsFRUApiA">Go 101 슬랙 채널</a>에j가입해주세요.
+</p>
+
+</small></div>
+
+<div class="alert alert-warning"><small>
+
+
+<div id="ebooks">
+이 책의 디지털 버전은 아래와 같은 곳을 통해서 구매할 수 있습니다.
+<ul>
+<li>
+	<a href="https://leanpub.com/go-generics-101">Leanpub store</a>,
+	<i>최소 7.99 달러</i> (7.99 달러는 Leanpub에서 판매하는 최소 판매가입니다. <a href="https://leanpub.com/b/go-optimizations-details">이곳</a>이나 <a href="https://leanpub.com/b/go-optimizations-details-generics#bundle-page-go-details-and-tips-101">이곳</a>에서 번들로 구매하는 것이 더 비용 대비 효율이 좋습니다).
+</li>
+<li>
+	<a href="https://www.amazon.com/dp/B09XBQNNF2">Amazon Kindle store</a>,
+	<i>5.99 달러</i>.
+</li>
+<li>
+	<a href="https://books.apple.com/book/id1618059315">Apple Books store</a>,
+	<i>5.99 달러</i>.
+</li>
+<li>
+	<a href="https://play.google.com/store/books/details?id=D81wEAAAQBAJ">Google Play store</a>,
+	<i>5.99 달러</i>.
+</li>
+</ul>
+	</div>
+<div>
+
+Go 101의 저자인 Tapir는 2016년 7월부터 Go 101 시리즈 책들을 집필하고 go101.org 웹사이트를 유지 관리하고 있습니다.
+새로운 콘텐츠는 책과 웹사이트에 수시로 추가될 예정입니다.
+Tapir는 인디 게임 개발자이기도 합니다.
+<a href="https://www.tapirgames.com">Tapir의 게임</a>을 플레이하여 Go 101을 지원할 수도 있습니다.
+(안드로이드와 아이폰/아이패드용):
+<ul>
+<li>
+	<a href="https://www.tapirgames.com/App/Color-Infection">Color Infection</a> (★★★★★), 140개 이상의 단계로 이루어진 물리 기반의 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Rectangle-Pushers">Rectangle Pushers</a> (★★★★★), 2가지 모드와 104개 이상의 단계로 이루어진 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Let-Us-Play-With-Particles">Let's Play With Particles</a>, 세가지 미니 게임이 있는 캐주얼 액션 게임
+</li>
+</ul>
+</div>
+
+<a href="https://paypal.me/tapirliu">페이팔</a>을 통한 개인 기부도 환영합니다.</small></div>
+
+<hr>
+색인:
+
+
+<div id="book-index">
+	
+<ul class="index part">
+	<li><a class="index" href="111-acknowledgements.html">Acknowledgements</a></li>
+	<li><a class="index" href="222-about-this-book.html">About Go Generics 101</a></li>
+	<li><a class="index" href="333-about-go-generics.html">About Go Custom Generics</a></li>
+	<li><a class="index" href="444-first-look-of-custom-generics.html">First Look of Custom Generics</a></li>
+	<li><a class="index" href="555-type-constraints-and-parameters.html">Constraints and Type Parameters</a></li>
+	<li><b class="index" id="i-666-generic-instantiations-and-type-argument-inferences.html">Generic Instantiations and Type Argument Inferences</b></li>
+	<li><a class="index" href="777-operations-on-values-of-type-parameter-types.html">Operations on Values of Type Parameter Types</a></li>
+	<li><a class="index" href="888-the-status-quo-of-go-custom-generics.html">The Status Quo of Go Custom Generics</a></li>
+	<li>Some Examples Using Go Custom Generics <i>(to do)</i></li>
+</ul>
+
+</div>
+
+
+
+
+
+
+
+
+		</div>
+	</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

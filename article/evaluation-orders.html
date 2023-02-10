@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Golang online books, articles, tools, etc.">
+		<meta name="author" content="">
+		<meta name="go-version" content="go1.20">
+		<link rel="icon" href="/static/go101/images/101-v1.ico">
+		<link rel="apple-touch-icon" sizes="152x152" href="/static/go101/images/iphone-v1.jpeg">
+	
+		<title>Expression Evaluation Orders -Go 101</title><link id="css-bs" href="/static/bootstrap/v4.0.3-dark/css/bootstrap.min.css" rel="stylesheet">
+		<link id="css-go101" href="/static/go101/css/v991-dark.css" rel="stylesheet">
+		<link id="css-prism" href="/static/prism/2020-08-03-dark/prism.css" rel="stylesheet">
+		<script id="js-prism" src="/static/prism/2020-08-03-dark/prism.js"></script>
+
+
+		<script src="/static/jquery/jquery.min-v1.11.2.js"></script>
+		<script src="/static/go101/js/v5.js"></script>
+		
+		
+		<style>
+		div, p, ul, li, td, th {line-height: 1.55;}
+		</style>
+
+		<script>
+		var theme = ""
+		</script>
+	</head>
+
+	<body>
+		<div class="container">
+
+		<div class="row nav-bar-with-borders">
+	<div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/"><small>Home</small></a> <span class="new-text"><sup>new!</sup></span>
+	</div><div class="col-xs-6 col-sm-4 nav-item-active">
+		<a href="/article/101.html"><small>Go 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/generics/101.html"><small>Go Generics 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/details-and-tips/101.html"><small>Go Details &amp; Tips 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/optimizations/101.html"><small>Go Optimizations 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/quizzes/101.html"><small>Go Quizzes 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go HowTo 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Practices 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Agg 101</small></div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/blog/101.html"><small>Go 101 Blog</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/apps-and-libs/101.html"><small>Go 101 Apps &amp; Libs</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;" id="theme-switch"><small>테마: 다크/라이트</small></div>
+
+</div>
+
+<div class="alert alert-warning text-center"><small>
+현재 3권의 신간들인 <a href="/optimizations/101.html">Go Optimizations 101</a>,
+<a href="/details-and-tips/101.html">Go Details &amp; Tips 101</a>
+과 <a href="/generics/101.html">Go Generics 101</a>이 출간되어 있습니다.
+Leanpub 서점에서 <a href="https://leanpub.com/b/go-optimizations-details-generics">번들</a>을 모두 구입하시는 방법이 비용 대비 효율이 가장 좋습니다.
+<p></p>
+Go에 대한 많은 정보들과 Go 101 책들의 최신 소식을 얻으시려면 Go 101 트위터 계정인 <a href="https://twitter.com/go100and1">@Go100and1</a>을
+팔로잉 해주세요.
+</small></div>
+<p>
+</p>
+
+
+
+<h1>Expression Evaluation Orders</h1>
+
+
+
+<p>
+This article will explain <a href="expressions-and-statements.html">expression</a>
+evaluation orders in all kinds of scenarios.
+</p>
+
+<h3>An Expression Is Evaluated After the Expressions It Depends on</h3>
+
+<div>
+This is easy to comprehend.
+An apparent example is an expression is evaluated later than its sub-expressions.
+For example, in a function call <code>f(x, y[n])</code>,
+<ul>
+<li>
+	<code>f()</code> is evaluated later than its depended expressions,
+	including <code>f</code>, <code>x</code> and <code>y[n]</code>.
+</li>
+<li>
+	the evaluation of the expression <code>y[n]</code> is later than
+	the evaluations of <code>n</code> and <code>y</code>.
+</li>
+</ul>
+
+<p>
+Please read <a href="packages-and-imports.html#initialization-order">program code element initialization order</a>
+for another example on package-level variable initialization orders.
+</p>
+</div>
+
+<a class="anchor" id="package-level-variables"></a>
+<h3>Initialization Order of Package-Level Variables</h3>
+
+<div>
+<p>
+When a package is loaded at run time, Go runtime
+will try to initialize uninitialized package-level variables
+which have no dependencies on uninitialized variables,
+by their declaration order,
+until no variables are initialized in such a process.
+For a successfully compiled Go program, there should be
+no uninitialized variables after all such processes end.
+</p>
+
+<p>
+Package-level variables appearing as blank identifiers are
+treated like any other variables in the initialization process.
+</p>
+
+For example, in the following program,
+variable <code>a</code> depends <code>b</code>,
+and variables <code>c</code> and <code>_</code> depend on <code>a</code>.
+So
+<ol>
+<li>
+	The first initialized variable is <code>b</code>,
+	which is the first package-level variable without dependencies on other package-level variables.
+</li>
+<li>
+	The second initialized variable is <code>a</code>.
+	After <code>b</code> is initialized,
+	<code>a</code> is the first package-level variable
+	without dependencies on uninitialized package-level variables.
+</li>
+<li>
+	The third and fourth initialized variables are <code>_</code> and <code>c</code>.
+	After <code>a</code> and <code>b</code> are initialized,
+	<code>_</code> and <code>c</code> both don't depend on uninitialized package-level variables.
+</li>
+</ol>
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+var (
+	_ = f()
+	a = b / 2
+	b = 6
+	c = f()
+)
+
+func f() int {
+	a++
+	return a
+}
+
+func main() {
+	fmt.Println(a, b, c) // 5 6 5
+}
+</code></pre>
+
+<p>
+The above program prints <code>5 6 5</code>.
+</p>
+
+<!--
+<pre class="line-numbers"><code class="language-go">package main
+
+var (
+	_ = f("w", x)
+	x = f("x", z)
+	y = f("y")
+	z = f("z")
+)
+
+func f(s string, deps ...int) int {
+	print(s)
+	return 0
+}
+
+func main() {
+	f("\n")
+}
+</code></pre>
+
+<p>
+(Note, before Go Toolchain 1.13, the standard Go compiler
+<a href="https://github.com/golang/go/issues/22326">didn't implement the rule correctly</a>.
+If the above program is compiled with the standard Go compiler version 1.12, it will print <code>zxwy</code>.)
+</p>
+-->
+
+<!--
+https://github.com/golang/go/issues/31292
+https://github.com/golang/go/commit/451cf3e2cd8950571f436896a3987343f8c2d7f6
+-->
+
+<p>
+Multiple variables on the left-hand side of a variable specification
+initialized by single multi-valued expression on the right-hand side
+are initialized together. For example, for a package-level variable
+declaration <code>var x, y = f()</code>, variables <code>x</code> and <code>y</code>
+will be initialized together. In other words, no other variables will
+be initialized between them.
+</p>
+
+A package-level variable declaration with multiple source value expressions
+will be disassembled into multiple single-source-value variable declarations
+before initializing all package-level variables.
+For example,
+
+<pre class="line-numbers"><code class="language-go">var m, n = expr1, expr2
+</code></pre>
+
+is equivalent to 
+
+<pre class="line-numbers"><code class="language-go">var m = expr1
+var n = expr2
+</code></pre>
+
+<p>
+</p>
+
+If hidden dependencies exist between variables,
+the initialization order between those variables is unspecified.
+In the following example (copied from Go specification),
+<ul>
+<li>
+	the variable <code>a</code> will be initialized after <code>b</code> for sure,
+</li>
+<li>
+	but whether <code>x</code> is initialized before <code>b</code>, between
+	<code>b</code> and <code>a</code>, or after <code>a</code>, is not specified.
+</li>
+<li>
+	and the moment at which function <code>sideEffect()</code> is called (before
+	or after <code>x</code> is initialized) is also not specified.
+</li>
+</ul>
+
+<pre class="line-numbers"><code class="language-go">// x has a hidden dependency on a and b
+var x = I(T{}).ab()
+// Assume sideEffect is unrelated to x, a, and b.
+var _ = sideEffect()
+var a = b
+var b = 42
+
+type I interface    { ab() []int }
+type T struct{}
+func (T) ab() []int { return []int{a, b} }
+</code></pre>
+
+<p>
+</p>
+
+<p>
+Please note that, Go specification doesn't compulsively specify the compilation order of the source files
+in a package, so try not to put some package-level variables into different source files in a package
+if there are complicate dependency relations between those variables; otherwise a variable might be
+initialzied to different values by different Go compilers.
+</p>
+
+</div>
+
+<h3>Operand Evaluation Orders in Logical Operations</h3>
+
+<div>
+<p>
+In a bool expression <code>a &amp;&amp; b</code>, the right operand expression <code>b</code> will be evaluated
+only if the left operand expression <code>a</code> is evaluated as <code>true</code>.
+So <code>b</code> will be evaluated, if it needs to be evaluated, after the evaluation of <code>a</code>.
+</p>
+
+<p>
+In a bool expression <code>a || b</code>, the right operand expression <code>b</code> will be evaluated
+only if the left operand expression <code>a</code> is evaluated as <code>false</code>.
+So <code>b</code> will be evaluated, if it needs to be evaluated, after the evaluation of <code>a</code>.
+</p>
+</div>
+
+<h3>The Usual Order</h3>
+
+<div>
+
+For the evaluations within a function body, Go specification says
+
+<div class="alert alert-success">
+...,
+when evaluating the operands of an expression, assignment, or return statement,
+all function calls, method calls, and (channel) communication operations
+are evaluated in lexical left-to-right order.
+</div>
+
+<p>
+The just described order is called <b><i>the usual order</i></b>.
+</p>
+
+<p>
+Please note that an explicit value conversion <code>T(v)</code> is not a function call.
+</p>
+
+For example, in an expression <code>[]int{x, fa(), fb(), y}</code>,
+assume <code>x</code> and <code>y</code> are two variables,
+<code>fa</code> and <code>fb</code> are two functions, then the call <code>fa()</code>
+is guaranteed to be evaluated (executed) before <code>fb()</code>.
+However, the following the evaluation orders are unspecified in Go specification:
+<ul>
+<li>
+	the evaluation order of <code>x</code> (or <code>y</code>) and <code>fa()</code> (or <code>fb()</code>).
+</li>
+<li>
+	the evaluation order of <code>x</code>, <code>y</code>, <code>fa</code> and <code>fb</code>.
+</li>
+</ul>
+
+Another example, the following assignment, is demoed in Go specification.
+
+<pre class="disable-line-numbers111"><code class="language-go">y[z.f()], ok = g(h(a, b), i()+x[j()], <-c), k()
+</code></pre>
+
+where
+<ul>
+<li>
+	<code>c</code> is a channel expression and will be evaluated to a channel value.
+</li>
+<li>
+	<code>g</code>, <code>h</code>, <code>i</code>, <code>j</code> and <code>k</code>
+	are function expressions.
+</li>
+<li>
+	<code>f</code> is a method of expression <code>z</code>.
+</li>
+</ul>
+
+Also considering the rule mentioned in the last section, compilers should guarantee the following evaluation orders at run time.
+<ul>
+<li>
+	The function calls, method calls and channel communication operations
+	happen in the order <code>z.f()</code>→<code>h()</code>→<code>i()</code>→<code>j()</code>→<code>&lt;-c</code>→<code>g()</code>→<code>k()</code>.
+</li>
+<li>
+	<code>h()</code> is evaluated after the evaluations of expressions <code>h</code>, <code>a</code> and <code>b</code>.
+</li>
+<li>
+	<code>y[]</code> is evaluated after the evaluation of <code>z.f()</code>.
+</li>
+<li>
+	<code>z.f()</code> is evaluated after the evaluation of expression <code>z</code>.
+</li>
+<li>
+	<code>x[]</code> is evaluated after the evaluation of <code>j()</code>.
+</li>
+</ul>
+
+However, the following orders (and more others) are not specified.
+<ul>
+<li>
+	The evaluation order of <code>y</code>, <code>z</code>, <code>g</code>,
+	<code>h</code>, <code>a</code>, <code>b</code>, <code>x</code>,
+	<code>i</code>, <code>j</code>, <code>c</code> and <code>k</code>.
+</li>
+<li>
+	The evaluation order of <code>y[]</code>, <code>x[]</code> and <code>&lt;-c</code>.
+</li>
+</ul>
+
+By the usual order, we know the following declared variables <code>x</code>,
+<code>m</code> and <code>n</code> (also demoed in Go specification)
+will be initialized with ambiguous values.
+
+<pre class="line-numbers"><code class="language-go">	a := 1
+	f := func() int { a++; return a }
+
+	// x may be [1, 2] or [2, 2]: evaluation order
+	// between a and f() is not specified.
+	x := []int{a, f()}
+
+	// m may be {2: 1} or {2: 2}: evaluation order
+	// between the two map element assignments is
+	// not specified.
+	m := map[int]int{a: 1, a: 2}
+
+	// n may be {2: 3} or {3: 3}: evaluation order
+	// between the key and the value is unspecified.
+	n := map[int]int{a: f()}
+</code></pre>
+
+<p>
+</p>
+
+</div>
+
+<a class="anchor" id="value-assignment"></a>
+<h3>Evaluation and Assignment Orders in Assignment Statements</h3>
+
+<div>
+
+Beside the above introduced rules, Go specification specifies more on the expression evaluation order
+the order of individual assignments in an assignment statement:
+
+<div class="alert alert-success">
+The assignment proceeds in two phases.
+First, the operands of index expressions and pointer indirection
+(including implicit pointer indirection in selectors) on the left
+and the expressions on the right are all evaluated in the usual order.
+Second, the assignments are carried out in left-to-right order.
+</div>
+
+<p>
+Later, we may call the first phase as evaluation phase and the second phase as carry-out phase.
+</p>
+
+<p>
+Go specification doesn't specify clearly whether or not the assignments carried-out
+during the second phase may affect the expression evaluation results got in the first phase,
+which ever caused
+<a href="https://github.com/golang/go/issues/23188#issuecomment-403951267">some</a>
+<a href="https://github.com/golang/go/issues/15620">disputes</a>.
+So, here, this article will explain more on the evaluation orders in value assignments.
+</p>
+
+<p>
+Firstly, let's clarify that the assignments carried-out during the second phase
+don't affect the expression evaluation results got at the end of the first phase.
+</p>
+
+<p>
+To make the following explanations convenient, we assume that
+the container (slice or map) value of an index destination expression in an assignment is always addressable.
+If it is not, we can think the container value has already been saved in and
+replaced by a temporary addressable container value before carrying out the second phase.
+</p>
+
+At the time of the end of the evaluation phase and just before the carry-out phase starts,
+each destination expression on the left of an assignment
+has been evaluated as its elementary form.
+Different destination expressions have different elementary forms.
+<ul>
+<li>
+	If a destination expression is a blank identifier, then its elementary form is still a blank identifier.
+</li>
+<li>
+	If a destination expression is a container (array, slice or map) index expression <code>c[k]</code>,
+	then its elementary form is <code>(*cAddr)[k]</code>,
+	where <code>cAddr</code> is a pointer pointing to <code>c</code>.
+</li>
+<li>
+	For other cases, the destination expression must result an addressable value,
+	then its elementary form is a dereference to the address of the destination expression evaluation result.
+</li>
+</ul>
+
+Assume <code>a</code> and <code>b</code> are two addressable variables of the same type, the following assignment
+
+<pre class="line-numbers"><code class="language-go">	a, b = b, a
+</code></pre>
+
+will be executed like the following steps:
+
+<pre class="line-numbers"><code class="language-go">// The evaluation phase:
+P0 := &a; P1 := &b
+R0 := b; R1 := a 
+
+// The elementary form: *P0, *P1 = R0, R1
+
+// The carry-out phase:
+*P0 = R0
+*P1 = R1
+</code></pre>
+
+<p>
+</p>
+
+Here is another example, in which <code>x[0]</code> instead of <code>x[1]</code> is modified.
+
+<pre class="line-numbers must-line-numbers"><code class="language-go">	x := []int{0, 0}
+	i := 0
+	i, x[i] = 1, 2
+	fmt.Println(x) // [2 0]
+</code></pre>
+
+The decomposed execution steps for the line <i>3</i> shown below are like:
+
+<pre class="line-numbers"><code class="language-go">// The evaluation phase:
+P0 := &i; P1 := &x; T2 := i
+R0 := 1; R1 := 2
+// Now, T2 == 0
+
+// The elementary form: *P0, (*P1)[T2] = R0, R1
+
+// The carry-out phase:
+*P0 = R0
+(*P1)[T2] = R1
+</code></pre>
+
+<p>
+</p>
+
+An example which is a little more complex.
+
+<pre class="line-numbers must-line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+func main() {
+	m := map[string]int{"Go": 0}
+	s := []int{1, 1, 1}; olds := s
+	n := 2
+	p := &n
+	s, m["Go"], *p, s[n] = []int{2, 2, 2}, s[1], m["Go"], 5
+	fmt.Println(m, s, n) // map[Go:1] [2 2 2] 0
+	fmt.Println(olds)    // [1 1 5]
+}
+</code></pre>
+
+<p>
+</p>
+
+The decomposed execution steps for the line <i>10</i> shown below are like:
+
+<pre class="line-numbers"><code class="language-go">// The evaluation phase:
+P0 := &s; PM1 := &m; K1 := "Go"; P2 := p; PS3 := &s; T3 := 2
+R0 := []int{2, 2, 2}; R1 := s[1]; R2 := m["Go"]; R3 := 5
+// now, R1 == 1, R2 == 0
+
+// The elementary form:
+//     *P0, (*PM1)[K1], *P2, (*PS3)[T3] = R0, R1, R2, R3
+
+// The carry-out phase:
+*P0 = R0
+(*PM1)[K1] = R1
+*P2 = R2
+(*PS3)[T3] = R3
+</code></pre>
+
+<p>
+</p>
+
+The following example rotates all elements in a slice for one index.
+
+<pre class="line-numbers"><code class="language-go">	x := []int{2, 3, 5, 7, 11}
+	t := x[0]
+	var i int
+	for i, x[i] = range x {}
+	x[i] = t
+	fmt.Println(x) // [3 5 7 11 2]
+</code></pre>
+
+<p>
+</p>
+
+Another example:
+
+<pre class="line-numbers"><code class="language-go">	x := []int{123}
+	x, x[0] = nil, 456        // will not panic
+	x, x[0] = []int{123}, 789 // will panic
+</code></pre>
+
+<p>
+</p>
+
+<p>
+Although it is legal, it is not recommended to use complex multi-value assignments in Go,
+for their readabilities are not good and they have negative effects on both compilation speed and execution performance.
+</p>
+
+As mentioned above,
+not all orders are specified in Go specification for value assignments,
+so some bad written code may produce different results.
+In the following example, the expression order of
+<code>x+1</code> and <code>f(&amp;x)</code> is not specified.
+So the example may print <code>100 99</code> or <code>1 99</code>.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+func main() {
+	f := func (p *int) int {
+		*p = 99
+		return *p
+	}
+
+	x := 0
+	y, z := x+1, f(&x)
+	fmt.Println(y, z)
+}
+</code></pre>
+
+<p>
+</p>
+
+The following is another example which will print ambiguous results.
+It may print <code>1 7 2</code>, <code>1 8 2</code> or <code>1 9 2</code>,
+depending on different compiler implementations.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+func main() {
+	x, y := 0, 7
+	f := func() int {
+		x++
+		y++
+		return x
+	}
+	fmt.Println(f(), y, f())
+}
+</code></pre>
+
+<p>
+</p>
+
+</div>
+
+<h3>Expression Evaluation Orders in <code>switch-case</code> Code Blocks</h3>
+
+<div>
+
+The expression evaluation order in a <code>switch-case</code> code block has been
+<a href="control-flows.html#switch-case">described before</a>.
+Here just shows an example.
+Simply speaking, before a branch code block is entered, the <code>case</code> expressions
+will be evaluated and compared with the switch expression one by one,
+until a comparison results in <code>true</code>.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+func main() {
+	f := func(n int) int {
+		fmt.Printf("f(%v) is called.\n", n)
+		return n
+	}
+
+	switch x := f(3); x + f(4) {
+	default:
+	case f(5):
+	case f(6), f(7), f(8):
+	case f(9), f(10):
+	}
+}
+</code></pre>
+
+<p>
+At run time, the <code>f()</code> calls will be evaluated by the order
+from top to bottom and from left to right,
+until a comparison results in <code>true</code>.
+So <code>f(8)</code>, <code>f(9)</code> and <code>f(10)</code>
+will be not evaluated in this example.
+</p>
+
+The output:
+<pre class="output"><code>f(3) is called.
+f(4) is called.
+f(5) is called.
+f(6) is called.
+f(7) is called.
+</code></pre>
+
+<p>
+</p>
+
+</div>
+
+<h3>Expression Evaluation Orders in <code>select-case</code> Code Blocks</h3>
+
+<div>
+
+<p>
+When executing a <code>select-case</code> code block, before entering a branch code block,
+all the channel operands of receive operations and the operands of send statements
+involved in the <code>select-case</code> code block are evaluated exactly once,
+in source order (from top to bottom, from left to right).
+</p>
+
+<p>
+Note, the target expression being assigned to by a receive <code>case</code>
+operation will only be evaluated if that receive operation is selected later.
+</p>
+
+In the following example, the expression <code>*fptr("aaa")</code> will never get evaluated,
+for its corresponding receive operation <code>&lt;-fchan("bbb", nil)</code> will not be selected.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+func main() {
+	c := make(chan int, 1)
+	c <- 0
+	fchan := func(info string, c chan int) chan int {
+		fmt.Println(info)
+		return c
+	}
+	fptr := func(info string) *int {
+		fmt.Println(info)
+		return new(int)
+	}
+
+	select {
+	case *fptr("aaa") = <-fchan("bbb", nil): // blocking
+	case *fptr("ccc") = <-fchan("ddd", c):   // non-blocking
+	case fchan("eee", nil) <- *fptr("fff"):  // blocking
+	case fchan("ggg", nil) <- *fptr("hhh"):  // blocking
+	}
+}
+</code></pre>
+
+The output of the above program:
+<pre class="output"><code>bbb
+ddd
+eee
+fff
+ggg
+hhh
+ccc
+</code></pre>
+
+<p>
+Note that the expression <code>*fptr("ccc")</code> is the last evaluated expression in the above example.
+It is evaluated after its corresponding receive operation <code>&lt;-fchan("ddd", c)</code> is selected.
+</p>
+
+</div>
+
+
+<!--
+
+var y, z = string(x),  f()
+
+and
+
+var y = string(x)
+var z = f()
+
+Those two code snippets are equivalent in the package block. They are not guaranteed to be equivalent within a function body.
+
+https://github.com/golang/go/issues/43216#issuecomment-750923219
+-->
+
+<hr>
+
+<div class="text-center"><a href="#i-evaluation-orders.html">Index↡</a></div>
+
+
+
+<hr>
+
+<div id="contact" class="alert alert-success"><small>
+
+<p>
+The <b><i>Go 101</i></b> 프로젝트는 <a href="https://github.com/go101/go101">Github</a>
+에서 호스팅됩니다.
+오타, 문법 오류, 부정확한 표현, 설명 결함, 코드 버그, 끊어진 링크와 같은 모든
+종류의 실수에 대한 수정 사항을 제출하여 Go 101을 개선을 돕는 것은 언제나 환영합니다.
+</p>
+
+<p>
+주기적으로 Go에 대한 깊이 있는 정보를 얻고 싶다면 Go 101의 공식 트위터 계정인
+<a href="https://twitter.com/go100and1">@go100and1</a>을 팔로우하거나
+<a href="https://join.slack.com/t/go-101/shared_invite/zt-y2pvwg00-Oz7lDDJu44l~hZsFRUApiA">Go 101 슬랙 채널</a>에j가입해주세요.
+</p>
+
+</small></div>
+
+<div class="alert alert-warning"><small>
+
+
+<div id="ebooks">
+이 책의 디지털 버전은 아래와 같은 곳을 통해서 구매할 수 있습니다.
+<ul>
+<li>
+	<a href="https://leanpub.com/go101">Leanpub</a>,
+	<i>최소 19.99 달러</i>.
+</li>
+<li>
+	
+	아마존 킨들 스토어, <i>(현재는 사용 불가)</i>.
+</li>
+<li>
+	<a href="https://books.apple.com/book/id1459984231">애플 북 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://play.google.com/store/books/details?id=Dc1wEAAAQBAJ">구글 플레이 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://github.com/go101/go101/releases">무료 전자책</a>,
+	pdf, epub과 azw3 포맷을 지원
+</li>
+</ul>
+	</div>
+<div>
+
+Go 101의 저자인 Tapir는 2016년 7월부터 Go 101 시리즈 책들을 집필하고 go101.org 웹사이트를 유지 관리하고 있습니다.
+새로운 콘텐츠는 책과 웹사이트에 수시로 추가될 예정입니다.
+Tapir는 인디 게임 개발자이기도 합니다.
+<a href="https://www.tapirgames.com">Tapir의 게임</a>을 플레이하여 Go 101을 지원할 수도 있습니다.
+(안드로이드와 아이폰/아이패드용):
+<ul>
+<li>
+	<a href="https://www.tapirgames.com/App/Color-Infection">Color Infection</a> (★★★★★), 140개 이상의 단계로 이루어진 물리 기반의 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Rectangle-Pushers">Rectangle Pushers</a> (★★★★★), 2가지 모드와 104개 이상의 단계로 이루어진 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Let-Us-Play-With-Particles">Let's Play With Particles</a>, 세가지 미니 게임이 있는 캐주얼 액션 게임
+</li>
+</ul>
+</div>
+
+<a href="https://paypal.me/tapirliu">페이팔</a>을 통한 개인 기부도 환영합니다.</small></div>
+
+<hr>
+색인:
+
+
+<div id="book-index">
+
+<!-- kindle starts: 1 -->
+
+<ul class="index part">
+	<li><a class="index" href="101-about.html">Go 101에 대해</a> - 이 책이 쓰여진 이유</li>
+	<li><a class="index" href="acknowledgements.html">감사의 말</a></li>
+</ul>
+
+<ul class="index part">
+	<li><a class="index" href="introduction.html">Go 소개</a> - Go를 배우는 가치</li>
+	<li><a class="index" href="go-toolchain.html">Go 툴체인</a> - Go 프로그램을 컴파일하고 실행하는 방법</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 코드에 익숙해지기
+
+	<ul class="index chapters">
+	<li><a class="index" href="basic-code-elements-introduction.html">소스 코드 요소 소개</a></li>
+	<li><a class="index" href="keywords-and-identifiers.html">키워드와 식별자</a></li>
+	<li><a class="index" href="basic-types-and-value-literals.html">기본 자료형과 기본 값 리터럴</a></li>
+	<li><a class="index" href="constants-and-variables.html">상수와 변수</a> - 무형성(untyped) 값과 자료형 추론 소개를 포함</li>
+	<li><a class="index" href="operators.html">일반 연산자</a> - 더 많은 자료형 추론 규칙 소개를 포함</li>
+	<li><a class="index" href="function-declarations-and-calls.html">함수 선언과 호출</a></li>
+	<li><a class="index" href="packages-and-imports.html">코드 패키지와 패키지 들여오기</a></li>
+	<li><a class="index" href="expressions-and-statements.html">표현식, 구문과 단순 구문</a></li>
+	<li><a class="index" href="control-flows.html">기본 흐름 제어</a></li>
+	<li><a class="index" href="control-flows-more.html">고루틴, 지연된 함수 호출과 패닉/복구</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 자료형 체계
+
+	<ul class="index chapters">
+	<li><a class="index" href="type-system-overview.html">Go 자료형 체계 개요</a> - Go 프로그래밍 숙달을 위해 반드시 읽어봐야 하는</li>
+	<li><a class="index" href="pointer.html">포인터</a></li>
+	<li><a class="index" href="struct.html">구조체</a></li>
+	<li><a class="index" href="value-part.html">변수</a> - Go 변수에 대한 더 깊은 이해</li>
+	<li><a class="index" href="container.html">배열, 슬라이스와 맵</a> - 1급 객체 컨테이너 자료형</li>
+	<li><a class="index" href="string.html">문자열</a></li>
+	<li><a class="index" href="function.html">함수</a> - 함수 자료형과 값, 가변 인자 함수</li>
+	<li><a class="index" href="channel.html">채널</a> - Go에서 동시성 동기화를 하는 방법</li>
+	<li><a class="index" href="method.html">메서드</a></li>
+	<li><a class="index" href="interface.html">인터페이스</a> - 리플렉션과 다형성을 하는 값 상자</li>
+	<li><a class="index" href="type-embedding.html">자료형 임베딩</a> - 자료형을 확장하는 방법</li>
+	<li><a class="index" href="unsafe.html">자료형에 안전하지 않는 포인터</a></li>
+	<li><a class="index" href="generic.html">제네릭</a> - 합성 자료형의 사용과 읽는 법</li>
+	<li><a class="index" href="reflection.html">리플렉션</a> - <code>reflect</code> 표준 패키지</li>
+	</ul>
+</li>
+</ul>
+
+<!-- kindle ends: 1 -->
+
+<!-- kindle starts: 2 -->
+
+<ul class="index part">
+<li>
+특별 주제
+
+	<ul class="index chapters">
+	<li><a class="index" href="line-break-rules.html">개행 규칙</a></li>
+	<li><a class="index" href="defer-more.html">지연된 함수 호출 더 알아보기</a></li>
+	<li><a class="index" href="panic-and-recover-use-cases.html">패닉/복구 사용 사례</a></li>
+	<li><a class="index" href="panic-and-recover-more.html">패닉/복구 메커니즘에 대한 고찰</a> - 함수 호출 종료 단계를 포함</li>
+	<li><a class="index" href="blocks-and-scopes.html">코드 블록과 식별자 스코프</a></li>
+	<li><b class="index" id="i-evaluation-orders.html">표현식 평가 순서</b></li>
+	<li><a class="index" href="value-copy-cost.html">Go의 값 복사 비용</a></li>
+	<li><a class="index" href="bounds-check-elimination.html">경계 검사 제거(BCE)</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+동시성 프로그래밍
+
+	<ul class="index chapters">
+	<li><a class="index" href="concurrent-synchronization-overview.html">동시성 동기화 개요</a></li>
+	<li><a class="index" href="channel-use-cases.html">채널 사용 사례</a></li>
+	<li><a class="index" href="channel-closing.html">채널을 깔끔하게 닫는 방법</a></li>
+	<li><a class="index" href="concurrent-synchronization-more.html">기타 동시성 동기화 기술</a> - <code>sync</code> 표준 패키지</li>
+	<li><a class="index" href="concurrent-atomic-operation.html">원자적 연산</a> - <code>sync/atomic</code> 표준 패키지</li>
+	<li><a class="index" href="memory-model.html">Go의 메모리 순서 보장</a></li>
+	<li><a class="index" href="concurrent-common-mistakes.html">흔히들 저지르는 동시성 프로그래밍 실수들</a></li>
+	</ul>
+
+</li>
+</ul>
+
+
+<ul class="index part">
+<li>
+메모리 관련
+
+	<ul class="index chapters">
+	<li><a class="index" href="memory-block.html">메모리 블록</a></li>
+	<li><a class="index" href="memory-layout.html">메모리 레이아웃</a></li>
+	<li><a class="index" href="memory-leaking.html">메모리 누수 시나리오</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+일부 요약
+
+	<ul class="index chapters">
+	<li><a class="index" href="summaries.html">몇 가지 간단한 요약</a></li>
+	<li><a class="index" href="nil.html">Go의 <code>nil</code></a></li>
+	<li><a class="index" href="value-conversions-assignments-and-comparisons.html">값 변환, 할당과 비교 규칙</a></li>
+	<li><a class="index" href="exceptions.html">구문/의미 예외</a></li>
+	<!-- (to remove) for printing -->
+	<li><a class="index" href="details.html">Go Details 101</a></li>
+	<li><a class="index" href="unofficial-faq.html">Go FAQ 101</a></li>
+	<li><a class="index" href="tips.html">Go Tips 101</a></li>
+	<!-- (to remove) -->
+	</ul>
+
+</li>
+</ul>
+
+<!-- kindle ends: 2 -->
+
+<!-- kindle starts: 0 -->
+
+<ul class="index part">
+<li><a class="index" href="more.html">더 많은 토픽</a></li>
+</ul>
+
+<!-- kindle ends: 0 -->
+
+</div>
+
+
+
+
+
+
+
+
+		</div>
+	</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

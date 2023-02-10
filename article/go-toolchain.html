@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Golang online books, articles, tools, etc.">
+		<meta name="author" content="">
+		<meta name="go-version" content="go1.20">
+		<link rel="icon" href="/static/go101/images/101-v1.ico">
+		<link rel="apple-touch-icon" sizes="152x152" href="/static/go101/images/iphone-v1.jpeg">
+	
+		<title>The Go Toolchain -Go 101</title><link id="css-bs" href="/static/bootstrap/v4.0.3-dark/css/bootstrap.min.css" rel="stylesheet">
+		<link id="css-go101" href="/static/go101/css/v991-dark.css" rel="stylesheet">
+		<link id="css-prism" href="/static/prism/2020-08-03-dark/prism.css" rel="stylesheet">
+		<script id="js-prism" src="/static/prism/2020-08-03-dark/prism.js"></script>
+
+
+		<script src="/static/jquery/jquery.min-v1.11.2.js"></script>
+		<script src="/static/go101/js/v5.js"></script>
+		
+		
+		<style>
+		div, p, ul, li, td, th {line-height: 1.55;}
+		</style>
+
+		<script>
+		var theme = ""
+		</script>
+	</head>
+
+	<body>
+		<div class="container">
+
+		<div class="row nav-bar-with-borders">
+	<div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/"><small>Home</small></a> <span class="new-text"><sup>new!</sup></span>
+	</div><div class="col-xs-6 col-sm-4 nav-item-active">
+		<a href="/article/101.html"><small>Go 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/generics/101.html"><small>Go Generics 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/details-and-tips/101.html"><small>Go Details &amp; Tips 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/optimizations/101.html"><small>Go Optimizations 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/quizzes/101.html"><small>Go Quizzes 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go HowTo 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Practices 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Agg 101</small></div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/blog/101.html"><small>Go 101 Blog</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/apps-and-libs/101.html"><small>Go 101 Apps &amp; Libs</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;" id="theme-switch"><small>테마: 다크/라이트</small></div>
+
+</div>
+
+<div class="alert alert-warning text-center"><small>
+현재 3권의 신간들인 <a href="/optimizations/101.html">Go Optimizations 101</a>,
+<a href="/details-and-tips/101.html">Go Details &amp; Tips 101</a>
+과 <a href="/generics/101.html">Go Generics 101</a>이 출간되어 있습니다.
+Leanpub 서점에서 <a href="https://leanpub.com/b/go-optimizations-details-generics">번들</a>을 모두 구입하시는 방법이 비용 대비 효율이 가장 좋습니다.
+<p></p>
+Go에 대한 많은 정보들과 Go 101 책들의 최신 소식을 얻으시려면 Go 101 트위터 계정인 <a href="https://twitter.com/go100and1">@Go100and1</a>을
+팔로잉 해주세요.
+</small></div>
+<p>
+</p>
+
+
+
+<h1>The Go Toolchain</h1>
+
+
+
+<p>
+Currently, the tools in the official Go Toolchain (called Go Toolchain later)
+are the most used tools to develop Go projects.
+In Go 101 article series, all examples are compiled and verified with
+the standard Go compiler provided in Go Toolchain.
+</p>
+
+<p>
+This article will introduce how to setup the Go development environment
+and how to use the <code>go</code> command provided in Go Toolchain.
+Some other tools out of Go Toolchain will also be introduced.
+</p>
+
+<h3>Install Go Toolchain</h3>
+
+<div>
+<p>
+Please <a href="https://golang.org/doc/install">download</a> Go Toolchain
+and install it by following the instructions shown in the download page.
+</p>
+
+<p>
+The version of a Go Toolchain release is consistent with
+the highest Go language version the release supports.
+For example, Go Toolchain 1.20.x supports
+all Go language versions from 1.0 to Go 1.20.
+</p>
+
+<p>
+The path to the <code>bin</code> subfolder in Go Toolchain installation root path
+must be put in the <code>PATH</code> environment variable to execute the tools
+(through the <code>go</code> command) provided in Go Toolchain without inputting their full paths.
+If your Go Toolchain is installed through an installer or with a package manager, the path to
+the <code>bin</code> subfolder may have been already set in the <code>PATH</code>
+environment variable automatically for you.
+</p>
+
+<p>
+The recent Go Toolchain versions support a feature called modules to manage project dependencies.
+The feature was introduced experimentally in version 1.11
+and has been enabled by default since version 1.16.
+</p>
+
+There is an environment variable, <code>GOPATH</code>, we should be aware of,
+though we don't need to care too much about it.
+It is defaulted to the path to the <code>go</code> folder under the home directory of the current user.
+The <code>GOPATH</code> environment variable may list multiple paths if it is specified manually.
+Later, when the <code>GOPATH</code> folder is mentioned, it means the folder at
+the first path in the <code>GOPATH</code> environment variable.
+<ul>
+<li>
+	The <code>pkg</code> subfolder under the <code>GOPATH</code> folder is
+	used to store cached versions of Go modules (a Go module is a collection of Go packages)
+	depended by local Go projects.
+</li>
+<li>
+	There is a <code>GOBIN</code> environment variable which controls
+	where the Go program binary files generated by the <code>go install</code>
+	subcommand will be stored.
+	The value of the <code>GOBIN</code> environment variable is defaulted to
+	the path to <code>bin</code> subfolder under the <code>GOPATH</code> folder.
+	The <code>GOBIN</code> path should be set in the <code>PATH</code>
+	environment variable if you would run the generated Go program binary files
+	without specifying their full paths.
+</li>
+</ul>
+
+
+<!--
+<p>
+Earlier Go Toolchain versions might require <code>GOROOT</code> and
+<code>GOPATH</code> environment variables to be set.
+Recent Go Toolchain versions have no such requirements.
+The default value of the <code>GOPATH</code> environment variable is
+the path to the <code>go</code> folder under the home directory of the current user.
+<code>GOPATH</code> environment variable may list multiple paths.
+</p>
+
+<p>
+There is a <code>GOBIN</code> environment variable which controls
+where the binary files generated by some <code>go</code> subcommands,
+such as the <code>go install</code> subcommand (see below), will be stored.
+If the environment variable is not set, the <code>go</code> command will
+use the path to <code>bin</code> subfolder in the first path specified in the
+<code>GOPATH</code> environment variable to store the generated binary files.
+The path to the folder for storing the binary files should be set in the <code>PATH</code>
+environment variable to run the binary files without specifying their full paths.
+</p>
+
+
+
+<p>
+Before Go Toolchain 1.11, it is recommended to put all custom Go packages into the
+<code>src</code> subfolder of any path specified in the <code>GOPATH</code> environment variable,
+in particular when a Go project depends on some third party packages.
+Packages will be introduced in <a href="packages-and-imports.html">packages and imports</a> later.
+In Go Toolchain 1.11, the Go modules feature is 
+</p>
+
+<p>
+In Go Toolchain 1.11, an experimental feature, Go modules, is supported.
+The Go modules feature lets us put our Go projects freely in any folder.
+We can get more module related information from
+<a href="https://github.com/golang/go/wiki/Modules">this wiki page</a>.
+</p>
+
+<p>
+Note, since Go Toolchain 1.13,
+the Go modules feature becomes as the preferred mode (to the old <code>GOPATH</code> mode).
+The necessity and meaningfulness of the <code>GOPATH</code> environment variable
+will be weakened much, even be abolished eventually.
+On the other hand, the importance of the <code>GOBIN</code> environment variable will be promoted,
+for there is still a need to store the binary files produced by some <code>go</code> subcommands.
+</p>
+
+<p>
+Since Go Toolchain 1.16, the Go modules feature is enabled by default.
+</p>
+
+<p><i>
+(Before Go Toolchain 1.9, a <code>GOROOT</code> environment variable had to be configured
+as the root path of the Go Toolchain installation.
+<a href="https://golang.org/doc/go1.9#goroot">With Go Toolchain 1.9</a>,
+this environment variable became optional, and it is recommended to leave it unset.)
+</i></p>
+
+<p>
+Before Go Toolchain 1.8, a <code>GOPATH</code> environment variable must be set.
+<a href="https://golang.org/doc/go1.8#gopath">Since Go Toolchain 1.8</a>,
+the default value of this environment variable is the path of the <code>go</code>
+folder under the home directory of the current user.
+You may specify <code>GOPATH</code> manually in order to work with one (or more) different location(s).
+Yes, the <code>GOPATH</code> environment variable may list multiple paths.
+</p>
+-->
+
+</div>
+
+<h3>The Simplest Go Program</h3>
+
+<div>
+<p>
+Let's write a simple example and learn how to run simple Go programs.
+</p>
+
+The following program is the simplest Go program.
+<pre class="line-numbers must-line-numbers fixed-width"><code class="language-go">package main
+
+func main() {
+}
+</code></pre>
+
+<p>
+The words <code>package</code> and <code>func</code> are two keywords.
+The two <code>main</code> words are two identifiers.
+Keywords and identifiers are introduced in
+<a href="keywords-and-identifiers.html">a coming article</a>.
+</p>
+
+<p>
+The first line <code>package main</code> specifies the package name
+(<code>main</code> here) of the containing source file.
+</p>
+
+<p>
+The second line is a blank line for better readability.
+</p>
+
+<p>
+The remaining code declares a function
+which is also called <code>main</code>.
+This <code>main</code> function in a <code>main</code> package
+specifies the entry point of a program.
+(Note that some other user code might be executed
+before the <code>main</code> function gets invoked.)
+</p>
+
+</div>
+
+<h3>Run Go Programs</h3>
+
+<div>
+
+<p>
+Go Toolchain requires that Go source code file
+to have the extension <code>.go</code>.
+Here, we assume the above source code is saved in a file
+named <code>simplest-go-program.go</code>.
+</p>
+
+Open a terminal and change the current directory to the directory
+which contains the above source file, then run
+<pre class="output"><code>$ go run simplest-go-program.go
+</code></pre>
+
+<p>
+Nothing is output? Yes, this program outputs nothing.
+</p>
+
+<p>
+If there are some syntax errors in the source code,
+then these errors will be reported as compilation errors.
+</p>
+
+If multiple source files are in the <code>main</code> package of a program,
+then we should run the program with the following command
+<pre class="output"><code>$ go run .
+</code></pre>
+
+Note,
+<ul>
+<li>
+	the <code>go run</code> command is not recommended to compile and run large Go projects.
+	It is just a convenient way to run simple Go programs, like the ones in the Go 101 articles.
+	For large Go projects, please use the commands <code>go build</code> or <code>go install</code>
+	to build then run executable binary files instead.
+</li>
+<li>
+	each formal Go project supporting Go modules needs a <code>go.mod</code> file located in the root folder
+	of that project. The <code>go.mod</code> file can be generated by the <code>go mod init</code> subcommand (see below).
+</li>
+<li>
+	source files starting with <code>_</code> or <code>.</code> are ignored by Go Toolchain.
+</li>
+</ul>
+
+</div>
+
+<h3>More <code>go</code> Subcommands</h3>
+
+<div>
+<p>
+The three commands, <code>go run</code>, <code>go build</code> and <code>go install</code>,
+only output code syntax errors (if any).
+They don't (try to) output code warnings (a.k.a., possible code logic mistakes).
+We can use the <code>go vet</code> command to check and report such warnings.
+</p>
+
+<p>
+We can (and should often) use the <code>go fmt</code> command to format Go source code
+with a consistent coding style.
+</p>
+
+<p>
+We can use the <code>go test</code> command to run tests and benchmarks.
+</p>
+
+<p>
+We can use the <code>go doc</code> command to view Go documentation in terminal windows.
+</p>
+
+It is highly recommended to let your Go projects support the Go modules feature
+to ease dependency management. For projects supporting Go modules,
+<ul>
+<li>
+	the <code>go mod init example.com/myproject</code> command is used to
+	generated a <code>go.mod</code> file in the current directory, which will be viewed
+	as the root directory of a module called <code>example.com/myproject</code>.
+	The <code>go.mod</code> file will be used to record module dependencies. We can edit
+	the <code>go.mod</code> file manually or let the <code>go</code> subcommands to update it.
+</li>
+<li>
+	the <code>go mod tidy</code> command is used to add missing module dependencies into and
+	remove unused module dependencies from the <code>go.mod</code> file
+	by analyzing all the source code of the current project.
+</li>
+<li>
+	the <code>go get</code> command is used to add/upgrade/downgrade/remove a single dependency.
+	This command is used less frequently than the <code>go mod tidy</code> command.
+</li>
+</ul>
+
+<p>
+Since Go Toolchain 1.16, we can run <code>go install example.com/program@latest</code>
+to install the latest version of a third-party Go program (into the <code>GOBIN</code> folder).
+Before Go Toolchain 1.16, the corresponding command is <code>go get -u example.com/program</code>,
+which has been deprecated now.
+</p>
+
+<p>
+We can use the <code>go help aSubCommand</code> command to view the help message for a specified sub command.
+</p>
+
+<p>
+Run the <code>go</code> command without any arguments to show the supported subcommands.
+</p>
+
+<p>
+The Go 101 article series will not explain much more on how to use the tools provided in Go Toolchain.
+Please read the <a href="https://golang.org/cmd/go/">official documentation</a> for details.
+</p>
+</div>
+
+<a class="anchor" id="doc"></a>
+<h3>View Go Package Docs in Browsers</h3>
+
+<div>
+
+<p>
+We could use the docs and source view tool <a href="https://github.com/go101/golds"><b>Golds</b></a>
+(<code>go101.org/golds</code>) to locally view the docs of a specified Go project.
+This is not an official tool. It is developed by me (Tapir Liu).
+<b>Golds</b> supports rich code reading experiences (such as listing type implementation relations).
+After installing <b>Golds</b>, we can run <code>golds std ./...</code> to view the docs of
+standard packages and packages in the current folder.
+</p>
+
+<p>
+For official Go documentations, please visit <a href="https://go.dev">go.dev</a>.
+</p>
+
+</div>
+<hr>
+
+<div class="text-center"><a href="#i-go-toolchain.html">Index↡</a></div>
+
+
+
+<hr>
+
+<div id="contact" class="alert alert-success"><small>
+
+<p>
+The <b><i>Go 101</i></b> 프로젝트는 <a href="https://github.com/go101/go101">Github</a>
+에서 호스팅됩니다.
+오타, 문법 오류, 부정확한 표현, 설명 결함, 코드 버그, 끊어진 링크와 같은 모든
+종류의 실수에 대한 수정 사항을 제출하여 Go 101을 개선을 돕는 것은 언제나 환영합니다.
+</p>
+
+<p>
+주기적으로 Go에 대한 깊이 있는 정보를 얻고 싶다면 Go 101의 공식 트위터 계정인
+<a href="https://twitter.com/go100and1">@go100and1</a>을 팔로우하거나
+<a href="https://join.slack.com/t/go-101/shared_invite/zt-y2pvwg00-Oz7lDDJu44l~hZsFRUApiA">Go 101 슬랙 채널</a>에j가입해주세요.
+</p>
+
+</small></div>
+
+<div class="alert alert-warning"><small>
+
+
+<div id="ebooks">
+이 책의 디지털 버전은 아래와 같은 곳을 통해서 구매할 수 있습니다.
+<ul>
+<li>
+	<a href="https://leanpub.com/go101">Leanpub</a>,
+	<i>최소 19.99 달러</i>.
+</li>
+<li>
+	
+	아마존 킨들 스토어, <i>(현재는 사용 불가)</i>.
+</li>
+<li>
+	<a href="https://books.apple.com/book/id1459984231">애플 북 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://play.google.com/store/books/details?id=Dc1wEAAAQBAJ">구글 플레이 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://github.com/go101/go101/releases">무료 전자책</a>,
+	pdf, epub과 azw3 포맷을 지원
+</li>
+</ul>
+	</div>
+<div>
+
+Go 101의 저자인 Tapir는 2016년 7월부터 Go 101 시리즈 책들을 집필하고 go101.org 웹사이트를 유지 관리하고 있습니다.
+새로운 콘텐츠는 책과 웹사이트에 수시로 추가될 예정입니다.
+Tapir는 인디 게임 개발자이기도 합니다.
+<a href="https://www.tapirgames.com">Tapir의 게임</a>을 플레이하여 Go 101을 지원할 수도 있습니다.
+(안드로이드와 아이폰/아이패드용):
+<ul>
+<li>
+	<a href="https://www.tapirgames.com/App/Color-Infection">Color Infection</a> (★★★★★), 140개 이상의 단계로 이루어진 물리 기반의 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Rectangle-Pushers">Rectangle Pushers</a> (★★★★★), 2가지 모드와 104개 이상의 단계로 이루어진 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Let-Us-Play-With-Particles">Let's Play With Particles</a>, 세가지 미니 게임이 있는 캐주얼 액션 게임
+</li>
+</ul>
+</div>
+
+<a href="https://paypal.me/tapirliu">페이팔</a>을 통한 개인 기부도 환영합니다.</small></div>
+
+<hr>
+색인:
+
+
+<div id="book-index">
+
+<!-- kindle starts: 1 -->
+
+<ul class="index part">
+	<li><a class="index" href="101-about.html">Go 101에 대해</a> - 이 책이 쓰여진 이유</li>
+	<li><a class="index" href="acknowledgements.html">감사의 말</a></li>
+</ul>
+
+<ul class="index part">
+	<li><a class="index" href="introduction.html">Go 소개</a> - Go를 배우는 가치</li>
+	<li><b class="index" id="i-go-toolchain.html">Go 툴체인</b> - Go 프로그램을 컴파일하고 실행하는 방법</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 코드에 익숙해지기
+
+	<ul class="index chapters">
+	<li><a class="index" href="basic-code-elements-introduction.html">소스 코드 요소 소개</a></li>
+	<li><a class="index" href="keywords-and-identifiers.html">키워드와 식별자</a></li>
+	<li><a class="index" href="basic-types-and-value-literals.html">기본 자료형과 기본 값 리터럴</a></li>
+	<li><a class="index" href="constants-and-variables.html">상수와 변수</a> - 무형성(untyped) 값과 자료형 추론 소개를 포함</li>
+	<li><a class="index" href="operators.html">일반 연산자</a> - 더 많은 자료형 추론 규칙 소개를 포함</li>
+	<li><a class="index" href="function-declarations-and-calls.html">함수 선언과 호출</a></li>
+	<li><a class="index" href="packages-and-imports.html">코드 패키지와 패키지 들여오기</a></li>
+	<li><a class="index" href="expressions-and-statements.html">표현식, 구문과 단순 구문</a></li>
+	<li><a class="index" href="control-flows.html">기본 흐름 제어</a></li>
+	<li><a class="index" href="control-flows-more.html">고루틴, 지연된 함수 호출과 패닉/복구</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 자료형 체계
+
+	<ul class="index chapters">
+	<li><a class="index" href="type-system-overview.html">Go 자료형 체계 개요</a> - Go 프로그래밍 숙달을 위해 반드시 읽어봐야 하는</li>
+	<li><a class="index" href="pointer.html">포인터</a></li>
+	<li><a class="index" href="struct.html">구조체</a></li>
+	<li><a class="index" href="value-part.html">변수</a> - Go 변수에 대한 더 깊은 이해</li>
+	<li><a class="index" href="container.html">배열, 슬라이스와 맵</a> - 1급 객체 컨테이너 자료형</li>
+	<li><a class="index" href="string.html">문자열</a></li>
+	<li><a class="index" href="function.html">함수</a> - 함수 자료형과 값, 가변 인자 함수</li>
+	<li><a class="index" href="channel.html">채널</a> - Go에서 동시성 동기화를 하는 방법</li>
+	<li><a class="index" href="method.html">메서드</a></li>
+	<li><a class="index" href="interface.html">인터페이스</a> - 리플렉션과 다형성을 하는 값 상자</li>
+	<li><a class="index" href="type-embedding.html">자료형 임베딩</a> - 자료형을 확장하는 방법</li>
+	<li><a class="index" href="unsafe.html">자료형에 안전하지 않는 포인터</a></li>
+	<li><a class="index" href="generic.html">제네릭</a> - 합성 자료형의 사용과 읽는 법</li>
+	<li><a class="index" href="reflection.html">리플렉션</a> - <code>reflect</code> 표준 패키지</li>
+	</ul>
+</li>
+</ul>
+
+<!-- kindle ends: 1 -->
+
+<!-- kindle starts: 2 -->
+
+<ul class="index part">
+<li>
+특별 주제
+
+	<ul class="index chapters">
+	<li><a class="index" href="line-break-rules.html">개행 규칙</a></li>
+	<li><a class="index" href="defer-more.html">지연된 함수 호출 더 알아보기</a></li>
+	<li><a class="index" href="panic-and-recover-use-cases.html">패닉/복구 사용 사례</a></li>
+	<li><a class="index" href="panic-and-recover-more.html">패닉/복구 메커니즘에 대한 고찰</a> - 함수 호출 종료 단계를 포함</li>
+	<li><a class="index" href="blocks-and-scopes.html">코드 블록과 식별자 스코프</a></li>
+	<li><a class="index" href="evaluation-orders.html">표현식 평가 순서</a></li>
+	<li><a class="index" href="value-copy-cost.html">Go의 값 복사 비용</a></li>
+	<li><a class="index" href="bounds-check-elimination.html">경계 검사 제거(BCE)</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+동시성 프로그래밍
+
+	<ul class="index chapters">
+	<li><a class="index" href="concurrent-synchronization-overview.html">동시성 동기화 개요</a></li>
+	<li><a class="index" href="channel-use-cases.html">채널 사용 사례</a></li>
+	<li><a class="index" href="channel-closing.html">채널을 깔끔하게 닫는 방법</a></li>
+	<li><a class="index" href="concurrent-synchronization-more.html">기타 동시성 동기화 기술</a> - <code>sync</code> 표준 패키지</li>
+	<li><a class="index" href="concurrent-atomic-operation.html">원자적 연산</a> - <code>sync/atomic</code> 표준 패키지</li>
+	<li><a class="index" href="memory-model.html">Go의 메모리 순서 보장</a></li>
+	<li><a class="index" href="concurrent-common-mistakes.html">흔히들 저지르는 동시성 프로그래밍 실수들</a></li>
+	</ul>
+
+</li>
+</ul>
+
+
+<ul class="index part">
+<li>
+메모리 관련
+
+	<ul class="index chapters">
+	<li><a class="index" href="memory-block.html">메모리 블록</a></li>
+	<li><a class="index" href="memory-layout.html">메모리 레이아웃</a></li>
+	<li><a class="index" href="memory-leaking.html">메모리 누수 시나리오</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+일부 요약
+
+	<ul class="index chapters">
+	<li><a class="index" href="summaries.html">몇 가지 간단한 요약</a></li>
+	<li><a class="index" href="nil.html">Go의 <code>nil</code></a></li>
+	<li><a class="index" href="value-conversions-assignments-and-comparisons.html">값 변환, 할당과 비교 규칙</a></li>
+	<li><a class="index" href="exceptions.html">구문/의미 예외</a></li>
+	<!-- (to remove) for printing -->
+	<li><a class="index" href="details.html">Go Details 101</a></li>
+	<li><a class="index" href="unofficial-faq.html">Go FAQ 101</a></li>
+	<li><a class="index" href="tips.html">Go Tips 101</a></li>
+	<!-- (to remove) -->
+	</ul>
+
+</li>
+</ul>
+
+<!-- kindle ends: 2 -->
+
+<!-- kindle starts: 0 -->
+
+<ul class="index part">
+<li><a class="index" href="more.html">더 많은 토픽</a></li>
+</ul>
+
+<!-- kindle ends: 0 -->
+
+</div>
+
+
+
+
+
+
+
+
+		</div>
+	</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

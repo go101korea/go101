@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Golang online books, articles, tools, etc.">
+		<meta name="author" content="">
+		<meta name="go-version" content="go1.20">
+		<link rel="icon" href="/static/go101/images/101-v1.ico">
+		<link rel="apple-touch-icon" sizes="152x152" href="/static/go101/images/iphone-v1.jpeg">
+	
+		<title>Syntax/Semantics Exceptions in Go -Go 101</title><link id="css-bs" href="/static/bootstrap/v4.0.3-dark/css/bootstrap.min.css" rel="stylesheet">
+		<link id="css-go101" href="/static/go101/css/v991-dark.css" rel="stylesheet">
+		<link id="css-prism" href="/static/prism/2020-08-03-dark/prism.css" rel="stylesheet">
+		<script id="js-prism" src="/static/prism/2020-08-03-dark/prism.js"></script>
+
+
+		<script src="/static/jquery/jquery.min-v1.11.2.js"></script>
+		<script src="/static/go101/js/v5.js"></script>
+		
+		
+		<style>
+		div, p, ul, li, td, th {line-height: 1.55;}
+		</style>
+
+		<script>
+		var theme = ""
+		</script>
+	</head>
+
+	<body>
+		<div class="container">
+
+		<div class="row nav-bar-with-borders">
+	<div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/"><small>Home</small></a> <span class="new-text"><sup>new!</sup></span>
+	</div><div class="col-xs-6 col-sm-4 nav-item-active">
+		<a href="/article/101.html"><small>Go 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/generics/101.html"><small>Go Generics 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/details-and-tips/101.html"><small>Go Details &amp; Tips 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/optimizations/101.html"><small>Go Optimizations 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/quizzes/101.html"><small>Go Quizzes 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go HowTo 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Practices 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Agg 101</small></div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/blog/101.html"><small>Go 101 Blog</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/apps-and-libs/101.html"><small>Go 101 Apps &amp; Libs</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;" id="theme-switch"><small>테마: 다크/라이트</small></div>
+
+</div>
+
+<div class="alert alert-warning text-center"><small>
+현재 3권의 신간들인 <a href="/optimizations/101.html">Go Optimizations 101</a>,
+<a href="/details-and-tips/101.html">Go Details &amp; Tips 101</a>
+과 <a href="/generics/101.html">Go Generics 101</a>이 출간되어 있습니다.
+Leanpub 서점에서 <a href="https://leanpub.com/b/go-optimizations-details-generics">번들</a>을 모두 구입하시는 방법이 비용 대비 효율이 가장 좋습니다.
+<p></p>
+Go에 대한 많은 정보들과 Go 101 책들의 최신 소식을 얻으시려면 Go 101 트위터 계정인 <a href="https://twitter.com/go100and1">@Go100and1</a>을
+팔로잉 해주세요.
+</small></div>
+<p>
+</p>
+
+
+
+<h1>Syntax/Semantics Exceptions in Go</h1>
+
+
+
+<p>
+This article will list all kinds of syntax/semantics exceptions in Go.
+Some of these exceptions are syntactic sugars to make programming convenient,
+some are caused built-in generic privileges,
+some exists for history reasons, and some exists for other reasons in logic.
+</p>
+
+<a class="anchor" id="nest-function-calls"></a>
+<h3>Nested function calls</h3>
+
+<div>
+The basic rule:
+<div class="alert alert-info">
+If the number of the return results of a function call is not zero,
+and the return results can be used as the whole arguments of another function call,
+then the former function call can be nested in the latter function call,
+the former nested call can't mix up with other arguments of the latter nesting call.
+</div>
+
+Sugar:
+<div class="alert alert-success">
+If a function call returns exactly one result,
+then the function call can be always be used as a single-value argument in other function calls,
+the single-result function call can mix up with other arguments of the nesting function calls.
+</div>
+
+<!--
+Exception (before Go Toolchain 1.15):
+<div class="alert alert-success">
+For the standard Go compiler (but not for gccgo),
+the basic rule doesn't apply to nesting calls to built-in <code>print</code> and <code>println</code> functions.
+Calls to these functions can't nest multi-result function calls as arguments.
+</div>
+-->
+
+Example:
+<pre class="line-numbers"><code class="language-go">package main
+
+import (
+	"fmt"
+)
+
+func f0() float64 {return 1}
+func f1() (float64, float64) {return 1, 2}
+func f2(float64, float64) {}
+func f3(float64, float64, float64) {}
+func f4()(x, y []int) {return}
+func f5()(x map[int]int, y int) {return}
+
+type I interface {m()(float64, float64)}
+type T struct{}
+func (T) m()(float64, float64) {return 1, 2}
+
+func main() {
+	// These lines compile okay.
+	f2(f0(), 123)
+	f2(f1())
+	fmt.Println(f1())
+	_ = complex(f1())
+	_ = complex(T{}.m())
+	f2(I(T{}).m())
+
+	// These lines don't compile.
+	/*
+	f3(123, f1())
+	f3(f1(), 123)
+	*/
+
+	// This line compiles okay only since
+	// Go Toolchain 1.15.
+	println(f1())
+
+	// The following 3 lines compile okay
+	// only since Go Toolchain 1.13.
+	copy(f4())
+	delete(f5())
+	_ = complex(I(T{}).m())
+}
+</code></pre>
+</div>
+
+<!--
+<h3>Unused variables</h3>
+
+<div>
+The basic rule:
+<div class="alert alert-info">
+Local variables can't be declared but not used.
+</div>
+
+Exception:
+<div class="alert alert-success">
+Function parameter and result variables,
+which can also be viewed as local variables,
+are allowed to be not used.
+</div>
+</div>
+-->
+
+<h3>Select struct fields</h3>
+
+<div>
+The basic rule:
+<div class="alert alert-info">
+Pointer values have no fields.
+</div>
+
+Sugar:
+<div class="alert alert-success">
+We can select the fields of a struct value through pointers of the struct value.
+</div>
+
+Example:
+<pre class="line-numbers"><code class="language-go">package main
+
+type T struct {
+	x int
+}
+
+func main() {
+	var t T
+	var p = &t
+
+	p.x *= 2
+	// The above line is a sugar of the following line.
+	(*p).x *= 2
+}
+</code></pre>
+</div>
+
+<h3>Receiver arguments of method calls</h3>
+
+<div>
+The basic rule:
+<div class="alert alert-info">
+The methods explicitly declared for type <code>*T</code> are not methods of type <code>T</code> for sure.
+</div>
+
+Sugar:
+<div class="alert alert-success">
+Although the methods explicitly declared for type <code>*T</code> are not methods of type <code>T</code>,
+addressable values of type <code>T</code> can be used as the receiver arguments of calls to these methods.
+</div>
+
+Example:
+<pre class="line-numbers"><code class="language-go">package main
+
+type T struct {
+	x int
+}
+
+func (pt *T) Double() {
+	pt.x *= 2
+}
+
+func main() {
+	// T{3}.Double() // This line fails to compile.
+
+	var t = T{3}
+
+	t.Double() // t.x == 6 now
+	// The above line is a sugar of the following line.
+	(&t).Double() // t.x == 12 now
+}
+</code></pre>
+</div>
+
+<h3>Take addresses of composite literal values</h3>
+
+<div>
+The basic rule:
+<div class="alert alert-info">
+Literal values are unaddressable and unaddressable values can't be taken addresses.
+</div>
+
+Sugar:
+<div class="alert alert-success">
+Although composite literal values are not addressable, they can be taken addresses explicitly.
+</div>
+
+<p>
+Please read <a href="struct.html#take-composite-literal-address">structs</a>
+and <a href="container.html#take-composite-literal-address">containers</a> for details.
+</p>
+</div>
+
+<h3>Selectors on named one-Level pointers</h3>
+
+<div>
+The basic rule:
+<div class="alert alert-info">
+Generally, selectors can't be used on values of <a href="type-system-overview.html#underlying-type">named</a> pointer types.
+</div>
+
+Sugar:
+<div class="alert alert-info">
+If <code>x</code> is a value of a named one-level pointer type,
+and selector <code>(*x).f</code> is a legal selector,
+then the <code>x.f</code> is also a legal selector, it can be viewed as a shorthand of <code>(*x).f</code>.
+</div>
+
+<p>
+Selectors can never be used on values of <b>multi-level</b> pointer types,
+no matter whether the multi-level pointer types are named or not.
+</p>
+
+Exception of the sugar:
+<div class="alert alert-success">
+The sugar is only valid if <code>f</code> denotes a struct field,
+it is not valid if <code>f</code> denotes a method.
+</div>
+
+Example:
+<pre class="line-numbers"><code class="language-go">package main
+
+type T struct {
+	x int
+}
+
+func (T) y() {
+}
+
+type P *T
+type PP **T // a multi-level pointer type
+
+func main() {
+	var t T
+	var p P = &t
+	var pt = &t   // type of pt is *T
+	var ppt = &pt // type of ppt is **T
+	var pp PP = ppt
+	_ = pp
+
+	_ = (*p).x // legal
+	_ = p.x    // also legal (for x is a field)
+
+	_ = (*p).y // legal
+	// _ = p.y // illegal (for y is a method)
+
+	// Following ones are all illegal.
+	/*
+	_ = ppt.x
+	_ = ppt.y
+	_ = pp.x
+	_ = pp.y
+	*/
+}
+</code></pre>
+</div>
+
+<!--
+<h3>Precedence of unary operators</h3>
+
+<div>
+The basic rule:
+<div class="alert alert-info">
+For any operand, its post operator has a higher precedence than its pre operator if the post operator
+is not a <a href="https://golang.org/ref/spec#Operators">binary operator</a>.
+</div>
+
+Sugar:
+<div class="alert alert-success">
+Assume operand <code>ptr</code> is a pointer value, in <code>*ptr++</code>, operator <code>*</code> has
+a higher precedence than operator <code>++</code>, a.k.a., <code>*ptr++</code> is equivalent to
+<code>(*ptr)++</code>, for pointer arithmetic is not supported in Go.
+</div>
+
+Example:
+<pre class="line-numbers"><code class="language-go">package main
+
+import (
+	"fmt"
+)
+
+type T struct{}
+
+func (t T) M() *int {
+	var v = 123
+	return &v
+}
+
+func main() {
+	var t = &T{}
+	var a = *t.M()
+	var b = *(t.M())
+	// The above two lines are equivalent.
+	var c = (*t).M()
+	fmt.Printf("%T %T %T\n", a, b, c) // int int *int
+
+	var s = [...]int{0, 1, 2}
+	var u = &s[0]
+	var v = &(s[0])
+	// The above two lines are equivalent.
+	var w = (&s)[0]
+	fmt.Printf("%T %T %T\n", u, v, w) // *int *int int
+
+	// sugar
+
+	var x = new(int)
+	*x++ // *x == 1 now
+	// The Above line is a sugar for
+	(*x)++
+}
+</code></pre>
+</div>
+-->
+
+<h3>The addressability of a container and its elements</h3>
+
+<div>
+The basic rule:
+<div class="alert alert-info">
+If a container is addressable, then its elements are also addressable.
+</div>
+
+Exception:
+<div class="alert alert-success">
+Elements of a map are always unaddressable, even if the map itself is addressable.
+</div>
+
+Sugar:
+<div class="alert alert-success">
+Elements of a slice are always addressable, even if the slice itself is not addressable.
+</div>
+
+Example:
+<pre class="line-numbers"><code class="language-go">package main
+
+func main() {
+	var m = map[string]int{"abc": 123}
+	_ = &m // okay
+
+	// The exception:
+	// p = &m["abc"] // error: map elements are unaddressable
+
+	// The sugar:
+	f := func() []int { // return results are unaddressable
+		return []int{0, 1, 2}
+	}
+	// _ = &f() // error: f() is unaddressable
+	_ = &f()[2] // okay
+}
+</code></pre>
+</div>
+
+<h3>Modify unaddressable values</h3>
+
+<div>
+The basic rule:
+<div class="alert alert-info">
+Unaddressable values can't be modified.
+In other words, unaddressable values shouldn't appear in assignments as destination values.
+</div>
+
+Exception:
+<div class="alert alert-success">
+Although map element values are unaddressable, they can be modified
+and appear in assignments as destination values.
+(But map elements can't be modified partially,
+they can only be overwritten wholly, a.k.a., replaced.)
+</div>
+
+Example:
+<pre class="line-numbers"><code class="language-go">package main
+
+func main() {
+	type T struct {
+		x int
+	}
+
+	var mt = map[string]T{"abc": {123}}
+	// Map elements are unaddressable.
+	// _ = &mt["abc"] // error
+	// Partial modification is not allowed.
+	// mt["abc"].x = 456 // error
+	// It is ok to replace a map element as a whole.
+	mt["abc"] = T{x: 789}
+}
+</code></pre>
+</div>
+
+<h3>Function Parameters</h3>
+
+<div>
+The basic rule:
+<div class="alert alert-info">
+Each parameter is a value of some type.
+</div>
+
+Exception:
+<div class="alert alert-success">
+The first parameters of the built-in <code>make</code> and <code>new</code> functions are types.
+</div>
+
+</div>
+
+<h3>Function names in one package</h3>
+
+<div>
+The basic rule:
+<div class="alert alert-info">
+Names of declared functions can't be duplicated in one package.
+</div>
+
+Exception:
+<div class="alert alert-success">
+There can be multiple functions declared with names as <code>init</code>
+(and types as <code>func()</code>).
+</div>
+
+</div>
+
+<h3>Function calls</h3>
+
+<div>
+The basic rule:
+<div class="alert alert-info">
+Functions whose names are not the blank identifier can be called in user code.
+</div>
+
+Exception:
+<div class="alert alert-success">
+<code>init</code> functions can't be called in user code.
+</div>
+
+</div>
+
+<h3>Functions being used as values</h3>
+
+<div>
+The basic rule:
+<div class="alert alert-info">
+Declared functions can be used as function values.
+</div>
+
+<!--
+Exception 1:
+<div class="alert alert-success">
+None of the built-in functions, which are documented in the <code>builtin</code> and <code>unsafe</code>
+standard packages, can be used as function values.
+</div>
+
+	var _ = panic
+	var _ = unsafe.Sizeof
+-->
+
+Exception:
+<div class="alert alert-success">
+<code>init</code> functions can not be used as function values.
+</div>
+
+Example:
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+import "unsafe"
+
+func init() {}
+
+func main() {
+	// These ones are okay.
+	var _ = main
+	var _ = fmt.Println
+
+	// This one fails to compile.
+	var _ = init
+}
+</code></pre>
+</div>
+
+<a class="anchor" id="generic-arguments-passing"></a>
+<h3>The manners of type argument passing</h3>
+
+<div>
+The basic rule:
+<div class="alert alert-info">
+In a type argument list, all type arguments are enclosed in square brackets
+and they are seperated by commas in the list.
+</div>
+
+Exception:
+<div class="alert alert-success">
+The manners of type argument lists passed to built-in generic type instantiations
+vary in different forms. Each key type argument of instantiated map types is
+individually enclosed in square brackets. Other type arguments are not enclosed.
+The type argument of an instantiation of built-in <code>new</code> generic function is enclosed in parentheses.
+The type argument of an instantiation of the built-in <code>make</code> generic function is mixed with value arguments
+and these type and value arguments are enclosed in parentheses.
+</div>
+
+</div>
+
+<a class="anchor" id="discard-return-results"></a>
+<h3>Discard return values of function calls</h3>
+
+<div>
+
+The basic rule:
+<div class="alert alert-info">
+The return values of a function call can be discarded altogether.
+</div>
+
+Exception:
+<div class="alert alert-success">
+The return values of calls to the built-in functions
+which are documented in the <code>builtin</code> and <code>unsafe</code>
+standard packages, can't be discarded, if the called function has return results.
+</div>
+
+Exception in exception:
+<div class="alert alert-success">
+The return values of a call to the built-in
+<code>copy</code> and <code>recover</code> functions
+can be all discarded, even if the two functions have return results.
+</div>
+
+</div>
+
+<h3>Declared variables</h3>
+
+<div>
+The basic rule:
+<div class="alert alert-info">
+Declared variables are always addressable.
+</div>
+
+Exception:
+<div class="alert alert-success">
+The <a href="https://golang.org/pkg/builtin/#pkg-variables">predeclared <code>nil</code></a> variable is not addressable.
+</div>
+
+So, <code>nil</code> is an immutable variable.
+</div>
+
+<h3>Argument passing</h3>
+
+<div>
+The basic rule:
+<div class="alert alert-info">
+An argument can be passed to the corresponding function parameter
+only if the argument is assignable to the corresponding function parameter type.
+</div>
+
+Sugar:
+<div class="alert alert-success">
+If the first slice argument of a <code>copy</code> and <code>append</code> function call
+is a byte slice, then the second argument can be a string,
+whereas a string value is not assignable to the second parameter type (also a byte slice).
+(For an <code>append</code> call, assume the second argument is passed with the form <code>arg...</code>.)
+</div>
+
+Example:
+<pre class="line-numbers"><code class="language-go">package main
+
+func main() {
+	var bs = []byte{1, 2, 3}
+	var s = "xyz"
+
+	copy(bs, s)
+	// The above line is a sugar (and an optimization)
+	// for the following line.
+	copy(bs, []byte(s))
+
+	bs = append(bs, s...)
+	// The above line is a sugar (and an optimization)
+	// for the following line.
+	bs = append(bs, []byte(s)...)
+}
+</code></pre>
+</div>
+
+<h3>Comparisons</h3>
+
+<div>
+The basic rule:
+<div class="alert alert-info">
+Map, slice and function types don't support comparison.
+</div>
+
+Exception:
+<div class="alert alert-success">
+Map, slice and function values can be compared to the predeclared untyped <code>nil</code> identifier.
+</div>
+
+Example:
+<pre class="line-numbers"><code class="language-go">package main
+
+func main() {
+	var s1 = []int{1, 2, 3}
+	var s2 = []int{7, 8, 9}
+	//_ = s1 == s2 // error: slice values can't be compared
+	_ = s1 == nil // ok
+	_ = s2 == nil // ok
+
+	var m1 = map[string]int{}
+	var m2 = m1
+	// _ = m1 == m2 // error: map values can't be compared
+	_ = m1 == nil
+	_ = m2 == nil
+
+	var f1 = func(){}
+	var f2 = f1
+	// _ = f1 == f2 // error: functions can't be compared
+	_ = f1 == nil
+	_ = f2 == nil
+}
+</code></pre>
+</div>
+
+<h3>Comparisons 2</h3>
+
+<div>
+The basic rule:
+<div class="alert alert-info">
+If a value can be implicitly converted to a comparable type, then the value can be compared to the values of the comparable type.
+</div>
+
+Exception:
+<div class="alert alert-success">
+The values of a non-interface incomparable type can't be compared to values of an interface type,
+even if the non-interface incomparable type implements the interface type
+(so values of the non-interface incomparable type can be implicitly converted to the interface type).
+</div>
+
+Please read <a href="value-conversions-assignments-and-comparisons.html#comparison-rules">comparison rules</a> for examples.
+</div>
+
+<!--
+<h3>Comparing interface values</h3>
+
+<div>
+The basic rule:
+<div class="alert alert-info">
+Comparing interface values with incomparable dynamic values will panic.
+</div>
+
+Exception:
+<div class="alert alert-success">
+If the dynamic types of two interface values are not the same one,
+then comparing them will never panic,
+even if either of the two dynamic values are incomparable.
+</div>
+
+Example:
+<pre class="line-numbers"><code class="language-go">package main
+
+func main() {
+	var s = []int{1, 2, 3}
+	var m = map[string]int{}
+	var x interface{} = s
+	var y interface{} = m
+	var z interface{} = nil
+	// The dynamic values of x and y are both incomparable.
+	//_ = x == x // will panic
+	//_ = y == y // will panic
+	_ = x == z // false, will not panic
+	_ = x == y // false, will not panic
+}
+</code></pre>
+</div>
+-->
+
+<h3>Blank composite literals</h3>
+
+<div>
+The basic rule:
+<div class="alert alert-info">
+If the values of a type <code>T</code> can be represented with composite literals, then <code>T{}</code> is its zero value.
+</div>
+
+Exception:
+<div class="alert alert-success">
+For a map or a slice type <code>T</code>, <code>T{}</code> isn't its zero value.
+Its zero value is represented with <code>nil</code>.
+</div>
+
+Example:
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+func main() {
+	// new(T) returns the address of a zero value of type T.
+
+	type T0 struct {
+		x int
+	}
+	fmt.Println( T0{} == *new(T0) ) // true
+	type T1 [5]int
+	fmt.Println( T1{} == *new(T1) ) // true
+
+	type T2 []int
+	fmt.Println( T2{} == nil ) // false
+	type T3 map[int]int
+	fmt.Println( T3{} == nil ) // false
+}
+</code></pre>
+</div>
+
+<h3>Container element iterations</h3>
+
+<div>
+The basic rule:
+<div class="alert alert-info">
+Only container values can be ranged, the iterated values are container elements.
+The element key/index will also be returned alongside of each iterated element.
+</div>
+
+Exception 1:
+<div class="alert alert-success">
+The iterated values are runes if the ranged containers are strings, instead of the byte elements of strings.
+</div>
+
+Exception 2:
+<div class="alert alert-success">
+The element index (order) will not be returned alongside of each iterated element when iterating channels.
+</div>
+
+Sugar:
+<div class="alert alert-success">
+Array pointers can also be ranged to iterate array elements, though pointers are not containers.
+</div>
+
+</div>
+
+<h3>Methods of built-in types</h3>
+
+<div>
+The basic rule:
+<div class="alert alert-info">
+Generally, built-in types have no methods.
+</div>
+
+Exception:
+<div class="alert alert-success">
+The built-in <code>error</code> type has a <code>Error() string</code> method.
+</div>
+</div>
+
+<!--
+<h3>Identifier visibility</h3>
+
+<div>
+The basic rule:
+<div class="alert alert-info">
+The identifiers not starting with Unicode upper case letters can't be exported.
+</div>
+
+Exception:
+<div class="alert alert-success">
+Identifiers starting with Unicode lower case letter in the <code>builtin</code> package
+can be exported.
+</div>
+</div>
+-->
+
+<h3>Types of values</h3>
+
+<div>
+The basic rule:
+<div class="alert alert-info">
+Each value has either a type or a default type.
+</div>
+
+Exception:
+<div class="alert alert-success">
+Untyped <code>nil</code> has neither a type nor a default type.
+</div>
+
+</div>
+
+<h3>Constant values</h3>
+
+<div>
+The basic rule:
+<div class="alert alert-info">
+Constant values never change.
+Constants can be assigned to variables.
+</div>
+
+Exception:
+<div class="alert alert-success">
+Predeclared <code>iota</code> is a built-in constant which is bound with <code>0</code>,
+but its value is not constant. Its value will start from <code>0</code>
+and increase one constant specification by constant specification in a constant declaration,
+though the increments happen at compile time.
+</div>
+
+Exception 2:
+<div class="alert alert-success">
+<code>iota</code> can only be used within constant declarations.
+It can't be assigned to variables in variable declarations.
+</div>
+
+</div>
+
+<a class="anchor" id="behaviors-on-missing-optional-result"></a>
+<h3>Behavior change caused by discarding the optional evaluation results of expressions</h3>
+
+<div>
+The basic rule:
+<div class="alert alert-info">
+Whether or not the optional evaluation result of an expression presents will not affect program behavior.
+</div>
+
+Exception:
+<div class="alert alert-success">
+Missing the optional result value in a type assertion will make current goroutine panic if the type assertion fails.
+</div>
+
+Example:
+<pre class="line-numbers"><code class="language-go">package main
+
+func main() {
+	var ok bool
+
+	var m = map[int]int{}
+	_, ok = m[123] // will not panic
+	_ = m[123]     // will not panic
+
+	var c = make(chan int, 2)
+	c <- 123
+	close(c)
+	_, ok = <-c // will not panic
+	_ = <-c     // will not panic
+
+	var v interface{} = "abc"
+	_, ok = v.(int) // will not panic
+	_ = v.(int)     // will panic!
+}
+</code></pre>
+
+</div>
+
+<a class="anchor" id="code-block-following-else"></a>
+<h3><code>else</code> keyword followed by a code block</h3>
+
+<div>
+The basic rule:
+<div class="alert alert-info">
+The <code>else</code> keyword must be followed by an explicit code block <code>{...}</code>.
+</div>
+
+Sugar:
+<div class="alert alert-success">
+The <code>else</code> keyword may be followed by a <code>if</code> code block (which is implicit).
+</div>
+
+For example, in the following code, function <code>foo</code> compiles okay, but function <code>bar</code> doesn't.
+<pre class="line-numbers"><code class="language-go">func f() []int {
+	return nil
+}
+
+func foo() {
+	if vs := f(); len(vs) == 0 {
+	} else if len(vs) == 1 {
+	}
+
+	if vs := f(); len(vs) == 0 {
+	} else {
+		switch {
+		case len(vs) == 1:
+		default:
+		}
+	}
+	
+	if vs := f(); len(vs) == 0 {
+	} else {
+		for _, _ = range vs {
+		}
+	}
+}
+
+func bar() {
+	if vs := f(); len(vs) == 0 {
+	} else switch { // error
+	case len(vs) == 1:
+	default:
+	}
+	
+	if vs := f(); len(vs) == 0 {
+	} else for _, _ = range vs { // error
+	}
+}
+</code></pre>
+
+</div>
+
+
+<hr>
+
+<div class="text-center"><a href="#i-exceptions.html">Index↡</a></div>
+
+
+
+<hr>
+
+<div id="contact" class="alert alert-success"><small>
+
+<p>
+The <b><i>Go 101</i></b> 프로젝트는 <a href="https://github.com/go101/go101">Github</a>
+에서 호스팅됩니다.
+오타, 문법 오류, 부정확한 표현, 설명 결함, 코드 버그, 끊어진 링크와 같은 모든
+종류의 실수에 대한 수정 사항을 제출하여 Go 101을 개선을 돕는 것은 언제나 환영합니다.
+</p>
+
+<p>
+주기적으로 Go에 대한 깊이 있는 정보를 얻고 싶다면 Go 101의 공식 트위터 계정인
+<a href="https://twitter.com/go100and1">@go100and1</a>을 팔로우하거나
+<a href="https://join.slack.com/t/go-101/shared_invite/zt-y2pvwg00-Oz7lDDJu44l~hZsFRUApiA">Go 101 슬랙 채널</a>에j가입해주세요.
+</p>
+
+</small></div>
+
+<div class="alert alert-warning"><small>
+
+
+<div id="ebooks">
+이 책의 디지털 버전은 아래와 같은 곳을 통해서 구매할 수 있습니다.
+<ul>
+<li>
+	<a href="https://leanpub.com/go101">Leanpub</a>,
+	<i>최소 19.99 달러</i>.
+</li>
+<li>
+	
+	아마존 킨들 스토어, <i>(현재는 사용 불가)</i>.
+</li>
+<li>
+	<a href="https://books.apple.com/book/id1459984231">애플 북 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://play.google.com/store/books/details?id=Dc1wEAAAQBAJ">구글 플레이 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://github.com/go101/go101/releases">무료 전자책</a>,
+	pdf, epub과 azw3 포맷을 지원
+</li>
+</ul>
+	</div>
+<div>
+
+Go 101의 저자인 Tapir는 2016년 7월부터 Go 101 시리즈 책들을 집필하고 go101.org 웹사이트를 유지 관리하고 있습니다.
+새로운 콘텐츠는 책과 웹사이트에 수시로 추가될 예정입니다.
+Tapir는 인디 게임 개발자이기도 합니다.
+<a href="https://www.tapirgames.com">Tapir의 게임</a>을 플레이하여 Go 101을 지원할 수도 있습니다.
+(안드로이드와 아이폰/아이패드용):
+<ul>
+<li>
+	<a href="https://www.tapirgames.com/App/Color-Infection">Color Infection</a> (★★★★★), 140개 이상의 단계로 이루어진 물리 기반의 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Rectangle-Pushers">Rectangle Pushers</a> (★★★★★), 2가지 모드와 104개 이상의 단계로 이루어진 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Let-Us-Play-With-Particles">Let's Play With Particles</a>, 세가지 미니 게임이 있는 캐주얼 액션 게임
+</li>
+</ul>
+</div>
+
+<a href="https://paypal.me/tapirliu">페이팔</a>을 통한 개인 기부도 환영합니다.</small></div>
+
+<hr>
+색인:
+
+
+<div id="book-index">
+
+<!-- kindle starts: 1 -->
+
+<ul class="index part">
+	<li><a class="index" href="101-about.html">Go 101에 대해</a> - 이 책이 쓰여진 이유</li>
+	<li><a class="index" href="acknowledgements.html">감사의 말</a></li>
+</ul>
+
+<ul class="index part">
+	<li><a class="index" href="introduction.html">Go 소개</a> - Go를 배우는 가치</li>
+	<li><a class="index" href="go-toolchain.html">Go 툴체인</a> - Go 프로그램을 컴파일하고 실행하는 방법</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 코드에 익숙해지기
+
+	<ul class="index chapters">
+	<li><a class="index" href="basic-code-elements-introduction.html">소스 코드 요소 소개</a></li>
+	<li><a class="index" href="keywords-and-identifiers.html">키워드와 식별자</a></li>
+	<li><a class="index" href="basic-types-and-value-literals.html">기본 자료형과 기본 값 리터럴</a></li>
+	<li><a class="index" href="constants-and-variables.html">상수와 변수</a> - 무형성(untyped) 값과 자료형 추론 소개를 포함</li>
+	<li><a class="index" href="operators.html">일반 연산자</a> - 더 많은 자료형 추론 규칙 소개를 포함</li>
+	<li><a class="index" href="function-declarations-and-calls.html">함수 선언과 호출</a></li>
+	<li><a class="index" href="packages-and-imports.html">코드 패키지와 패키지 들여오기</a></li>
+	<li><a class="index" href="expressions-and-statements.html">표현식, 구문과 단순 구문</a></li>
+	<li><a class="index" href="control-flows.html">기본 흐름 제어</a></li>
+	<li><a class="index" href="control-flows-more.html">고루틴, 지연된 함수 호출과 패닉/복구</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 자료형 체계
+
+	<ul class="index chapters">
+	<li><a class="index" href="type-system-overview.html">Go 자료형 체계 개요</a> - Go 프로그래밍 숙달을 위해 반드시 읽어봐야 하는</li>
+	<li><a class="index" href="pointer.html">포인터</a></li>
+	<li><a class="index" href="struct.html">구조체</a></li>
+	<li><a class="index" href="value-part.html">변수</a> - Go 변수에 대한 더 깊은 이해</li>
+	<li><a class="index" href="container.html">배열, 슬라이스와 맵</a> - 1급 객체 컨테이너 자료형</li>
+	<li><a class="index" href="string.html">문자열</a></li>
+	<li><a class="index" href="function.html">함수</a> - 함수 자료형과 값, 가변 인자 함수</li>
+	<li><a class="index" href="channel.html">채널</a> - Go에서 동시성 동기화를 하는 방법</li>
+	<li><a class="index" href="method.html">메서드</a></li>
+	<li><a class="index" href="interface.html">인터페이스</a> - 리플렉션과 다형성을 하는 값 상자</li>
+	<li><a class="index" href="type-embedding.html">자료형 임베딩</a> - 자료형을 확장하는 방법</li>
+	<li><a class="index" href="unsafe.html">자료형에 안전하지 않는 포인터</a></li>
+	<li><a class="index" href="generic.html">제네릭</a> - 합성 자료형의 사용과 읽는 법</li>
+	<li><a class="index" href="reflection.html">리플렉션</a> - <code>reflect</code> 표준 패키지</li>
+	</ul>
+</li>
+</ul>
+
+<!-- kindle ends: 1 -->
+
+<!-- kindle starts: 2 -->
+
+<ul class="index part">
+<li>
+특별 주제
+
+	<ul class="index chapters">
+	<li><a class="index" href="line-break-rules.html">개행 규칙</a></li>
+	<li><a class="index" href="defer-more.html">지연된 함수 호출 더 알아보기</a></li>
+	<li><a class="index" href="panic-and-recover-use-cases.html">패닉/복구 사용 사례</a></li>
+	<li><a class="index" href="panic-and-recover-more.html">패닉/복구 메커니즘에 대한 고찰</a> - 함수 호출 종료 단계를 포함</li>
+	<li><a class="index" href="blocks-and-scopes.html">코드 블록과 식별자 스코프</a></li>
+	<li><a class="index" href="evaluation-orders.html">표현식 평가 순서</a></li>
+	<li><a class="index" href="value-copy-cost.html">Go의 값 복사 비용</a></li>
+	<li><a class="index" href="bounds-check-elimination.html">경계 검사 제거(BCE)</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+동시성 프로그래밍
+
+	<ul class="index chapters">
+	<li><a class="index" href="concurrent-synchronization-overview.html">동시성 동기화 개요</a></li>
+	<li><a class="index" href="channel-use-cases.html">채널 사용 사례</a></li>
+	<li><a class="index" href="channel-closing.html">채널을 깔끔하게 닫는 방법</a></li>
+	<li><a class="index" href="concurrent-synchronization-more.html">기타 동시성 동기화 기술</a> - <code>sync</code> 표준 패키지</li>
+	<li><a class="index" href="concurrent-atomic-operation.html">원자적 연산</a> - <code>sync/atomic</code> 표준 패키지</li>
+	<li><a class="index" href="memory-model.html">Go의 메모리 순서 보장</a></li>
+	<li><a class="index" href="concurrent-common-mistakes.html">흔히들 저지르는 동시성 프로그래밍 실수들</a></li>
+	</ul>
+
+</li>
+</ul>
+
+
+<ul class="index part">
+<li>
+메모리 관련
+
+	<ul class="index chapters">
+	<li><a class="index" href="memory-block.html">메모리 블록</a></li>
+	<li><a class="index" href="memory-layout.html">메모리 레이아웃</a></li>
+	<li><a class="index" href="memory-leaking.html">메모리 누수 시나리오</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+일부 요약
+
+	<ul class="index chapters">
+	<li><a class="index" href="summaries.html">몇 가지 간단한 요약</a></li>
+	<li><a class="index" href="nil.html">Go의 <code>nil</code></a></li>
+	<li><a class="index" href="value-conversions-assignments-and-comparisons.html">값 변환, 할당과 비교 규칙</a></li>
+	<li><b class="index" id="i-exceptions.html">구문/의미 예외</b></li>
+	<!-- (to remove) for printing -->
+	<li><a class="index" href="details.html">Go Details 101</a></li>
+	<li><a class="index" href="unofficial-faq.html">Go FAQ 101</a></li>
+	<li><a class="index" href="tips.html">Go Tips 101</a></li>
+	<!-- (to remove) -->
+	</ul>
+
+</li>
+</ul>
+
+<!-- kindle ends: 2 -->
+
+<!-- kindle starts: 0 -->
+
+<ul class="index part">
+<li><a class="index" href="more.html">더 많은 토픽</a></li>
+</ul>
+
+<!-- kindle ends: 0 -->
+
+</div>
+
+
+
+
+
+
+
+
+		</div>
+	</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

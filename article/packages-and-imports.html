@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Golang online books, articles, tools, etc.">
+		<meta name="author" content="">
+		<meta name="go-version" content="go1.20">
+		<link rel="icon" href="/static/go101/images/101-v1.ico">
+		<link rel="apple-touch-icon" sizes="152x152" href="/static/go101/images/iphone-v1.jpeg">
+	
+		<title>Code Packages and Package Imports -Go 101</title><link id="css-bs" href="/static/bootstrap/v4.0.3-dark/css/bootstrap.min.css" rel="stylesheet">
+		<link id="css-go101" href="/static/go101/css/v991-dark.css" rel="stylesheet">
+		<link id="css-prism" href="/static/prism/2020-08-03-dark/prism.css" rel="stylesheet">
+		<script id="js-prism" src="/static/prism/2020-08-03-dark/prism.js"></script>
+
+
+		<script src="/static/jquery/jquery.min-v1.11.2.js"></script>
+		<script src="/static/go101/js/v5.js"></script>
+		
+		
+		<style>
+		div, p, ul, li, td, th {line-height: 1.55;}
+		</style>
+
+		<script>
+		var theme = ""
+		</script>
+	</head>
+
+	<body>
+		<div class="container">
+
+		<div class="row nav-bar-with-borders">
+	<div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/"><small>Home</small></a> <span class="new-text"><sup>new!</sup></span>
+	</div><div class="col-xs-6 col-sm-4 nav-item-active">
+		<a href="/article/101.html"><small>Go 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/generics/101.html"><small>Go Generics 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/details-and-tips/101.html"><small>Go Details &amp; Tips 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/optimizations/101.html"><small>Go Optimizations 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/quizzes/101.html"><small>Go Quizzes 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go HowTo 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Practices 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Agg 101</small></div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/blog/101.html"><small>Go 101 Blog</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/apps-and-libs/101.html"><small>Go 101 Apps &amp; Libs</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;" id="theme-switch"><small>테마: 다크/라이트</small></div>
+
+</div>
+
+<div class="alert alert-warning text-center"><small>
+현재 3권의 신간들인 <a href="/optimizations/101.html">Go Optimizations 101</a>,
+<a href="/details-and-tips/101.html">Go Details &amp; Tips 101</a>
+과 <a href="/generics/101.html">Go Generics 101</a>이 출간되어 있습니다.
+Leanpub 서점에서 <a href="https://leanpub.com/b/go-optimizations-details-generics">번들</a>을 모두 구입하시는 방법이 비용 대비 효율이 가장 좋습니다.
+<p></p>
+Go에 대한 많은 정보들과 Go 101 책들의 최신 소식을 얻으시려면 Go 101 트위터 계정인 <a href="https://twitter.com/go100and1">@Go100and1</a>을
+팔로잉 해주세요.
+</small></div>
+<p>
+</p>
+
+
+
+<h1>Code Packages and Package Imports</h1>
+
+
+
+<p>
+Like many modern programming languages,
+Go code is also organized as code packages.
+To use the exported code elements (functions, types, variables and named constants,
+etc) in a specified package, the package must first be imported,
+except the <code>builtin</code> standard code package (which is a universe package).
+This article will explain code packages and package imports in Go.
+</p>
+
+<a class="anchor" id="import"></a>
+<h3>Introduction of Package Import</h3>
+
+<div>
+Let's view a small program which imports a standard code package.
+(Assume the source code of this program is stored in a file named <code>simple-import-demo.go</code>.)
+
+<pre class="line-numbers must-line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+func main() {
+	fmt.Println("Go has", 25, "keywords.")
+}
+</code></pre>
+
+Some explanations:
+<ul>
+<li>
+	The first line specifies the name of the package containing the source file <code>simple-import-demo.go</code>.
+	The <code>main</code> entry function of a program must be put in a package named <code>main</code>.
+</li>
+<li>
+	The third line imports the <code>fmt</code> standard package by using the <code>import</code> is a keyword.
+	The identifier <code>fmt</code> is the package name.
+	It is also used as the import name of, and represents, this standard package in the scope of containing source file.
+	(Import names will be explained a below section.)
+	There are many format functions declared in this standard package for other packages to use.
+	The <code>Println</code> function is one of them.
+	It will print the string representations of
+	an arbitrary number of arguments to the standard output.
+</li>
+<li>
+	The sixth line calls the <code>Println</code> function.
+	Note that the function name is prefixed with a <code>fmt.</code> in the call,
+	where <code>fmt</code> is the name of the package which contains the called function.
+	The form <code>aImportName.AnExportedIdentifier</code> is called a
+	<a href="https://golang.org/ref/spec#Qualified_identifiers">qualified identifier</a>.
+	<code>AnExportedIdentifier</code> is called an unqualified identifier.
+</li>
+<li>
+	A <code>fmt.Println</code> function call has no requirements
+	for its arguments, so in this program, its three arguments
+	will be deduced as values of their respective default types,
+	<code>string</code>, <code>int</code> and <code>string</code>.
+</li>
+<li>
+	For each <code>fmt.Println</code> call,
+	a space character is inserted between
+	each two consecutive string representations
+	and a newline character is printed at the end.
+</li>
+</ul>
+
+Running this program, you will get the following output:
+<pre class="output"><code>$ go run simple-import-demo.go
+Go has 25 keywords.
+</code></pre>
+
+<p>
+Please note, only exported code elements in a package can be used
+in the source file which imports the package.
+An exported code element uses an
+<a href="keywords-and-identifiers.html#identifier">exported identifier</a> as its name.
+For example, the first character of the identifier <code>Println</code>
+is an upper case letter (so the <code>Println</code> function is exported),
+which is why the <code>Println</code> function
+declared in the <code>fmt</code> standard package can be used
+in the above example program.
+</p>
+
+<p>
+The built-in functions, <code>print</code> and <code>println</code>,
+have similar functionalities as the corresponding functions in the
+<code>fmt</code> standard package.
+Built-in functions can be used without importing any packages.
+</p>
+
+<p>
+Note, the two built-in functions, <code>print</code> and <code>println</code>,
+are not recommended to be used in the production environment,
+for they are not guaranteed to stay in the future Go versions.
+</p>
+
+<p>
+All standard packages are listed <a href="https://golang.org/pkg/">here</a>.
+We can also <a href="go-toolchain.html#doc">run a local server</a>
+to view Go documentation.
+</p>
+
+<p>
+A package import is also called an import declaration formally in Go.
+An import declaration is only visible to the source file which contains the import declaration.
+It is not visible to other source files in the same package.
+</p>
+
+Let's view another example:
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+import "math/rand"
+
+func main() {
+	fmt.Printf("Next pseudo-random number is %v.\n", rand.Uint32())
+}
+</code></pre>
+
+<p>
+This example imports one more standard package, the <code>math/rand</code> package,
+which is a sub-package of the <code>math</code> standard package.
+This package provides some functions to produce pseudo-random numbers.
+</p>
+
+Some explanations:
+<ul>
+<li>
+	In this example, the package name <code>rand</code> is used as the import name
+	of the imported <code>math/rand</code> standard package.
+	A <code>rand.Uint32()</code> call will return
+	a random <code>uint32</code> integer number.
+</li>
+<li>
+	<code>Printf</code> is another commonly used function
+	in the <code>fmt</code> standard package.
+	A call to the <code>Printf</code> function must take at least one argument.
+	The first argument of a <code>Printf</code> function call must be a <code>string</code> value,
+	which specifies the format of the printed result.
+	The <code>%v</code> in the first argument is called a format verb,
+	it will be replaced with the string representation of the second argument.
+	As we have learned in the article
+	<a href="basic-types-and-value-literals.html">basic types and their
+	literals</a>, the <code>\n</code> in a double-quoted
+	string literal will be escaped as a newline character.
+</li>
+</ul>
+
+The above program will always output:
+<pre class="output"><code>Next pseudo-random number is 2596996162.
+</code></pre>
+
+<p>
+Note: before Go 1.20,
+if we expect the above program to produce a different random number at each run,
+we should set a different seed by calling the <code>rand.Seed</code> function
+when the program just starts.
+</p>
+
+<p>
+If multiple packages are imported into a source file,
+we can group them in one import declaration by enclosing
+them in a <code>()</code>.
+</p>
+
+Example:
+<pre class="line-numbers"><code class="language-go">package main
+
+// Multiple packages can be imported together.
+import (
+	"fmt"
+	"math/rand"
+	"time"
+)
+
+func main() {
+	// Set the random seed (only needed before Go 1.20).
+	rand.Seed(time.Now().UnixNano())
+	fmt.Printf("Next pseudo-random number is %v.\n", rand.Uint32())
+}
+</code></pre>
+
+Some explanations:
+<ul>
+<li>
+	this example imports one more package,
+	the <code>time</code> standard package,
+	which provides many time related utilities.
+</li>
+<li>
+	function <code>time.Now()</code> returns the current time,
+	as a value of type <code>time.Time</code>.
+</li>
+<li>
+	<code>UnixNano</code> is a method of the <code>time.Time</code> type.
+	The method call <code>aTime.UnixNano()</code> returns the number of nanoseconds
+	elapsed since January 1, 1970 UTC to the time denoted by <code>aTime</code>.
+	The return result is a value of type <code>int64</code>,
+	which is also the parameter type of the <code>rand.Seed</code> function
+	(note: the <code>rand.Seed</code> function has been deprecated since Go 1.20).
+	Methods are special functions. We can learn methods in the article
+	<a href="method.html">methods in Go</a> for details later.
+</li>
+</ul>
+
+</div>
+
+<h3>More About <code>fmt.Printf</code> Format Verbs</h3>
+
+<p>
+As the above has mentioned, if there is one format verb in the first argument
+of a <code>fmt.Printf</code> call, it will be replaced with the string
+representation of the second argument.
+In fact, there can be multiple format verbs in the first <code>string</code>
+argument. The second format verb will be replaced with the string representation
+of the third argument, and so on.
+</p>
+
+<div>
+In Go 101, only the following listed format verbs will be used.
+<ul>
+<li>
+	<code>%v</code>, which will be replaced with the general string representation of the corresponding argument.
+</li>
+<li>
+	<code>%T</code>, which will be replaced with the type name or type literal of the corresponding argument.
+</li>
+<li>
+	<code>%x</code>, which will be replaced with the hex string representation of the corresponding argument.
+	Note, the hex string representations for values of some kinds of types are not defined.
+	Generally, the corresponding arguments of <code>%x</code> should be strings, integers,
+	integer arrays or integer slices (arrays and slices will be explained in a later article).
+</li>
+<li>
+	<code>%s</code>, which will be replaced with the string representation of the corresponding argument.
+	The corresponding argument should be a string or byte slice.
+</li>
+<li>
+	Format verb <code>%%</code> represents a percent sign.
+</li>
+</ul>
+
+An example:
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+func main() {
+	a, b := 123, "Go"
+	fmt.Printf("a == %v == 0x%x, b == %s\n", a, a, b)
+	fmt.Printf("type of a: %T, type of b: %T\n", a, b)
+	fmt.Printf("1%% 50%% 99%%\n")
+}
+</code></pre>
+
+Output:
+<pre class="output"><code>a == 123 == 0x7b, b == Go
+type of a: int, type of b: string
+1% 50% 99%
+</code></pre>
+
+<p>
+</p>
+
+<p>
+For more <code>Printf</code> format verbs, please read
+the online <a href="https://golang.org/pkg/fmt/"><code>fmt</code> package documentation</a>,
+or view the same documentation by running a local documentation server.
+We can also run <code>go doc fmt</code> to view the documentation of the <code>fmt</code> standard package,
+and run <code>go doc fmt.Printf</code> to view the documentation of the <code>fmt.Printf</code> function,
+in a terminal.
+</p>
+</div>
+
+<a class="anchor" id="package"></a>
+<h3>Package Folder, Package Import Path and Package Dependencies</h3>
+
+<div>
+<p>
+A code package may consist of several source files.
+These source files are located in the same folder.
+The source files in a folder (not including subfolders) must belong to the same package.
+So, a folder corresponds to a code package, and vice versa.
+The folder containing the source files of a code package is called the folder of the package.
+</p>
+
+<p>
+For Go Toolchain, a package whose import path containing an <code>internal</code> folder name
+is viewed as a special package. It can only be imported by the packages
+in and under the direct parent directory of the <code>internal</code> folder.
+For example, package <code>.../a/b/c/internal/d/e/f</code> and <code>.../a/b/c/internal</code>
+can only be imported by the packages whose import paths have a <code>.../a/b/c</code> prefix.
+</p>
+
+<!--
+<p>
+Depending on different scenarios, a folder with name <code>vendor</code> might be also viewed
+as a special package folder. The following paragraphs will explain when this happens.
+</p>
+
+<p>
+Go Toolchain 1.11 introduced a modules feature.
+A module can be viewed as a collection of packages which have a common root (a package tree).
+Each module is associated with an root import path and
+<a href="https://semver.org/">a semantic version</a>.
+The major version should be contained in the root import path,
+execpt the <code>v0</code> or <code>v1</code> major versions.
+Modules with different root import paths are viewed as different modules.
+</p>
+
+<p>
+Go Toolchain 1.11 also introduced a <code>GO111MODULE</code> environment variable.
+Its value can be <code>auto</code>, <code>on</code> and <code>off</code>.
+Up to now (Go Toolchain v1.15), its default (and recommended) value is <code>auto</code>.
+By context, different Go Toolchain versions interpret <code>auto</code>
+as either <code>on</code> or <code>off</code> by different rules.
+Please check <a href="https://github.com/golang/go/wiki/Modules">the official wiki</a> for details.
+</p>
+
+<p>
+If a package is contained within a <code>GOPATH/src</code> directory,
+and the modules feature is off, then its import path is the relative path to
+either the <code>GOPATH/src</code> directory or the closest <code>vendor</code> folder
+which containing the package.
+</p>
+
+For example, when the modules feature is off, then for the following hierarchical directory structure,
+<ul>
+<li>
+	the import paths of the two <code>foo</code> packages are both <code>w/foo</code>.
+</li>
+<li>
+	the import paths of the <code>x</code>, <code>y</code> and <code>z</code> packages
+	are <code>x</code>, <code>x/y</code> and <code>x/z</code>, respectively.
+</li>
+</ul>
+
+Note,
+<ul>
+<li>
+	when the file <code>y.go</code> imports a package with import path as <code>w/foo</code>,
+	the imported package is the package with folder <code>GOPATH/src/x/y/vendor/w/foo</code>.
+</li>
+<li>
+	when the <code>x.go</code> or <code>z.go</code> file imports a package with import path <code>w/foo</code>,
+	the imported package is the package with folder <code>GOPATH/src/x/vendor/w/foo</code>.
+</li>
+</ul>
+
+<pre class="disable-line-numbers111"><code class="language-go">_ GOPATH
+  |_ src
+     |_ x
+        |_ vendor
+        |  |_ w
+        |     |_ foo
+        |        |_ foo.go    // package foo
+        |_ y
+        |  |_ vendor
+        |  |  |_ w
+        |  |     |_ foo
+        |  |        |_ foo.go // package foo
+        |  |_ y.go            // package y
+        |_ z
+        |  |_ z.go            // package z
+        |_ x.go               // package x
+</code></pre>
+
+<p>
+</p>
+
+<p>
+When the modules feature is on, the root import path of a module is
+often (but not required to be) specified in a <code>go.mod</code> file
+which is directly contained in the root package folder of the module.
+We often use the root import path to identify the module.
+The root import path is the common prefix of all packages in the module.
+</p>
+
+<p>
+Only the <code>vendor</code> folder directly under the root path of a module is viewed as a special folder.
+</p>
+
+For example, when the modules feature is on, then in the module identified with <code>example.com/mypkg</code> shown blow,
+<ul>
+<li>
+	the import path of the first <code>foo</code> package is <code>w/foo</code>.
+	The <code>MyProject/vendor</code> folder is viewed as a special folder.
+</li>
+<li>
+	the import path of the other  <code>foo</code> package is<code>example.com/mypkg/x/y/vendor/w/foo</code>.
+	Note, the <code>MyProject/x/y/vendor</code> folder is viewed as a normal package folder.
+</li>
+<li>
+	the import paths of the <code>x</code>, <code>y</code> and <code>z</code> packages
+	are <code>example.com/mypkg/x</code>, <code>example.com/mypkg/x/y</code> and <code>example.com/mypkg/x/z</code>, respectively.
+</li>
+</ul>
+
+Note, when the <code>x.go</code>, <code>y.go</code> or <code>z.go</code> files import a package with import path <code>w/foo</code>,
+the imported package is always the package with folder <code>MyProject/vendor/w/foo</code>.
+
+<pre class="disable-line-numbers111"><code class="language-go">_ MyProject
+     |_ go.mod                // module example.com/mypkg
+     |_ vendor
+     |  |_ w
+     |     |_ foo
+     |        |_ foo.go       // package foo
+     |_ x
+        |_ y
+        |  |_ vendor
+        |  |  |_ w
+        |  |     |_ foo
+        |  |        |_ foo.go // package foo
+        |  |_ y.go            // package y
+        |_ z
+        |  |_ z.go            // package z
+        |_ x.go               // package x
+</code></pre>
+
+<p>
+</p>
+-->
+
+<p>
+When one source file in a package imports another package,
+we say the importing package depends on the imported package.
+</p>
+
+<p>
+Go doesn't support circular package dependencies.
+If package <code>a</code> depends on package <code>b</code>
+and package <code>b</code> depends on package <code>c</code>,
+then source files in package <code>c</code> can't import package <code>a</code> and <code>b</code>,
+and source files in package <code>b</code> can't import package <code>a</code>.
+</p>
+
+<p>
+Surely, source files in a package can't, and don't need to, import the package itself.
+</p>
+
+<!--
+<p>
+Similar to package dependencies, a module might also depend on some other modules.
+The direct module dependencies and their versions are often specified in the <code>go.mod</code> file of the module.
+Circular module dependencies are supported, though such scenarios are rare in practice.
+</p>
+-->
+
+<p>
+Later, we will call the packages named with <code>main</code>
+and containing <code>main</code> entry functions as <b>program packages</b> (or <b>command packages</b>),
+and call other packages as <b>library packages</b>.
+Program packages are not importable.
+Each Go program should contain one and only one program package.
+</p>
+
+<p>
+The name of the folder of a package is not required to be the same as the package name.
+However, for a library package, it will make package users confused if the name
+of the package is different from the name of the folder of the package.
+The cause of the confusion is that the default import path of a package is the name of the package
+but what is contained in the import path of the package is the folder name of the package.
+So please try to make the two names identical for each library package.
+</p>
+
+<p>
+On the other hand, it is recommended to give each program package folder
+a meaningful name other than its package name, <code>main</code>.
+</p>
+</div>
+
+<a class="anchor" id="init"></a>
+<h3>The <code>init</code> Functions</h3>
+
+<p>
+There can be multiple functions named as <code>init</code> declared in a package,
+even in a source code file.
+The functions named as <code>init</code> must have not any
+input parameters and return results.
+</p>
+
+<p>
+Note, at the top package-level block, the <code>init</code> identifier
+can only be used in function declarations.
+We can't declare package-level variable/constants/types which names are <code>init</code>.
+</p>
+
+<p>
+At run time, each <code>init</code> function will be (sequentially) invoked once
+and only once (before invoking the <code>main</code> entry function).
+So the meaning of the <code>init</code> functions are much like the static initializer blocks in Java.
+</p>
+
+<div>
+Here is a simple example which contains two <code>init</code> functions:
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+func init() {
+	fmt.Println("hi,", bob)
+}
+
+func main() {
+	fmt.Println("bye")
+}
+
+func init() {
+	fmt.Println("hello,", smith)
+}
+
+func titledName(who string) string {
+	return "Mr. " + who
+}
+
+var bob, smith = titledName("Bob"), titledName("Smith")
+</code></pre>
+
+The output of this program:
+<pre class="output"><code>hi, Mr. Bob
+hello, Mr. Smith
+bye
+</code></pre>
+
+<p>
+</p>
+
+</div>
+
+<a class="anchor" id="initialization-order"></a>
+<h3>Resource Initialization Order</h3>
+
+<div>
+<p>
+At run time, a package will be loaded after all its dependency packages.
+Each package will be loaded once and only once.
+</p>
+
+<p>
+All <code>init</code> functions in all involved packages in a program
+will be invoked sequentially.
+An <code>init</code> function in an importing package
+will be invoked after all the <code>init</code> functions
+declared in the dependency packages of the importing package for sure.
+All <code>init</code> functions will be invoked
+before invoking the <code>main</code> entry function.
+</p>
+
+<p>
+The invocation order of the <code>init</code> functions in the same source file
+is from top to bottom. Go specification recommends, but doesn't require, to invoke
+the <code>init</code> functions in different source files of the same package
+by the alphabetical order of filenames of their containing source files.
+So it is not a good idea to have dependency relations between
+two <code>init</code> functions in two different source files.
+</p>
+
+<p>
+All package-level variables declared in a package are initialized before
+any <code>init</code> function declared in the same package is invoked.
+</p>
+
+Go runtime will try to initialize package-level variables in a package
+by their declaration order, but a package-level variable will be
+initialized after all of its depended variables for sure.
+For example, in the following code snippet, the initializations the four
+package-level variables happen in the order <code>y</code>, <code>z</code>,
+<code>x</code>, and <code>w</code>.
+
+<pre class="line-numbers"><code class="language-go">func f() int {
+	return z + y
+}
+
+func g() int {
+	return y/2
+}
+
+var (
+	w       = x
+	x, y, z = f(), 123, g()
+)
+</code></pre>
+
+<p>
+About more detailed rule of the initialization order of package-level variables,
+please read the article <a href="evaluation-orders.html#package-level-variables">expression evaluation order</a>.
+</p>
+
+</div>
+
+<h3>Full Package Import Forms</h3>
+
+<div>
+
+
+In fact, the full form of an import declaration is
+
+<pre class="disable-line-numbers111"><code class="language-go">import importname "path/to/package"
+</code></pre>
+
+<p>
+where <code>importname</code> is optional,
+its default value is the name (not the folder name) of the imported package.
+</p>
+
+In fact, in the above used import declarations,
+the <code>importname</code> portions are all omitted,
+for they are identical to the respective package names.
+These import declarations are equivalent to the following ones:
+
+<pre class="disable-line-numbers111"><code class="language-go">import fmt "fmt"        // <=> import "fmt"
+import rand "math/rand" // <=> import "math/rand"
+import time "time"      // <=> import "time"
+</code></pre>
+
+<p>
+</p>
+
+<p>
+If the <code>importname</code> portion presents in an import declaration,
+then the prefix tokens used in qualified identifiers must be <code>importname</code>
+instead of the name of the imported package.
+</p>
+
+<p>
+The full import declaration form is not used widely.
+However, sometimes we must use it.
+For example, if a source file imports two packages with the same name,
+to avoid making compiler confused, we must use the full import form
+to set a custom <code>importname</code> for at least one package in the two.
+</p>
+
+Here is an example of using full import declaration forms.
+<pre class="line-numbers"><code class="language-go">package main
+
+import (
+	format "fmt"
+	random "math/rand"
+	"time"
+)
+
+func main() {
+	random.Seed(time.Now().UnixNano())
+	format.Print("A random number: ", random.Uint32(), "\n")
+
+	// The following line fails to compile,
+	// for "rand" is not identified.
+	/*
+	fmt.Print("A random number: ", rand.Uint32(), "\n")
+	*/
+}
+</code></pre>
+
+Some explanations:
+<ul>
+<li>
+	we must use <code>format</code> and <code>random</code> as the
+	prefix token in qualified identifiers, instead of the real package names
+	<code>fmt</code> and <code>rand</code>.
+</li>
+<li>
+	<code>Print</code> is another function in the <code>fmt</code> standard package.
+	Like <code>Println</code> function calls,
+	a <code>Print</code> function call can take an arbitrary number of arguments.
+	It will print the string representations of the passed arguments, one by one.
+	If two consecutive arguments are both not string values,
+	then a space character will be automatically inserted between them in the print result.
+</li>
+</ul>
+
+<p>
+The <code>importname</code> in the full form import declaration can be a dot
+(<code>.</code>). Such imports are called dot imports.
+To use the exported elements in the packages being dot imported,
+the prefix part in qualified identifiers must be omitted.
+</p>
+
+Example:
+<pre class="line-numbers"><code class="language-go">package main
+
+import (
+	. "fmt"
+	. "time"
+)
+
+func main() {
+	Println("Current time:", Now())
+}
+</code></pre>
+
+<p>
+In the above example, <code>Println</code> instead of <code>fmt.Println</code>,
+and <code>Now</code> instead of <code>time.Now</code> must be used.
+</p>
+
+<p>
+Generally, dot imports reduce code readability, so they are not recommended to be used in formal projects.
+</p>
+
+<p>
+The <code>importname</code> in the full form import declaration can be the blank identifier
+(<code>_</code>). Such imports are called anonymous imports (some articles elsewhere also call them blank imports).
+The importing source files can't use the exported code elements in anonymously imported packages.
+The purpose of anonymous imports is to initialize the imported packages
+(each of <code>init</code> functions in the anonymously imported packages will be called once).
+</p>
+
+In the following example, all <code>init</code> functions declared in
+<a href="https://golang.org/pkg/net/http/pprof/">the
+<code>net/http/pprof</code> standard package</a> will be called before the
+<code>main</code> entry function is called.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import _ "net/http/pprof"
+
+func main() {
+	... // do somethings
+}
+</code></pre>
+</div>
+
+<h3>Each Non-Anonymous Import Must Be Used at Least Once</h3>
+
+<div>
+Except anonymous imports, other imports must be used at least once.
+For example, the following example fails to compile.
+<pre class="line-numbers"><code class="language-go">package main
+
+import (
+	"net/http" // error: imported and not used
+	. "time"   // error: imported and not used
+)
+
+import (
+	format "fmt"  // okay: it is used once below
+	_ "math/rand" // okay: it is not required to be used
+)
+
+func main() {
+	format.Println() // use the imported "fmt" package
+}
+</code></pre>
+
+</div>
+
+<!--
+<h3>Package Import Paths</h3>
+
+todo: it is some a chaos currently. It would be good to finish this section at Go 1.12.
+
+<div>
+<p>
+Before Go Toolchain 1.11, the <a href="go-toolchain.html">official Go tools</a> recommend,
+and often require, the folder containing a third-party package to be put in the <code>src</code>
+folder under any path specified in the <code>GOPATH</code> environment variable.
+The import path of the third-party package is the relative path of
+the package folder to the <code>src</code> folder.
+The separators in the path must be always <code>/</code> and can't be <code>\</code>.
+For example, if the path of a package is <code>OneGoPath/src/a/b/pkg</code>
+(or <code>OneGoPath\src\a\b\pkg</code> on Windows),
+then its import path is <code>a/b/pkg</code>.
+</p>
+
+<p>
+Since Go Toolchain 1.6 (experimented since 1.5), each code package folder
+can contain a <code>vendor</code> subfolder, which is used to store
+the dependency packages of that code package.
+The packages under the <code>vendor</code> subfolder have a higher priority
+in package look-up.
+</p>
+
+<p>
+Since version 1.11, Go Toolchain starts to support modules.
+The <code>GOPATH</code> environment variable is still kept
+but Go package source code can be put anywhere.
+A new environment variable <code>GO111MODULE</code> is used to
+
+Go source code can be put anywhere and <code>GOPATH</code> environment variable is not required
+
+GO111MODULE
+</p>
+
+<p>
+A standard package has a higher import priority than a third-party package
+if their import paths are identical.
+So please try to avoid using the import path of a standard package
+as the import path of a third-party package.
+</p>
+
+
+go tools will ignore the files under directories named "testdata".
+
+</div>
+-->
+
+
+<h3>Modules</h3>
+
+A module is a collection of several packages.
+After being downloaded to local, these packages are all contained in the same folder,
+which is called the root folder of the module.
+A module may has many versions, which
+follow <a href="https://semver.org/">Semantic Versioning</a> specification.
+About more modules related concepts and how to manage and use modules,
+please read the <a href="https://golang.org/ref/mod">official documentation</a>.
+
+
+
+
+<hr>
+
+<div class="text-center"><a href="#i-packages-and-imports.html">Index↡</a></div>
+
+
+
+<hr>
+
+<div id="contact" class="alert alert-success"><small>
+
+<p>
+The <b><i>Go 101</i></b> 프로젝트는 <a href="https://github.com/go101/go101">Github</a>
+에서 호스팅됩니다.
+오타, 문법 오류, 부정확한 표현, 설명 결함, 코드 버그, 끊어진 링크와 같은 모든
+종류의 실수에 대한 수정 사항을 제출하여 Go 101을 개선을 돕는 것은 언제나 환영합니다.
+</p>
+
+<p>
+주기적으로 Go에 대한 깊이 있는 정보를 얻고 싶다면 Go 101의 공식 트위터 계정인
+<a href="https://twitter.com/go100and1">@go100and1</a>을 팔로우하거나
+<a href="https://join.slack.com/t/go-101/shared_invite/zt-y2pvwg00-Oz7lDDJu44l~hZsFRUApiA">Go 101 슬랙 채널</a>에j가입해주세요.
+</p>
+
+</small></div>
+
+<div class="alert alert-warning"><small>
+
+
+<div id="ebooks">
+이 책의 디지털 버전은 아래와 같은 곳을 통해서 구매할 수 있습니다.
+<ul>
+<li>
+	<a href="https://leanpub.com/go101">Leanpub</a>,
+	<i>최소 19.99 달러</i>.
+</li>
+<li>
+	
+	아마존 킨들 스토어, <i>(현재는 사용 불가)</i>.
+</li>
+<li>
+	<a href="https://books.apple.com/book/id1459984231">애플 북 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://play.google.com/store/books/details?id=Dc1wEAAAQBAJ">구글 플레이 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://github.com/go101/go101/releases">무료 전자책</a>,
+	pdf, epub과 azw3 포맷을 지원
+</li>
+</ul>
+	</div>
+<div>
+
+Go 101의 저자인 Tapir는 2016년 7월부터 Go 101 시리즈 책들을 집필하고 go101.org 웹사이트를 유지 관리하고 있습니다.
+새로운 콘텐츠는 책과 웹사이트에 수시로 추가될 예정입니다.
+Tapir는 인디 게임 개발자이기도 합니다.
+<a href="https://www.tapirgames.com">Tapir의 게임</a>을 플레이하여 Go 101을 지원할 수도 있습니다.
+(안드로이드와 아이폰/아이패드용):
+<ul>
+<li>
+	<a href="https://www.tapirgames.com/App/Color-Infection">Color Infection</a> (★★★★★), 140개 이상의 단계로 이루어진 물리 기반의 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Rectangle-Pushers">Rectangle Pushers</a> (★★★★★), 2가지 모드와 104개 이상의 단계로 이루어진 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Let-Us-Play-With-Particles">Let's Play With Particles</a>, 세가지 미니 게임이 있는 캐주얼 액션 게임
+</li>
+</ul>
+</div>
+
+<a href="https://paypal.me/tapirliu">페이팔</a>을 통한 개인 기부도 환영합니다.</small></div>
+
+<hr>
+색인:
+
+
+<div id="book-index">
+
+<!-- kindle starts: 1 -->
+
+<ul class="index part">
+	<li><a class="index" href="101-about.html">Go 101에 대해</a> - 이 책이 쓰여진 이유</li>
+	<li><a class="index" href="acknowledgements.html">감사의 말</a></li>
+</ul>
+
+<ul class="index part">
+	<li><a class="index" href="introduction.html">Go 소개</a> - Go를 배우는 가치</li>
+	<li><a class="index" href="go-toolchain.html">Go 툴체인</a> - Go 프로그램을 컴파일하고 실행하는 방법</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 코드에 익숙해지기
+
+	<ul class="index chapters">
+	<li><a class="index" href="basic-code-elements-introduction.html">소스 코드 요소 소개</a></li>
+	<li><a class="index" href="keywords-and-identifiers.html">키워드와 식별자</a></li>
+	<li><a class="index" href="basic-types-and-value-literals.html">기본 자료형과 기본 값 리터럴</a></li>
+	<li><a class="index" href="constants-and-variables.html">상수와 변수</a> - 무형성(untyped) 값과 자료형 추론 소개를 포함</li>
+	<li><a class="index" href="operators.html">일반 연산자</a> - 더 많은 자료형 추론 규칙 소개를 포함</li>
+	<li><a class="index" href="function-declarations-and-calls.html">함수 선언과 호출</a></li>
+	<li><b class="index" id="i-packages-and-imports.html">코드 패키지와 패키지 들여오기</b></li>
+	<li><a class="index" href="expressions-and-statements.html">표현식, 구문과 단순 구문</a></li>
+	<li><a class="index" href="control-flows.html">기본 흐름 제어</a></li>
+	<li><a class="index" href="control-flows-more.html">고루틴, 지연된 함수 호출과 패닉/복구</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 자료형 체계
+
+	<ul class="index chapters">
+	<li><a class="index" href="type-system-overview.html">Go 자료형 체계 개요</a> - Go 프로그래밍 숙달을 위해 반드시 읽어봐야 하는</li>
+	<li><a class="index" href="pointer.html">포인터</a></li>
+	<li><a class="index" href="struct.html">구조체</a></li>
+	<li><a class="index" href="value-part.html">변수</a> - Go 변수에 대한 더 깊은 이해</li>
+	<li><a class="index" href="container.html">배열, 슬라이스와 맵</a> - 1급 객체 컨테이너 자료형</li>
+	<li><a class="index" href="string.html">문자열</a></li>
+	<li><a class="index" href="function.html">함수</a> - 함수 자료형과 값, 가변 인자 함수</li>
+	<li><a class="index" href="channel.html">채널</a> - Go에서 동시성 동기화를 하는 방법</li>
+	<li><a class="index" href="method.html">메서드</a></li>
+	<li><a class="index" href="interface.html">인터페이스</a> - 리플렉션과 다형성을 하는 값 상자</li>
+	<li><a class="index" href="type-embedding.html">자료형 임베딩</a> - 자료형을 확장하는 방법</li>
+	<li><a class="index" href="unsafe.html">자료형에 안전하지 않는 포인터</a></li>
+	<li><a class="index" href="generic.html">제네릭</a> - 합성 자료형의 사용과 읽는 법</li>
+	<li><a class="index" href="reflection.html">리플렉션</a> - <code>reflect</code> 표준 패키지</li>
+	</ul>
+</li>
+</ul>
+
+<!-- kindle ends: 1 -->
+
+<!-- kindle starts: 2 -->
+
+<ul class="index part">
+<li>
+특별 주제
+
+	<ul class="index chapters">
+	<li><a class="index" href="line-break-rules.html">개행 규칙</a></li>
+	<li><a class="index" href="defer-more.html">지연된 함수 호출 더 알아보기</a></li>
+	<li><a class="index" href="panic-and-recover-use-cases.html">패닉/복구 사용 사례</a></li>
+	<li><a class="index" href="panic-and-recover-more.html">패닉/복구 메커니즘에 대한 고찰</a> - 함수 호출 종료 단계를 포함</li>
+	<li><a class="index" href="blocks-and-scopes.html">코드 블록과 식별자 스코프</a></li>
+	<li><a class="index" href="evaluation-orders.html">표현식 평가 순서</a></li>
+	<li><a class="index" href="value-copy-cost.html">Go의 값 복사 비용</a></li>
+	<li><a class="index" href="bounds-check-elimination.html">경계 검사 제거(BCE)</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+동시성 프로그래밍
+
+	<ul class="index chapters">
+	<li><a class="index" href="concurrent-synchronization-overview.html">동시성 동기화 개요</a></li>
+	<li><a class="index" href="channel-use-cases.html">채널 사용 사례</a></li>
+	<li><a class="index" href="channel-closing.html">채널을 깔끔하게 닫는 방법</a></li>
+	<li><a class="index" href="concurrent-synchronization-more.html">기타 동시성 동기화 기술</a> - <code>sync</code> 표준 패키지</li>
+	<li><a class="index" href="concurrent-atomic-operation.html">원자적 연산</a> - <code>sync/atomic</code> 표준 패키지</li>
+	<li><a class="index" href="memory-model.html">Go의 메모리 순서 보장</a></li>
+	<li><a class="index" href="concurrent-common-mistakes.html">흔히들 저지르는 동시성 프로그래밍 실수들</a></li>
+	</ul>
+
+</li>
+</ul>
+
+
+<ul class="index part">
+<li>
+메모리 관련
+
+	<ul class="index chapters">
+	<li><a class="index" href="memory-block.html">메모리 블록</a></li>
+	<li><a class="index" href="memory-layout.html">메모리 레이아웃</a></li>
+	<li><a class="index" href="memory-leaking.html">메모리 누수 시나리오</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+일부 요약
+
+	<ul class="index chapters">
+	<li><a class="index" href="summaries.html">몇 가지 간단한 요약</a></li>
+	<li><a class="index" href="nil.html">Go의 <code>nil</code></a></li>
+	<li><a class="index" href="value-conversions-assignments-and-comparisons.html">값 변환, 할당과 비교 규칙</a></li>
+	<li><a class="index" href="exceptions.html">구문/의미 예외</a></li>
+	<!-- (to remove) for printing -->
+	<li><a class="index" href="details.html">Go Details 101</a></li>
+	<li><a class="index" href="unofficial-faq.html">Go FAQ 101</a></li>
+	<li><a class="index" href="tips.html">Go Tips 101</a></li>
+	<!-- (to remove) -->
+	</ul>
+
+</li>
+</ul>
+
+<!-- kindle ends: 2 -->
+
+<!-- kindle starts: 0 -->
+
+<ul class="index part">
+<li><a class="index" href="more.html">더 많은 토픽</a></li>
+</ul>
+
+<!-- kindle ends: 0 -->
+
+</div>
+
+
+
+
+
+
+
+
+		</div>
+	</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

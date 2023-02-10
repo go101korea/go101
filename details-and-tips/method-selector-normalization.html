@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Golang online books, articles, tools, etc.">
+		<meta name="author" content="">
+		<meta name="go-version" content="go1.20">
+		<link rel="icon" href="/static/go101/images/101-v1.ico">
+		<link rel="apple-touch-icon" sizes="152x152" href="/static/go101/images/iphone-v1.jpeg">
+	
+		<title>Normalization of method selectors -Go 101</title><link id="css-bs" href="/static/bootstrap/v4.0.3-dark/css/bootstrap.min.css" rel="stylesheet">
+		<link id="css-go101" href="/static/go101/css/v991-dark.css" rel="stylesheet">
+		<link id="css-prism" href="/static/prism/2020-08-03-dark/prism.css" rel="stylesheet">
+		<script id="js-prism" src="/static/prism/2020-08-03-dark/prism.js"></script>
+
+
+		<script src="/static/jquery/jquery.min-v1.11.2.js"></script>
+		<script src="/static/go101/js/v5.js"></script>
+		
+		
+		<style>
+		div, p, ul, li, td, th {line-height: 1.55;}
+		</style>
+
+		<script>
+		var theme = ""
+		</script>
+	</head>
+
+	<body>
+		<div class="container">
+
+		<div class="row nav-bar-with-borders">
+	<div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/"><small>Home</small></a> <span class="new-text"><sup>new!</sup></span>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/article/101.html"><small>Go 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/generics/101.html"><small>Go Generics 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-active">
+		<a href="/details-and-tips/101.html"><small>Go Details &amp; Tips 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/optimizations/101.html"><small>Go Optimizations 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/quizzes/101.html"><small>Go Quizzes 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go HowTo 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Practices 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Agg 101</small></div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/blog/101.html"><small>Go 101 Blog</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/apps-and-libs/101.html"><small>Go 101 Apps &amp; Libs</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;" id="theme-switch"><small>테마: 다크/라이트</small></div>
+
+</div>
+
+<div class="alert alert-warning text-center"><small>
+현재 3권의 신간들인 <a href="/optimizations/101.html">Go Optimizations 101</a>,
+<a href="/details-and-tips/101.html">Go Details &amp; Tips 101</a>
+과 <a href="/generics/101.html">Go Generics 101</a>이 출간되어 있습니다.
+Leanpub 서점에서 <a href="https://leanpub.com/b/go-optimizations-details-generics">번들</a>을 모두 구입하시는 방법이 비용 대비 효율이 가장 좋습니다.
+<p></p>
+Go에 대한 많은 정보들과 Go 101 책들의 최신 소식을 얻으시려면 Go 101 트위터 계정인 <a href="https://twitter.com/go100and1">@Go100and1</a>을
+팔로잉 해주세요.
+</small></div>
+<p>
+</p>
+
+
+
+<h1>Normalization of method selectors</h1>
+
+
+
+<p>Go allows simplified forms of some selectors.</p>
+
+<p>For example, in the following program, <code>t1.M1</code> is a simplified form of <code>(*t1).M1</code>,
+and <code>t2.M2</code> is a simplified form of <code>(&amp;t2).M2</code>. At compile time, the compiler will normalize the simplified forms to their original respective full forms.</p>
+
+<p>The following program prints <code>0</code> and <code>9</code>, because the modification to <code>t1.X</code> has no effects on the evaluation result of <code>*t1</code> during evaluating <code>(*t1).M1</code>.</p>
+
+<pre><code class="language-Go">package main
+
+type T struct {
+	X int
+}
+
+func (t T) M1() int {
+	return t.X
+}
+
+func (t *T) M2() int {
+	return t.X
+}
+
+func main() {
+	var t1 = new(T)
+	var f1 = t1.M1 // &lt;=&gt; (*t1).M1
+	t1.X = 9
+	println(f1()) // 0 
+	
+	var t2 T
+	var f2 = t2.M2 // &lt;=&gt; (&amp;t2).M2
+	t2.X = 9
+	println(f2()) // 9
+}
+</code></pre>
+
+<p>In the following code, the function <code>foo</code> runs okay, but the function <code>bar</code> will produce a panic. The reason is <code>s.M</code> is a simplified form of <code>(*s.T).M</code>. At compile time, the compiler will normalize the simplified form to it original full form. At runtime, if <code>s.T</code> is nil, then the evaluation of <code>*s.T</code> will cause a panic. The two modifications to <code>s.T</code> have no effects on the evaluation result of <code>*s.T</code>.</p>
+
+<pre><code class="language-Go">package main
+
+type T struct {
+	X int
+}
+
+func (t T) M() int {
+	return t.X
+}
+
+type S struct {
+	*T
+}
+
+func foo() {
+	var s = S{T: new(T)}
+	var f = s.M // &lt;=&gt; (*s.T).M
+	s.T = nil
+	f()
+}
+
+func bar() {
+	var s S
+	var f = s.M // panic
+	s.T = new(T)
+	f()
+}
+
+func main() {
+	foo()
+	bar()
+}
+</code></pre>
+
+<p>Please note that, interface method values and method values got through reflection
+will be expanded to the promoted method values with a delay.
+For example, in the following program, the modification to <code>s.T.X</code>
+has effects on the return results of the method values got through reflection and interface ways.</p>
+
+<pre><code class="language-Go">package main
+
+import &quot;reflect&quot;
+
+type T struct {
+	X int
+}
+
+func (t T) M() int {
+	return t.X
+}
+
+type S struct {
+	*T
+}
+
+func main() {
+	var s = S{T: new(T)}
+	var f = s.M // &lt;=&gt; (*s.T).M
+	var g = reflect.ValueOf(&amp;s).Elem().
+		MethodByName(&quot;M&quot;).
+		Interface().(func() int)
+	var h = interface{M() int}(s).M
+	s.T.X = 3
+	println( f() ) // 0
+	println( g() ) // 3
+	println( h() ) // 3
+}
+</code></pre>
+
+<p>Source: <a href="https://github.com/golang/go/issues/47863">https://github.com/golang/go/issues/47863</a></p>
+
+<p>Note, there was a bug in the official standard Go compiler before version 1.20.
+The older compilers will de-virtualize some interface
+methods at compile time but the de-virtualizations are made too far
+to be correct. For example, the following program should print <code>2 2</code>,
+but it prints <code>1 2</code> if it is complied with the official standard Go compiler v1.19.</p>
+
+<pre><code class="language-Go">package main
+
+type I interface{ M() }
+
+type T struct{
+	x int
+}
+
+func (t T) M() {
+	println(t.x)
+}
+
+func main() {
+	var t = &amp;T{x: 1}
+	var i I = t
+	
+	var f = i.M
+	defer f() // 2 (correct)
+
+	// i.M is de-virtualized as (*t).M at compile time (bug).
+	defer i.M() // 1 (wrong)
+	
+	t.x = 2
+}
+</code></pre>
+
+<p>The bug has been fixed in Go toolchain 1.20.</p>
+
+<p>Source: <a href="https://github.com/golang/go/issues/52072">https://github.com/golang/go/issues/52072</a></p>
+
+<hr>
+
+<div class="text-center"><a href="#i-method-selector-normalization.html">Index↡</a></div>
+
+
+
+<hr>
+
+<div id="contact" class="alert alert-success"><small>
+
+<p>
+The <b><i>Go 101</i></b> 프로젝트는 <a href="https://github.com/go101/go101">Github</a>
+에서 호스팅됩니다.
+오타, 문법 오류, 부정확한 표현, 설명 결함, 코드 버그, 끊어진 링크와 같은 모든
+종류의 실수에 대한 수정 사항을 제출하여 Go 101을 개선을 돕는 것은 언제나 환영합니다.
+</p>
+
+<p>
+주기적으로 Go에 대한 깊이 있는 정보를 얻고 싶다면 Go 101의 공식 트위터 계정인
+<a href="https://twitter.com/go100and1">@go100and1</a>을 팔로우하거나
+<a href="https://join.slack.com/t/go-101/shared_invite/zt-y2pvwg00-Oz7lDDJu44l~hZsFRUApiA">Go 101 슬랙 채널</a>에j가입해주세요.
+</p>
+
+</small></div>
+
+<div class="alert alert-warning"><small>
+
+
+<div id="ebooks">
+이 책의 디지털 버전은 아래와 같은 곳을 통해서 구매할 수 있습니다.
+<ul>
+<li>
+	<a href="https://leanpub.com/go-details-and-tips-101">Leanpub</a>,
+	<i>최소 7.99 달러</i> (7.99 달러는 Leanpub에서 판매하는 최소 판매가입니다. <a href="https://leanpub.com/b/go-optimizations-details">이곳</a>이나 <a href="https://leanpub.com/b/go-optimizations-details-generics#bundle-page-go-details-and-tips-101">이곳</a>에서 번들로 구매하는 것이 더 비용 대비 효율이 좋습니다).
+</li>
+<li>
+	<a href="https://www.amazon.com/dp/B09NT56PW8">아마존 킨들 스토어</a>,
+	<i>4.99 달러</i>.
+</li>
+<li>
+	<a href="https://books.apple.com/book/id1609931638">애플 북스</a>,
+	<i>4.99 달러</i>.
+</li>
+<li>
+	<a href="https://play.google.com/store/books/details?id=A81wEAAAQBAJ">구글 플레이 스토어</a>,
+	<i>4.99 달러</i>.
+</li>
+</ul>
+	</div>
+<div>
+
+Go 101의 저자인 Tapir는 2016년 7월부터 Go 101 시리즈 책들을 집필하고 go101.org 웹사이트를 유지 관리하고 있습니다.
+새로운 콘텐츠는 책과 웹사이트에 수시로 추가될 예정입니다.
+Tapir는 인디 게임 개발자이기도 합니다.
+<a href="https://www.tapirgames.com">Tapir의 게임</a>을 플레이하여 Go 101을 지원할 수도 있습니다.
+(안드로이드와 아이폰/아이패드용):
+<ul>
+<li>
+	<a href="https://www.tapirgames.com/App/Color-Infection">Color Infection</a> (★★★★★), 140개 이상의 단계로 이루어진 물리 기반의 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Rectangle-Pushers">Rectangle Pushers</a> (★★★★★), 2가지 모드와 104개 이상의 단계로 이루어진 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Let-Us-Play-With-Particles">Let's Play With Particles</a>, 세가지 미니 게임이 있는 캐주얼 액션 게임
+</li>
+</ul>
+</div>
+
+<a href="https://paypal.me/tapirliu">페이팔</a>을 통한 개인 기부도 환영합니다.</small></div>
+
+<hr>
+색인:
+
+
+<div id="book-index">
+
+<ul class="index part">
+	<li><a class="index" href="0.0-acknowledgements.html">Acknowledgments</a></li>
+	<li><a class="index" href="0.1-introduction.html">About Go Details & Tips 101</a></li>
+</ul>
+	
+<ul class="index part">
+<li>Syntax and Semantics Related
+<ul>
+	
+	<li><a class="index" href="semicolon-insertion.html">Go compilers will automatically insert some semicolons in code</a></li>
+	<li><b class="index" id="i-method-selector-normalization.html">Normalization of method selectors</b></li>
+	<li>more than 40 other details are available in <a href="#ebooks">the paid ebooks</a>.</li>
+</ul>
+</li>
+</ul>
+
+<ul class="index part">
+<li>Conversions Related
+<ul>
+	<li><a class="index" href="pointer-indirect-conversion.html">Values of two different defined pointer types may be indirectly converted to each other's type if the base types of the two types shares the same underlying type</a></li>
+	<li>more 4 details are available in <a href="#ebooks">the paid ebooks</a>.</li>
+</ul>
+</li>
+</ul>
+
+<ul class="index part">
+<li>Comparisons Related
+<ul>
+	<li><a class="index" href="array-comparison.html">Array values are compared element by element</a></li>
+	<li>more 11 details are available in <a href="#ebooks">the paid ebooks</a>.</li>
+</ul>
+</li>
+</ul>
+
+<ul class="index part">
+<li>Compiler and Runtime Related
+<ul>
+	<li>about 10 details are available in <a href="#ebooks">the paid ebooks</a>.</li>
+</ul>
+</li>
+</ul>
+	
+<ul class="index part">
+<li>Standard Packages Related
+<ul>
+	<li><a class="index" href="json-unmarshal-is-case-insensitive.html">The <code>json.Unmarshal</code> function accepts case-insensitive object key matches</a></li>
+	<li>more 10 details are available in <a href="#ebooks">the paid ebooks</a>.</li>
+</ul>
+</li>
+</ul>
+
+</div>
+
+
+
+
+
+
+
+
+		</div>
+	</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

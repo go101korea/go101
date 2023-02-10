@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Golang online books, articles, tools, etc.">
+		<meta name="author" content="">
+		<meta name="go-version" content="go1.20">
+		<link rel="icon" href="/static/go101/images/101-v1.ico">
+		<link rel="apple-touch-icon" sizes="152x152" href="/static/go101/images/iphone-v1.jpeg">
+	
+		<title>About Go 101 -Go 101</title><link id="css-bs" href="/static/bootstrap/v4.0.3-dark/css/bootstrap.min.css" rel="stylesheet">
+		<link id="css-go101" href="/static/go101/css/v991-dark.css" rel="stylesheet">
+		<link id="css-prism" href="/static/prism/2020-08-03-dark/prism.css" rel="stylesheet">
+		<script id="js-prism" src="/static/prism/2020-08-03-dark/prism.js"></script>
+
+
+		<script src="/static/jquery/jquery.min-v1.11.2.js"></script>
+		<script src="/static/go101/js/v5.js"></script>
+		
+		
+		<style>
+		div, p, ul, li, td, th {line-height: 1.55;}
+		</style>
+
+		<script>
+		var theme = ""
+		</script>
+	</head>
+
+	<body>
+		<div class="container">
+
+		<div class="row nav-bar-with-borders">
+	<div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/"><small>Home</small></a> <span class="new-text"><sup>new!</sup></span>
+	</div><div class="col-xs-6 col-sm-4 nav-item-active">
+		<a href="/article/101.html"><small>Go 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/generics/101.html"><small>Go Generics 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/details-and-tips/101.html"><small>Go Details &amp; Tips 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/optimizations/101.html"><small>Go Optimizations 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/quizzes/101.html"><small>Go Quizzes 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go HowTo 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Practices 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Agg 101</small></div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/blog/101.html"><small>Go 101 Blog</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/apps-and-libs/101.html"><small>Go 101 Apps &amp; Libs</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;" id="theme-switch"><small>테마: 다크/라이트</small></div>
+
+</div>
+
+<div class="alert alert-warning text-center"><small>
+현재 3권의 신간들인 <a href="/optimizations/101.html">Go Optimizations 101</a>,
+<a href="/details-and-tips/101.html">Go Details &amp; Tips 101</a>
+과 <a href="/generics/101.html">Go Generics 101</a>이 출간되어 있습니다.
+Leanpub 서점에서 <a href="https://leanpub.com/b/go-optimizations-details-generics">번들</a>을 모두 구입하시는 방법이 비용 대비 효율이 가장 좋습니다.
+<p></p>
+Go에 대한 많은 정보들과 Go 101 책들의 최신 소식을 얻으시려면 Go 101 트위터 계정인 <a href="https://twitter.com/go100and1">@Go100and1</a>을
+팔로잉 해주세요.
+</small></div>
+<p>
+</p>
+
+
+
+<h1>About Go 101</h1>
+
+
+
+<p>
+I feel it is hard to describe the contents in this article
+in the general description manner.
+So this article will use the interview manner to make descriptions instead.
+</p>
+
+<h3>Hi Tapir, when and why did you plan to write this book?</h3>
+
+<p>
+At about July 2016, after (not very intensively) using Go for two years,
+I felt that Go is a simple language and I had mastered Go programming.
+At that time, I had collected many details in Go programming.
+I thought I can archive these details into a book.
+I thought it should be an easy job.
+</p>
+
+<p>
+I was wrong. I was overconfident.
+In trying to make explanations for some details,
+I found I couldn't explain them clearly.
+With more and more confusions being gathered,
+I felt my Go knowledge was so limited that I was still a newbie Go programmer.
+</p>
+
+<p>
+I gave up writing that book.
+</p>
+
+<h3>Gave up? Isn't this book already finished now?</h3>
+
+<p>
+It was that book being cancelled, not the book <b><i>Go 101</i></b>.
+I eventually cleared almost all the confusions by reading many official
+Go documentation and all kinds of Go articles on Internet,
+and by finding answers from some Go forums and the Go project issue tracker.
+</p>
+
+<p>
+I spent about one year clearing the confusions.
+During the period, from time to time,
+once I had cleared most confusions on a topic
+and regained the confidence on explaining that topic,
+I wrote one blog article for that topic.
+In the end, I had written about twenty Go articles.
+And I had collected more Go details than before.
+It was the time to restart the plan of writing a Go book.
+</p>
+
+<p>
+I wrote another ten basic tutorial articles and twenty more articles
+on all kinds of other Go topics.
+So now <i>Go 101</i> has about 50 articles.
+</p>
+
+<h3>What were your ever confusions?</h3>
+
+<p>
+Some of the confusions were a few syntax and semantics design details,
+some of them involved values of certain kinds of types
+(mainly slices, interfaces and channels),
+and a few of them were related to standard package APIs.
+</p>
+
+<h3>What are the causes of your ever confusions do you think?</h3>
+
+<p>
+Thinking Go is easy to master is considered harmful.
+Holding such opinion (thinking Go is easy to master) will make you understand Go shallowly and prevent you from mastering Go.
+</p>
+
+<p>
+Go is a feature rich language.
+Its syntax set is surely not large, but we also can't say it is small.
+Some syntax and semantics designs in Go are straightforward,
+some are a little counter-intuitive or inconsistent with others.
+There are several trade-offs in Go syntax and semantics designs.
+A programmer needs certain Go programming experiences to comprehend the trade-offs.
+</p>
+
+<p>
+Go provides several first-citizen non-essential kinds of types.
+Some encapsulations are made in implementing these types
+to hide the internal structures of these types.
+On one hand, the encapsulations bring much convenience to Go programming.
+On the other hand, the encapsulations make some obstacles to
+understand the behaviors of values of these types more deeply.
+</p>
+
+<p>
+Many official and unofficial Go tutorials are very simple
+and only cover the general use cases by ignoring many details.
+This may be good to encourage new Go programmers to learn and use Go.
+On the other hand, this also makes many Go programmers overconfident
+on the extent of their Go knowledge.
+</p>
+
+<p>
+Several functions and types declared in some standard packages
+do not have detailed explanations. This is understandable,
+for many details are so subtle that it is hard
+to find proper wordings to explain them clearly.
+Saying a few accurate words is better than saying lots of words with inaccuracies.
+But this really leaves some confusions for the package users.
+</p>
+
+<h3>So do you think simplicity is not a selling point of Go?</h3>
+
+<p>
+I think, at least, simplicity is not a main selling point of Go.
+After all, there are several other languages simpler than Go.
+On the other hand, Go, as a feature rich language, is also not a complicated language.
+A new Go programmer with right attitudes can master Go programming in one year.
+</p>
+
+<h3>Then what are the selling points of Go do you think?</h3>
+
+<p>
+Personally, I think the fact that, as a static language, Go is flexible
+as many dynamic script languages is the main selling point of Go language.
+</p>
+
+<p>
+Memory saving, fast program warming-up, fast code execution speed and fast compilations combined
+is another main selling point of Go.
+Although this is a common selling point of many C family languages.
+But for web development area, seldom languages own the four characteristics at the same time.
+In fact, this is the main reason why I switched to Go from Java for web development.
+</p>
+
+<p>
+Built-in concurrent programming support is also a selling point of Go,
+though personally I don't think it is the main selling point of Go.
+</p>
+
+<p>
+Great code readability is another important selling point of Go.
+I feel readability is the most important factor considered in designing Go.
+</p>
+
+<p>
+Great cross-platform support is also a selling point of Go,
+though this selling point is not much unique nowadays.
+</p>
+
+<p>
+A stable core design and development team and an active community together
+can also be viewed as a selling point of Go.
+</p>
+
+<h3>What does Go 101 do to clear these confusions?</h3>
+
+<div>
+<i>Go 101</i> tries to clear many confusions by doing the followings.
+<ol>
+<li>
+	Emphasizes on basic concepts and terminologies.
+	Without understanding these basic concepts and terminologies,
+	it is hard to fully understand many rules and high level concepts.
+</li>
+<li>
+	Adds the <b><i>value part</i></b> terminology and use one special article
+	to explain value parts. This article uncovers the underlying structures
+	of some kinds of types, so that Go programmers could understand
+	Go values of those types more deeply.
+	I think knowing a little possible underlying implementations is very
+	helpful to clear some confusions about all kinds of Go values.
+</li>
+<li>
+	Explains memory blocks in detail. Knowing the relations between
+	Go values and memory blocks is very helpful to understand
+	how a garbage collector works and how to avoid memory leaking.
+</li>
+<li>
+	Views interface values as boxes for wrapping non-interface values.
+	I found thinking interface values as value boxes is very helpful
+	to clear many interface related confusions.
+</li>
+<li>
+	Clarifies several ambiguities which exist in the Go specification,
+	such as embedding rules, promoted method value evaluation,
+	and panic/recover mechanism.
+</li>
+<li>
+	Makes several summary articles and special topic articles by
+	aggregating many knowledge points and details, which would save
+	Go programmers much learning time.
+</li>
+</ol>
+
+</div>
+
+<h3>Is there anything else worth mentioning?</h3>
+
+<div>
+
+<p>
+This book doesn't touch custom generics in depth.
+Please read the <a href="https://go101.org/generics/101.html">Go Generics 101</a> book
+to learn about custom generics.
+</p>
+
+<p>
+In addition, type parameter types (used frequently in custom generics) are deliberately ignored
+in the descriptions of conversion, assignability and comparison rules.
+In other words, this book doesn't consider the situations in which custom generics are involved.
+</p>
+
+</div>
+
+
+
+
+<hr>
+
+<div class="text-center"><a href="#i-101-about.html">Index↡</a></div>
+
+
+
+<hr>
+
+<div id="contact" class="alert alert-success"><small>
+
+<p>
+The <b><i>Go 101</i></b> 프로젝트는 <a href="https://github.com/go101/go101">Github</a>
+에서 호스팅됩니다.
+오타, 문법 오류, 부정확한 표현, 설명 결함, 코드 버그, 끊어진 링크와 같은 모든
+종류의 실수에 대한 수정 사항을 제출하여 Go 101을 개선을 돕는 것은 언제나 환영합니다.
+</p>
+
+<p>
+주기적으로 Go에 대한 깊이 있는 정보를 얻고 싶다면 Go 101의 공식 트위터 계정인
+<a href="https://twitter.com/go100and1">@go100and1</a>을 팔로우하거나
+<a href="https://join.slack.com/t/go-101/shared_invite/zt-y2pvwg00-Oz7lDDJu44l~hZsFRUApiA">Go 101 슬랙 채널</a>에j가입해주세요.
+</p>
+
+</small></div>
+
+<div class="alert alert-warning"><small>
+
+
+<div id="ebooks">
+이 책의 디지털 버전은 아래와 같은 곳을 통해서 구매할 수 있습니다.
+<ul>
+<li>
+	<a href="https://leanpub.com/go101">Leanpub</a>,
+	<i>최소 19.99 달러</i>.
+</li>
+<li>
+	
+	아마존 킨들 스토어, <i>(현재는 사용 불가)</i>.
+</li>
+<li>
+	<a href="https://books.apple.com/book/id1459984231">애플 북 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://play.google.com/store/books/details?id=Dc1wEAAAQBAJ">구글 플레이 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://github.com/go101/go101/releases">무료 전자책</a>,
+	pdf, epub과 azw3 포맷을 지원
+</li>
+</ul>
+	</div>
+<div>
+
+Go 101의 저자인 Tapir는 2016년 7월부터 Go 101 시리즈 책들을 집필하고 go101.org 웹사이트를 유지 관리하고 있습니다.
+새로운 콘텐츠는 책과 웹사이트에 수시로 추가될 예정입니다.
+Tapir는 인디 게임 개발자이기도 합니다.
+<a href="https://www.tapirgames.com">Tapir의 게임</a>을 플레이하여 Go 101을 지원할 수도 있습니다.
+(안드로이드와 아이폰/아이패드용):
+<ul>
+<li>
+	<a href="https://www.tapirgames.com/App/Color-Infection">Color Infection</a> (★★★★★), 140개 이상의 단계로 이루어진 물리 기반의 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Rectangle-Pushers">Rectangle Pushers</a> (★★★★★), 2가지 모드와 104개 이상의 단계로 이루어진 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Let-Us-Play-With-Particles">Let's Play With Particles</a>, 세가지 미니 게임이 있는 캐주얼 액션 게임
+</li>
+</ul>
+</div>
+
+<a href="https://paypal.me/tapirliu">페이팔</a>을 통한 개인 기부도 환영합니다.</small></div>
+
+<hr>
+색인:
+
+
+<div id="book-index">
+
+<!-- kindle starts: 1 -->
+
+<ul class="index part">
+	<li><b class="index" id="i-101-about.html">Go 101에 대해</b> - 이 책이 쓰여진 이유</li>
+	<li><a class="index" href="acknowledgements.html">감사의 말</a></li>
+</ul>
+
+<ul class="index part">
+	<li><a class="index" href="introduction.html">Go 소개</a> - Go를 배우는 가치</li>
+	<li><a class="index" href="go-toolchain.html">Go 툴체인</a> - Go 프로그램을 컴파일하고 실행하는 방법</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 코드에 익숙해지기
+
+	<ul class="index chapters">
+	<li><a class="index" href="basic-code-elements-introduction.html">소스 코드 요소 소개</a></li>
+	<li><a class="index" href="keywords-and-identifiers.html">키워드와 식별자</a></li>
+	<li><a class="index" href="basic-types-and-value-literals.html">기본 자료형과 기본 값 리터럴</a></li>
+	<li><a class="index" href="constants-and-variables.html">상수와 변수</a> - 무형성(untyped) 값과 자료형 추론 소개를 포함</li>
+	<li><a class="index" href="operators.html">일반 연산자</a> - 더 많은 자료형 추론 규칙 소개를 포함</li>
+	<li><a class="index" href="function-declarations-and-calls.html">함수 선언과 호출</a></li>
+	<li><a class="index" href="packages-and-imports.html">코드 패키지와 패키지 들여오기</a></li>
+	<li><a class="index" href="expressions-and-statements.html">표현식, 구문과 단순 구문</a></li>
+	<li><a class="index" href="control-flows.html">기본 흐름 제어</a></li>
+	<li><a class="index" href="control-flows-more.html">고루틴, 지연된 함수 호출과 패닉/복구</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 자료형 체계
+
+	<ul class="index chapters">
+	<li><a class="index" href="type-system-overview.html">Go 자료형 체계 개요</a> - Go 프로그래밍 숙달을 위해 반드시 읽어봐야 하는</li>
+	<li><a class="index" href="pointer.html">포인터</a></li>
+	<li><a class="index" href="struct.html">구조체</a></li>
+	<li><a class="index" href="value-part.html">변수</a> - Go 변수에 대한 더 깊은 이해</li>
+	<li><a class="index" href="container.html">배열, 슬라이스와 맵</a> - 1급 객체 컨테이너 자료형</li>
+	<li><a class="index" href="string.html">문자열</a></li>
+	<li><a class="index" href="function.html">함수</a> - 함수 자료형과 값, 가변 인자 함수</li>
+	<li><a class="index" href="channel.html">채널</a> - Go에서 동시성 동기화를 하는 방법</li>
+	<li><a class="index" href="method.html">메서드</a></li>
+	<li><a class="index" href="interface.html">인터페이스</a> - 리플렉션과 다형성을 하는 값 상자</li>
+	<li><a class="index" href="type-embedding.html">자료형 임베딩</a> - 자료형을 확장하는 방법</li>
+	<li><a class="index" href="unsafe.html">자료형에 안전하지 않는 포인터</a></li>
+	<li><a class="index" href="generic.html">제네릭</a> - 합성 자료형의 사용과 읽는 법</li>
+	<li><a class="index" href="reflection.html">리플렉션</a> - <code>reflect</code> 표준 패키지</li>
+	</ul>
+</li>
+</ul>
+
+<!-- kindle ends: 1 -->
+
+<!-- kindle starts: 2 -->
+
+<ul class="index part">
+<li>
+특별 주제
+
+	<ul class="index chapters">
+	<li><a class="index" href="line-break-rules.html">개행 규칙</a></li>
+	<li><a class="index" href="defer-more.html">지연된 함수 호출 더 알아보기</a></li>
+	<li><a class="index" href="panic-and-recover-use-cases.html">패닉/복구 사용 사례</a></li>
+	<li><a class="index" href="panic-and-recover-more.html">패닉/복구 메커니즘에 대한 고찰</a> - 함수 호출 종료 단계를 포함</li>
+	<li><a class="index" href="blocks-and-scopes.html">코드 블록과 식별자 스코프</a></li>
+	<li><a class="index" href="evaluation-orders.html">표현식 평가 순서</a></li>
+	<li><a class="index" href="value-copy-cost.html">Go의 값 복사 비용</a></li>
+	<li><a class="index" href="bounds-check-elimination.html">경계 검사 제거(BCE)</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+동시성 프로그래밍
+
+	<ul class="index chapters">
+	<li><a class="index" href="concurrent-synchronization-overview.html">동시성 동기화 개요</a></li>
+	<li><a class="index" href="channel-use-cases.html">채널 사용 사례</a></li>
+	<li><a class="index" href="channel-closing.html">채널을 깔끔하게 닫는 방법</a></li>
+	<li><a class="index" href="concurrent-synchronization-more.html">기타 동시성 동기화 기술</a> - <code>sync</code> 표준 패키지</li>
+	<li><a class="index" href="concurrent-atomic-operation.html">원자적 연산</a> - <code>sync/atomic</code> 표준 패키지</li>
+	<li><a class="index" href="memory-model.html">Go의 메모리 순서 보장</a></li>
+	<li><a class="index" href="concurrent-common-mistakes.html">흔히들 저지르는 동시성 프로그래밍 실수들</a></li>
+	</ul>
+
+</li>
+</ul>
+
+
+<ul class="index part">
+<li>
+메모리 관련
+
+	<ul class="index chapters">
+	<li><a class="index" href="memory-block.html">메모리 블록</a></li>
+	<li><a class="index" href="memory-layout.html">메모리 레이아웃</a></li>
+	<li><a class="index" href="memory-leaking.html">메모리 누수 시나리오</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+일부 요약
+
+	<ul class="index chapters">
+	<li><a class="index" href="summaries.html">몇 가지 간단한 요약</a></li>
+	<li><a class="index" href="nil.html">Go의 <code>nil</code></a></li>
+	<li><a class="index" href="value-conversions-assignments-and-comparisons.html">값 변환, 할당과 비교 규칙</a></li>
+	<li><a class="index" href="exceptions.html">구문/의미 예외</a></li>
+	<!-- (to remove) for printing -->
+	<li><a class="index" href="details.html">Go Details 101</a></li>
+	<li><a class="index" href="unofficial-faq.html">Go FAQ 101</a></li>
+	<li><a class="index" href="tips.html">Go Tips 101</a></li>
+	<!-- (to remove) -->
+	</ul>
+
+</li>
+</ul>
+
+<!-- kindle ends: 2 -->
+
+<!-- kindle starts: 0 -->
+
+<ul class="index part">
+<li><a class="index" href="more.html">더 많은 토픽</a></li>
+</ul>
+
+<!-- kindle ends: 0 -->
+
+</div>
+
+
+
+
+
+
+
+
+		</div>
+	</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

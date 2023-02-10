@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Golang online books, articles, tools, etc.">
+		<meta name="author" content="">
+		<meta name="go-version" content="go1.20">
+		<link rel="icon" href="/static/go101/images/101-v1.ico">
+		<link rel="apple-touch-icon" sizes="152x152" href="/static/go101/images/iphone-v1.jpeg">
+	
+		<title>Goroutines, Deferred Function Calls and Panic/Recover -Go 101</title><link id="css-bs" href="/static/bootstrap/v4.0.3-dark/css/bootstrap.min.css" rel="stylesheet">
+		<link id="css-go101" href="/static/go101/css/v991-dark.css" rel="stylesheet">
+		<link id="css-prism" href="/static/prism/2020-08-03-dark/prism.css" rel="stylesheet">
+		<script id="js-prism" src="/static/prism/2020-08-03-dark/prism.js"></script>
+
+
+		<script src="/static/jquery/jquery.min-v1.11.2.js"></script>
+		<script src="/static/go101/js/v5.js"></script>
+		
+		
+		<style>
+		div, p, ul, li, td, th {line-height: 1.55;}
+		</style>
+
+		<script>
+		var theme = ""
+		</script>
+	</head>
+
+	<body>
+		<div class="container">
+
+		<div class="row nav-bar-with-borders">
+	<div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/"><small>Home</small></a> <span class="new-text"><sup>new!</sup></span>
+	</div><div class="col-xs-6 col-sm-4 nav-item-active">
+		<a href="/article/101.html"><small>Go 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/generics/101.html"><small>Go Generics 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/details-and-tips/101.html"><small>Go Details &amp; Tips 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/optimizations/101.html"><small>Go Optimizations 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/quizzes/101.html"><small>Go Quizzes 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go HowTo 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Practices 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Agg 101</small></div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/blog/101.html"><small>Go 101 Blog</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/apps-and-libs/101.html"><small>Go 101 Apps &amp; Libs</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;" id="theme-switch"><small>테마: 다크/라이트</small></div>
+
+</div>
+
+<div class="alert alert-warning text-center"><small>
+현재 3권의 신간들인 <a href="/optimizations/101.html">Go Optimizations 101</a>,
+<a href="/details-and-tips/101.html">Go Details &amp; Tips 101</a>
+과 <a href="/generics/101.html">Go Generics 101</a>이 출간되어 있습니다.
+Leanpub 서점에서 <a href="https://leanpub.com/b/go-optimizations-details-generics">번들</a>을 모두 구입하시는 방법이 비용 대비 효율이 가장 좋습니다.
+<p></p>
+Go에 대한 많은 정보들과 Go 101 책들의 최신 소식을 얻으시려면 Go 101 트위터 계정인 <a href="https://twitter.com/go100and1">@Go100and1</a>을
+팔로잉 해주세요.
+</small></div>
+<p>
+</p>
+
+
+
+<h1>Goroutines, Deferred Function Calls and Panic/Recover</h1>
+
+
+
+<p>
+This article will introduce goroutines and deferred function calls.
+Goroutine and deferred function call are two unique features in Go.
+This article also explains panic and recover mechanism.
+Not all knowledge relating to these features is covered in this
+article, more will be introduced in future articles.
+</p>
+
+<a class="anchor" id="goroutine"></a>
+<h3>Goroutines</h3>
+
+<div>
+<p>
+Modern CPUs often have multiple cores, and some CPU cores support hyper-threading.
+In other words, modern CPUs can process multiple instruction pipelines simultaneously.
+To fully use the power of modern CPUs,
+we need to do concurrent programming in coding our programs.
+</p>
+
+<p>
+Concurrent computing is a form of computing in which
+several computations are executed during overlapping time periods.
+The following picture depicts two concurrent computing cases.
+In the picture, A and B represent two separate computations.
+The second case is also called parallel computing,
+which is special concurrent computing.
+In the first case, A and B are only in parallel during a small piece of time.
+</p>
+
+<div class="text-center">
+<img src="res/concurrent-vs-parallel.png" alt="concurrent and parallel"></img>
+</div>
+
+<p>
+Concurrent computing may happen in a program, a computer, or a network.
+In Go 101, we only talk about program-scope concurrent computing.
+Goroutine is the Go way to create concurrent computations in Go programming.
+</p>
+
+<p>
+Goroutines are also often called green threads.
+Green threads are maintained and scheduled by
+the language runtime instead of the operating systems.
+The cost of memory consumption and context switching,
+of a goroutine is much lesser than an OS thread.
+So, it is not a problem for a Go program to maintain tens of thousands
+goroutines at the same time, as long as the system memory is sufficient.
+</p>
+
+<p>
+Go doesn't support the creation of system threads in user code.
+So, using goroutines is the only way to do (program scope) concurrent programming in Go.
+</p>
+
+<p>
+Each Go program starts with only one goroutine, we call it the main goroutine.
+A goroutine can create new goroutines.
+It is super easy to create a new goroutine in Go,
+just use the keyword <code>go</code> followed by a function call.
+The function call will then be executed in a newly created goroutine.
+The newly created goroutine will exit alongside the exit of the called function.
+</p>
+
+All the result values of a goroutine function call
+(if the called function returns values)
+must be discarded in the function call statement.
+The following is an example which creates two new goroutines
+in the main goroutine.
+In the example, <code>time.Duration</code> is a custom type defined
+in the <code>time</code> standard package.
+Its underlying type is the built-in type <code>int64</code>.
+Underlying types will be explained in <a href="type-system-overview.html#underlying-type">the next article</a>.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import (
+	"log"
+	"math/rand"
+	"time"
+)
+
+func SayGreetings(greeting string, times int) {
+	for i := 0; i < times; i++ {
+		log.Println(greeting)
+		d := time.Second * time.Duration(rand.Intn(5)) / 2
+		time.Sleep(d) // sleep for 0 to 2.5 seconds
+	}
+}
+
+func main() {
+	rand.Seed(time.Now().UnixNano()) // needed before Go 1.20
+	log.SetFlags(0)
+	go SayGreetings("hi!", 10)
+	go SayGreetings("hello!", 10)
+	time.Sleep(2 * time.Second)
+}
+</code></pre>
+
+Quite easy. Right? We do concurrent programming now!
+The above program may have three user-created goroutines running
+simultaneously at its peak during run time.
+Let's run it. One possible output result:
+
+<pre class="output"><code>hi!
+hello!
+hello!
+hello!
+hello!
+hi!
+</code></pre>
+
+<p>
+</p>
+
+<p>
+When the main goroutine exits, the whole program also exits,
+even if there are still some other goroutines which have not exited yet.
+</p>
+
+<p>
+Unlike previous articles, this program uses the <code>Println</code>
+function in the <code>log</code> standard package instead of the
+corresponding function in the <code>fmt</code> standard package.
+The reason is the print functions in the <code>log</code> standard
+package are synchronized (the next section will explain what synchronizations are),
+so the texts printed by the two goroutines
+will not be messed up in one line (though the chance of the printed texts
+being messed up by using the print functions in the <code>fmt</code>
+standard package is very small for this specific program).
+</p>
+
+</div>
+
+<a class="anchor" id="synchronization"></a>
+<h3>Concurrency Synchronization</h3>
+
+<div>
+
+Concurrent computations may share resources, generally memory resource.
+The following are some circumstances that may occur during concurrent computing:
+<ul>
+<li>
+	In the same period that one computation is writing data to a memory segment,
+	another computation is reading data from the same memory segment.
+	Then the integrity of the data read by the other computation might be not preserved.
+</li>
+<li>
+	In the same period that one computation is writing data to a memory segment,
+	another computation is also writing data to the same memory segment.
+	Then the integrity of the data stored at the memory segment might be not preserved.
+</li>
+</ul>
+
+<p>
+These circumstances are called data races. One of the duties in concurrent
+programming is to control resource sharing among concurrent computations,
+so that data races will never happen.
+The ways to implement this duty are called concurrency synchronizations,
+or data synchronizations, which will be introduced one by one in later Go 101 articles.
+</p>
+
+Other duties in concurrent programming include
+<ul>
+<li>
+	determine how many computations are needed.
+</li>
+<li>
+	determine when to start, block, unblock and end a computation.
+</li>
+<li>
+	determine how to distribute workload among concurrent computations.
+</li>
+</ul>
+
+<p>
+The program shown in the last section is not perfect.
+The two new goroutines are intended to print ten greetings each.
+However, the main goroutine will exit in two seconds,
+so many greetings don't have a chance to get printed.
+How to let the main goroutine know when the two new goroutines
+have both finished their tasks?
+We must use something called concurrency synchronization techniques.
+</p>
+
+<p>
+Go supports several
+<a href="concurrent-synchronization-overview.html">concurrency synchronization techniques</a>.
+Among them, <a href="channel.html">the channel technique</a> is the most unique and popularly used one.
+However, for simplicity, here we will use another technique,
+the <code>WaitGroup</code> type in the <code>sync</code> standard package,
+to synchronize the executions between the two new goroutines and the main goroutine.
+</p>
+
+The <code>WaitGroup</code> type has three methods (special functions, will be explained later):
+<code>Add</code>, <code>Done</code> and <code>Wait</code>.
+This type will be explained in detail later in another article.
+Here we can simply think
+<ul>
+<li>
+	the <code>Add</code> method is used to register the number of new tasks.
+</li>
+<li>
+	the <code>Done</code> method is used to notify that a task is finished.
+</li>
+<li>
+	and the <code>Wait</code> method makes the caller goroutine become blocking until all registered tasks are finished.
+</li>
+</ul>
+
+Example:
+<pre class="line-numbers"><code class="language-go">package main
+
+import (
+	"log"
+	"math/rand"
+	"time"
+	"sync"
+)
+
+var wg sync.WaitGroup
+
+func SayGreetings(greeting string, times int) {
+	for i := 0; i < times; i++ {
+		log.Println(greeting)
+		d := time.Second * time.Duration(rand.Intn(5)) / 2
+		time.Sleep(d)
+	}
+	// Notify a task is finished.
+	wg.Done() // <=> wg.Add(-1)
+}
+
+func main() {
+	rand.Seed(time.Now().UnixNano()) // needed before Go 1.20
+	log.SetFlags(0)
+	wg.Add(2) // register two tasks.
+	go SayGreetings("hi!", 10)
+	go SayGreetings("hello!", 10)
+	wg.Wait() // block until all tasks are finished.
+}
+</code></pre>
+
+<p>
+Run it, we can find that, before the program exits,
+each of the two new goroutines prints ten greetings.
+</p>
+
+</div>
+
+<a class="anchor" id="states-of-goroutine"></a>
+<h3>Goroutine States</h3>
+
+<div>
+<p>
+The last example shows that a live goroutine may stay in (and switch between)
+two states, <b>running</b> and <b>blocking</b>.
+In that example, the main goroutine enters the blocking state when the
+<code>wg.Wait</code> method is called, and enter running state again
+when the other two goroutines both finish their respective tasks.
+</p>
+
+<p>
+The following picture depicts a possible lifecycle of a goroutine.
+</p>
+
+<div class="text-center">
+<img src="res/goroutine-states.png" alt="goroutine states"></img>
+</div>
+
+<p>
+Note, a goroutine is still considered to be 'running' if it is asleep (after calling <code>time.Sleep</code> function)
+or awaiting the response of a system call or a network connection.
+</p>
+
+<p>
+When a new goroutine is created, it will enter the 'running' state automatically.
+Goroutines can only exit from running state, and never from blocking state.
+If, for any reason, a goroutine stays in blocking state forever,
+then it will never exit.
+Such cases, except some rare ones, should be avoided in concurrent programming.
+</p>
+
+<p>
+A blocking goroutine can only be unblocked by
+an operation made in another goroutine.
+If all goroutines in a Go program are in blocking state,
+then all of them will stay in blocking state forever.
+This can be viewed as an overall deadlock.
+When this happens in a program, the standard Go runtime
+will try to crash the program.
+</p>
+
+The following program will crash, after two seconds:
+<pre class="line-numbers"><code class="language-go">package main
+
+import (
+	"sync"
+	"time"
+)
+
+var wg sync.WaitGroup
+
+func main() {
+	wg.Add(1)
+	go func() {
+		time.Sleep(time.Second * 2)
+		wg.Wait()
+	}()
+	wg.Wait()
+}
+</code></pre>
+
+The output:
+<pre class="output"><code>fatal error: all goroutines are asleep - deadlock!
+
+...
+</code></pre>
+
+<p>
+Later, we will learn more operations which will make goroutines enter blocking state.
+</p>
+
+</div>
+
+<h3>Goroutine Schedule</h3>
+
+<p>
+Not all goroutines in running state are being executed at a given time.
+At any given time, the maximum number of goroutines being executed will
+not exceed the number of logical CPUs available for the current program.
+We can call the <a href="https://golang.org/pkg/runtime/#NumCPU"><code>runtime.NumCPU</code></a>
+function to get the number of logical CPUs available for the current program.
+Each logical CPU can only execute one goroutine at any given time.
+Go runtime must frequently switch execution contexts between goroutines
+to let each running goroutine have a chance to execute.
+This is similar to how operating systems switch execution contexts between OS threads.
+</p>
+
+<p>
+The following picture depicts a more detailed possible lifecycle for a goroutine.
+In the picture, the running state is divided into several more sub-states.
+A goroutine in the queuing sub-state is waiting to be executed.
+A goroutine in the executing sub-state may enter the queuing sub-state
+again when it has been executed for a while (a very small piece of time).
+</p>
+
+<div class="text-center">
+<img src="res/goroutine-schedule.png" alt="goroutine sub-states"></img>
+</div>
+
+<p>
+Please note, for simplicity, the sub-states shown in the above
+picture will be not mentioned in other articles in Go 101.
+And again, in Go 101, the sleeping and system calling sub-states are not viewed
+as sub-states of the blocking state.
+</p>
+
+<p>
+The standard Go runtime adopts the
+<a href="https://docs.google.com/document/d/1TTj4T2JO42uD5ID9e89oa0sLKhJYD0Y_kqxDv3I3XMw">M-P-G model</a>
+to do the goroutine schedule job,
+where <b>M</b> represents OS threads,
+<b>P</b> represents logical/virtual processors (not logical CPUs)
+and <b>G</b> represents goroutines.
+Most schedule work is made by logical processors (<b>P</b>s),
+which act as brokers by attaching goroutines (<b>G</b>s) to OS threads (<b>M</b>s).
+Each OS thread can only be attached to at most one goroutine at any given time,
+and each goroutine can only be attached to at most one OS thread at any given time.
+A goroutine can only get executed when it is attached to an OS thread.
+A goroutine which has been executed for a while will try to detach itself from the corresponding OS thread,
+so that other running goroutines can have a chance to get attached and executed.
+</p>
+
+<p>
+At runtime. we can call the <a href="https://golang.org/pkg/runtime/#GOMAXPROCS"><code>runtime.GOMAXPROCS</code></a>
+function to get and set the number of logical processors (<b>P</b>s).
+For the standard Go runtime, before Go 1.5, the default initial value of this number is <code>1</code>,
+but since Go 1.5, the default initial value of this number is equal to
+the number of logical CPUs available for the current running program.
+The default initial value (the number of logical CPUs) is the best choice for most programs.
+But for some file IO heavy programs, a <code>GOMAXPROCS</code> value larger than <code>runtime.NumCPU()</code> may be helpful.
+</p>
+
+<p>
+The default initial value of <code>runtime.GOMAXPROCS</code> can also be set through the <code>GOMAXPROCS</code> environment variable.
+</p>
+
+<p>
+At any time, the number of goroutines in the executing sub-state is no more than
+the smaller one of <code>runtime.NumCPU</code> and <code>runtime.GOMAXPROCS</code>.
+</p>
+
+<a class="anchor" id="defer"></a>
+<h3>Deferred Function Calls</h3>
+
+<div>
+<p>
+A deferred function call is a function call which follows a <code>defer</code> keyword.
+The <code>defer</code> keyword and the deferred function call together form a defer statement. 
+Like goroutine function calls,
+all the results of the function call (if the called function has return results)
+must be discarded in the function call statement.
+</p>
+
+<p>
+When a defer statement is executed, the deferred function call is not executed immediately.
+Instead, it is pushed into a deferred call queue maintained by its caller goroutine.
+After a function call <code>fc(...)</code> returns (but has not fully existed yet)
+and enters its <a href="function-declarations-and-calls.html#exiting-phase">exiting phase</a>,
+all the deferred function calls pushed into the deferred call queue
+during executing the function call will be removed from the deferred call queue and executed,
+in first-in, last-out order, that is, the reverse of the order
+in which they were pushed into the deferred call queue.
+Once all these deferred calls are executed,
+the function call <code>fc(...)</code> fully exits.
+</p>
+
+Here is a simple example to show how to use deferred function calls.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+func main() {
+	defer fmt.Println("The third line.")
+	defer fmt.Println("The second line.")
+	fmt.Println("The first line.")
+}
+</code></pre>
+
+The output:
+<pre class="output"><code>The first line.
+The second line.
+The third line.
+</code></pre>
+
+<p>
+</p>
+
+Here is another example which is a little more complex.
+The example will print <code>0</code> to <code>9</code>,
+each per line, by their natural order.
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+func main() {
+	defer fmt.Println("9")
+	fmt.Println("0")
+	defer fmt.Println("8")
+	fmt.Println("1")
+	if false {
+		defer fmt.Println("not reachable")
+	}
+	defer func() {
+		defer fmt.Println("7")
+		fmt.Println("3")
+		defer func() {
+			fmt.Println("5")
+			fmt.Println("6")
+		}()
+		fmt.Println("4")
+	}()
+	fmt.Println("2")
+	return
+	defer fmt.Println("not reachable")
+}
+</code></pre>
+
+<p>
+</p>
+</div>
+
+<a class="anchor" id="defer-modify-results"></a>
+<h3>Deferred Function Calls Can Modify the Named Return Results of Nesting Functions</h3>
+
+<div>
+For example,
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+func Triple(n int) (r int) {
+	defer func() {
+		r += n // modify the return value
+	}()
+
+	return n + n // <=> r = n + n; return
+}
+
+func main() {
+	fmt.Println(Triple(5)) // 15
+}
+</code></pre>
+</div>
+
+<a class="anchor" id="argument-evaluation-moment"></a>
+<h3>The Evaluation Moment of the Arguments of Deferred Function Calls</h3>
+
+<div>
+
+<p>
+The arguments of a deferred function call
+are all evaluated at the moment when the corresponding defer statement is executed
+(a.k.a. when the deferred call is pushed into the deferred call queue).
+The evaluation results are used when the deferred call is executed later during
+the existing phase of the surrounding call (the caller of the deferred call).
+</p>
+
+<p>
+The expressions within the body of an anonymous function call,
+whether the call is a general call or a deferred/goroutine call,
+are evaluated during the anonymous function call is executed.
+</p>
+
+Here is an example.
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+func main() {
+	func() {
+		for i := 0; i < 3; i++ {
+			defer fmt.Println("a:", i)
+		}
+	}()
+	fmt.Println()
+	func() {
+		for i := 0; i < 3; i++ {
+			defer func() {
+				fmt.Println("b:", i)
+			}()
+		}
+	}()
+}
+</code></pre>
+
+Run it. The output:
+<pre class="output"><code>a: 2
+a: 1
+a: 0
+
+b: 3
+b: 3
+b: 3
+</code></pre>
+
+<p>
+The first loop prints <code>i</code> as <code>2</code>, <code>1</code> and <code>0</code> as a sequence.
+The second loop always prints <code>i</code> as <code>3</code>,
+because when the three <code>fmt.Println</code> calls within the anonymous function are invoked,
+the value of the loop variable <code>i</code> has changed to <code>3</code>.
+</p>
+
+To make the second loop print the same result as the first one,
+we can modify the second loop as
+
+<pre class="line-numbers"><code class="language-go">		for i := 0; i < 3; i++ {
+			defer func(i int) {
+				// The "i" is the input parameter.
+				fmt.Println("b:", i)
+			}(i)
+		}
+</code></pre>
+
+or
+
+<pre class="line-numbers"><code class="language-go">		for i := 0; i < 3; i++ {
+			i := i // <=> var i = i
+			defer func() {
+				// The "i" is not the loop variable.
+				fmt.Println("b:", i)
+			}()
+		}
+</code></pre>
+
+<p>
+</p>
+
+The same argument valuation moment rules also apply to goroutine function calls.
+The following program will output <code>123 789</code>.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+import "time"
+
+func main() {
+	var a = 123
+	go func(x int) {
+		time.Sleep(time.Second)
+		fmt.Println(x, a) // 123 789
+	}(a)
+
+	a = 789
+
+	time.Sleep(2 * time.Second)
+}
+</code></pre>
+
+<p>
+By the way, it is not a good idea to do synchronizations by using <code>time.Sleep</code> calls in formal projects.
+If the program runs on a computer which CPUs are occupied by many other
+programs running on the computer, the newly created goroutine may never
+get a chance to execute before the program exits.
+We should use the concurrency synchronization techniques introduced in the article
+<a href="concurrent-synchronization-overview.html">concurrency synchronization overview</a>
+to do synchronizations in formal projects.
+</p>
+
+</div>
+
+<h3>The Necessity of the Deferred Function Feature</h3>
+
+<p>
+In the above examples, the deferred function calls are not absolutely necessary.
+However, the deferred function call feature is a necessary feature for the
+panic and recover mechanism which will be introduced below.
+</p>
+
+<p>
+Deferred function calls can also help us write cleaner and more robust code.
+We can read more code examples that make use of deferred function calls
+and learn more details on deferred function calls in the article
+<a href="defer-more.html">more about deferred functions</a> later. For now,
+we will explore the importance of deferred functions for panic and recovery.
+</p>
+
+
+<a class="anchor" id="panic-recover"></a>
+<h3>Panic and Recover</h3>
+
+<p>
+Go doesn't support exception throwing and catching,
+instead explicit error handling is preferred to use in Go programming.
+In fact, Go supports an exception throw/catch alike mechanism.
+The mechanism is called panic/recover.
+</p>
+
+<p>
+We can call the built-in <code>panic</code> function to create a panic
+to make the current goroutine enter panicking status.
+</p>
+
+<p>
+Panicking is another way to make a function return.
+Once a panic occurs in a function call, the function call returns immediately
+and enters its exiting phase.
+</p>
+
+<p>
+By calling the built-in <code>recover</code> function in a deferred call,
+an alive panic in the current goroutine can be removed
+so that the current goroutine will enter normal calm status again.
+</p>
+
+<p>
+If a panicking goroutine exits without being recovered, it will make the whole program crash.
+</p>
+
+The built-in <code>panic</code> and <code>recover</code> functions are
+declared as
+<pre class="line-numbers"><code class="language-go">func panic(v interface{})
+func recover() interface{}
+</code></pre>
+
+<p>
+Interface types and values will be explained in the article
+<a href="interface.html">interfaces in Go</a> later.
+Here, we just need to know that the blank interface type
+<code>interface{}</code> can be viewed as the <code>any</code> type
+or the <code>Object</code> type in many other languages. In other words,
+we can pass a value of any type to a <code>panic</code> function call.
+</p>
+
+<p>
+The value returned by a <code>recover</code> function call is the value
+a <code>panic</code> function call consumed.
+</p>
+
+The example below shows how to create a panic and how to recover from it.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+func main() {
+	defer func() {
+		fmt.Println("exit normally.")
+	}()
+	fmt.Println("hi!")
+	defer func() {
+		v := recover()
+		fmt.Println("recovered:", v)
+	}()
+	panic("bye!")
+	fmt.Println("unreachable")
+}
+</code></pre>
+
+The output:
+
+<pre class="output"><code>hi!
+recovered: bye!
+exit normally.
+</code></pre>
+
+<p>
+</p>
+
+Here is another example which shows a panicking goroutine exits without being recovered.
+So the whole program crashes.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	fmt.Println("hi!")
+
+	go func() {
+		time.Sleep(time.Second)
+		panic(123)
+	}()
+
+	for {
+		time.Sleep(time.Second)
+	}
+}
+</code></pre>
+
+The output:
+
+<pre class="output"><code>hi!
+panic: 123
+
+goroutine 5 [running]:
+...
+</code></pre>
+
+<p>
+</p>
+
+Go runtime will create panics for some circumstances,
+such as dividing an integer by zero. For example,
+
+<pre class="line-numbers"><code class="language-go">package main
+
+func main() {
+	a, b := 1, 0
+	_ = a/b
+}
+</code></pre>
+
+The output:
+
+<pre class="output"><code>panic: runtime error: integer divide by zero
+
+goroutine 1 [running]:
+...
+</code></pre>
+
+<p>
+</p>
+
+<p>
+More runtime panic circumstances will be mentioned
+in later Go 101 articles.
+</p>
+
+<p>
+Generally, panics are used for logic errors, such as careless human errors.
+Logic errors should never happen at run time.
+If they happen, there must be bugs in the code.
+On the other hand, non-logic errors are hard to absolutely avoid at run time.
+In other words, non-logic errors are errors happening in reality.
+Such errors should not cause panics and should be explicitly returned and handled properly.
+</p>
+
+<p>
+We can learn <a href="panic-and-recover-use-cases.html">some panic/recover use cases</a>
+and <a href="panic-and-recover-more.html">more about panic/recover mechanism</a> later.
+</p>
+
+<h3>Some Fatal Errors Are Not Panics and They Are Unrecoverable</h3>
+
+<p>
+For the standard Go compiler, some fatal errors,
+such as stack overflow and out of memory are not recoverable.
+Once they occur, program will crash.
+</p>
+
+
+
+<hr>
+
+<div class="text-center"><a href="#i-control-flows-more.html">Index↡</a></div>
+
+
+
+<hr>
+
+<div id="contact" class="alert alert-success"><small>
+
+<p>
+The <b><i>Go 101</i></b> 프로젝트는 <a href="https://github.com/go101/go101">Github</a>
+에서 호스팅됩니다.
+오타, 문법 오류, 부정확한 표현, 설명 결함, 코드 버그, 끊어진 링크와 같은 모든
+종류의 실수에 대한 수정 사항을 제출하여 Go 101을 개선을 돕는 것은 언제나 환영합니다.
+</p>
+
+<p>
+주기적으로 Go에 대한 깊이 있는 정보를 얻고 싶다면 Go 101의 공식 트위터 계정인
+<a href="https://twitter.com/go100and1">@go100and1</a>을 팔로우하거나
+<a href="https://join.slack.com/t/go-101/shared_invite/zt-y2pvwg00-Oz7lDDJu44l~hZsFRUApiA">Go 101 슬랙 채널</a>에j가입해주세요.
+</p>
+
+</small></div>
+
+<div class="alert alert-warning"><small>
+
+
+<div id="ebooks">
+이 책의 디지털 버전은 아래와 같은 곳을 통해서 구매할 수 있습니다.
+<ul>
+<li>
+	<a href="https://leanpub.com/go101">Leanpub</a>,
+	<i>최소 19.99 달러</i>.
+</li>
+<li>
+	
+	아마존 킨들 스토어, <i>(현재는 사용 불가)</i>.
+</li>
+<li>
+	<a href="https://books.apple.com/book/id1459984231">애플 북 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://play.google.com/store/books/details?id=Dc1wEAAAQBAJ">구글 플레이 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://github.com/go101/go101/releases">무료 전자책</a>,
+	pdf, epub과 azw3 포맷을 지원
+</li>
+</ul>
+	</div>
+<div>
+
+Go 101의 저자인 Tapir는 2016년 7월부터 Go 101 시리즈 책들을 집필하고 go101.org 웹사이트를 유지 관리하고 있습니다.
+새로운 콘텐츠는 책과 웹사이트에 수시로 추가될 예정입니다.
+Tapir는 인디 게임 개발자이기도 합니다.
+<a href="https://www.tapirgames.com">Tapir의 게임</a>을 플레이하여 Go 101을 지원할 수도 있습니다.
+(안드로이드와 아이폰/아이패드용):
+<ul>
+<li>
+	<a href="https://www.tapirgames.com/App/Color-Infection">Color Infection</a> (★★★★★), 140개 이상의 단계로 이루어진 물리 기반의 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Rectangle-Pushers">Rectangle Pushers</a> (★★★★★), 2가지 모드와 104개 이상의 단계로 이루어진 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Let-Us-Play-With-Particles">Let's Play With Particles</a>, 세가지 미니 게임이 있는 캐주얼 액션 게임
+</li>
+</ul>
+</div>
+
+<a href="https://paypal.me/tapirliu">페이팔</a>을 통한 개인 기부도 환영합니다.</small></div>
+
+<hr>
+색인:
+
+
+<div id="book-index">
+
+<!-- kindle starts: 1 -->
+
+<ul class="index part">
+	<li><a class="index" href="101-about.html">Go 101에 대해</a> - 이 책이 쓰여진 이유</li>
+	<li><a class="index" href="acknowledgements.html">감사의 말</a></li>
+</ul>
+
+<ul class="index part">
+	<li><a class="index" href="introduction.html">Go 소개</a> - Go를 배우는 가치</li>
+	<li><a class="index" href="go-toolchain.html">Go 툴체인</a> - Go 프로그램을 컴파일하고 실행하는 방법</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 코드에 익숙해지기
+
+	<ul class="index chapters">
+	<li><a class="index" href="basic-code-elements-introduction.html">소스 코드 요소 소개</a></li>
+	<li><a class="index" href="keywords-and-identifiers.html">키워드와 식별자</a></li>
+	<li><a class="index" href="basic-types-and-value-literals.html">기본 자료형과 기본 값 리터럴</a></li>
+	<li><a class="index" href="constants-and-variables.html">상수와 변수</a> - 무형성(untyped) 값과 자료형 추론 소개를 포함</li>
+	<li><a class="index" href="operators.html">일반 연산자</a> - 더 많은 자료형 추론 규칙 소개를 포함</li>
+	<li><a class="index" href="function-declarations-and-calls.html">함수 선언과 호출</a></li>
+	<li><a class="index" href="packages-and-imports.html">코드 패키지와 패키지 들여오기</a></li>
+	<li><a class="index" href="expressions-and-statements.html">표현식, 구문과 단순 구문</a></li>
+	<li><a class="index" href="control-flows.html">기본 흐름 제어</a></li>
+	<li><b class="index" id="i-control-flows-more.html">고루틴, 지연된 함수 호출과 패닉/복구</b></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 자료형 체계
+
+	<ul class="index chapters">
+	<li><a class="index" href="type-system-overview.html">Go 자료형 체계 개요</a> - Go 프로그래밍 숙달을 위해 반드시 읽어봐야 하는</li>
+	<li><a class="index" href="pointer.html">포인터</a></li>
+	<li><a class="index" href="struct.html">구조체</a></li>
+	<li><a class="index" href="value-part.html">변수</a> - Go 변수에 대한 더 깊은 이해</li>
+	<li><a class="index" href="container.html">배열, 슬라이스와 맵</a> - 1급 객체 컨테이너 자료형</li>
+	<li><a class="index" href="string.html">문자열</a></li>
+	<li><a class="index" href="function.html">함수</a> - 함수 자료형과 값, 가변 인자 함수</li>
+	<li><a class="index" href="channel.html">채널</a> - Go에서 동시성 동기화를 하는 방법</li>
+	<li><a class="index" href="method.html">메서드</a></li>
+	<li><a class="index" href="interface.html">인터페이스</a> - 리플렉션과 다형성을 하는 값 상자</li>
+	<li><a class="index" href="type-embedding.html">자료형 임베딩</a> - 자료형을 확장하는 방법</li>
+	<li><a class="index" href="unsafe.html">자료형에 안전하지 않는 포인터</a></li>
+	<li><a class="index" href="generic.html">제네릭</a> - 합성 자료형의 사용과 읽는 법</li>
+	<li><a class="index" href="reflection.html">리플렉션</a> - <code>reflect</code> 표준 패키지</li>
+	</ul>
+</li>
+</ul>
+
+<!-- kindle ends: 1 -->
+
+<!-- kindle starts: 2 -->
+
+<ul class="index part">
+<li>
+특별 주제
+
+	<ul class="index chapters">
+	<li><a class="index" href="line-break-rules.html">개행 규칙</a></li>
+	<li><a class="index" href="defer-more.html">지연된 함수 호출 더 알아보기</a></li>
+	<li><a class="index" href="panic-and-recover-use-cases.html">패닉/복구 사용 사례</a></li>
+	<li><a class="index" href="panic-and-recover-more.html">패닉/복구 메커니즘에 대한 고찰</a> - 함수 호출 종료 단계를 포함</li>
+	<li><a class="index" href="blocks-and-scopes.html">코드 블록과 식별자 스코프</a></li>
+	<li><a class="index" href="evaluation-orders.html">표현식 평가 순서</a></li>
+	<li><a class="index" href="value-copy-cost.html">Go의 값 복사 비용</a></li>
+	<li><a class="index" href="bounds-check-elimination.html">경계 검사 제거(BCE)</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+동시성 프로그래밍
+
+	<ul class="index chapters">
+	<li><a class="index" href="concurrent-synchronization-overview.html">동시성 동기화 개요</a></li>
+	<li><a class="index" href="channel-use-cases.html">채널 사용 사례</a></li>
+	<li><a class="index" href="channel-closing.html">채널을 깔끔하게 닫는 방법</a></li>
+	<li><a class="index" href="concurrent-synchronization-more.html">기타 동시성 동기화 기술</a> - <code>sync</code> 표준 패키지</li>
+	<li><a class="index" href="concurrent-atomic-operation.html">원자적 연산</a> - <code>sync/atomic</code> 표준 패키지</li>
+	<li><a class="index" href="memory-model.html">Go의 메모리 순서 보장</a></li>
+	<li><a class="index" href="concurrent-common-mistakes.html">흔히들 저지르는 동시성 프로그래밍 실수들</a></li>
+	</ul>
+
+</li>
+</ul>
+
+
+<ul class="index part">
+<li>
+메모리 관련
+
+	<ul class="index chapters">
+	<li><a class="index" href="memory-block.html">메모리 블록</a></li>
+	<li><a class="index" href="memory-layout.html">메모리 레이아웃</a></li>
+	<li><a class="index" href="memory-leaking.html">메모리 누수 시나리오</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+일부 요약
+
+	<ul class="index chapters">
+	<li><a class="index" href="summaries.html">몇 가지 간단한 요약</a></li>
+	<li><a class="index" href="nil.html">Go의 <code>nil</code></a></li>
+	<li><a class="index" href="value-conversions-assignments-and-comparisons.html">값 변환, 할당과 비교 규칙</a></li>
+	<li><a class="index" href="exceptions.html">구문/의미 예외</a></li>
+	<!-- (to remove) for printing -->
+	<li><a class="index" href="details.html">Go Details 101</a></li>
+	<li><a class="index" href="unofficial-faq.html">Go FAQ 101</a></li>
+	<li><a class="index" href="tips.html">Go Tips 101</a></li>
+	<!-- (to remove) -->
+	</ul>
+
+</li>
+</ul>
+
+<!-- kindle ends: 2 -->
+
+<!-- kindle starts: 0 -->
+
+<ul class="index part">
+<li><a class="index" href="more.html">더 많은 토픽</a></li>
+</ul>
+
+<!-- kindle ends: 0 -->
+
+</div>
+
+
+
+
+
+
+
+
+		</div>
+	</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,2815 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Golang online books, articles, tools, etc.">
+		<meta name="author" content="">
+		<meta name="go-version" content="go1.20">
+		<link rel="icon" href="/static/go101/images/101-v1.ico">
+		<link rel="apple-touch-icon" sizes="152x152" href="/static/go101/images/iphone-v1.jpeg">
+	
+		<title>Go Details 101 -Go 101</title><link id="css-bs" href="/static/bootstrap/v4.0.3-dark/css/bootstrap.min.css" rel="stylesheet">
+		<link id="css-go101" href="/static/go101/css/v991-dark.css" rel="stylesheet">
+		<link id="css-prism" href="/static/prism/2020-08-03-dark/prism.css" rel="stylesheet">
+		<script id="js-prism" src="/static/prism/2020-08-03-dark/prism.js"></script>
+
+
+		<script src="/static/jquery/jquery.min-v1.11.2.js"></script>
+		<script src="/static/go101/js/v5.js"></script>
+		
+		
+		<style>
+		div, p, ul, li, td, th {line-height: 1.55;}
+		</style>
+
+		<script>
+		var theme = ""
+		</script>
+	</head>
+
+	<body>
+		<div class="container">
+
+		<div class="row nav-bar-with-borders">
+	<div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/"><small>Home</small></a> <span class="new-text"><sup>new!</sup></span>
+	</div><div class="col-xs-6 col-sm-4 nav-item-active">
+		<a href="/article/101.html"><small>Go 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/generics/101.html"><small>Go Generics 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/details-and-tips/101.html"><small>Go Details &amp; Tips 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/optimizations/101.html"><small>Go Optimizations 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/quizzes/101.html"><small>Go Quizzes 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go HowTo 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Practices 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Agg 101</small></div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/blog/101.html"><small>Go 101 Blog</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/apps-and-libs/101.html"><small>Go 101 Apps &amp; Libs</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;" id="theme-switch"><small>테마: 다크/라이트</small></div>
+
+</div>
+
+<div class="alert alert-warning text-center"><small>
+현재 3권의 신간들인 <a href="/optimizations/101.html">Go Optimizations 101</a>,
+<a href="/details-and-tips/101.html">Go Details &amp; Tips 101</a>
+과 <a href="/generics/101.html">Go Generics 101</a>이 출간되어 있습니다.
+Leanpub 서점에서 <a href="https://leanpub.com/b/go-optimizations-details-generics">번들</a>을 모두 구입하시는 방법이 비용 대비 효율이 가장 좋습니다.
+<p></p>
+Go에 대한 많은 정보들과 Go 101 책들의 최신 소식을 얻으시려면 Go 101 트위터 계정인 <a href="https://twitter.com/go100and1">@Go100and1</a>을
+팔로잉 해주세요.
+</small></div>
+<p>
+</p>
+
+
+
+<h1>Go Details 101</h1>
+
+
+
+<div>
+Index:
+
+<ul class="summaries" id="details.html">
+<li>
+	Code package related details:
+	<ul class="index">
+	<li>
+		<a class="index" href="#import-package-multiple-times">A package can be imported more than once in a source file.</a>
+	</li>
+	<!--li>
+		<a class="index" href="#force-import-path">The comment <code>// import "x.y.z/mypkg"</code> following <code>package mypkg</code> is meaningful for the standard Go compiler.</a>
+	</li-->
+	</ul>
+</li>
+<li>
+	Control flow related details:
+	<ul class="index">
+	<li>
+		<a class="index" href="#default-branch-position">The <code>default</code> branch in <code>switch</code> and <code>select</code> blocks can be put before all <code>case</code> branches, after all <code>case</code> branches, or between <code>case</code> branches.</a>
+	</li>
+	<li>
+		<a class="index" href="#constant-case-expressions">The numeric constant case expressions in a <code>switch</code> block can't be duplicate, but boolean ones can.</a>
+	</li>
+	<li>
+		<a class="index" href="#switch-expressions-are-typed">The switch expressions in <code>switch</code> block are always evaluated to typed values.</a>
+	</li>
+	<li>
+		<a class="index" href="#default-switch-expression-value">The default switch expression of a <code>switch</code> block is a typed value <code>true</code> of the predeclared type <code>bool</code>.</a>
+	</li>
+	<li>
+		<a class="index" href="#open-brace-on-the-next-line">Sometimes, the open brace <code>{</code> of an explicit code block can be put on the next line.</a>
+	</li>
+	<li>
+		<a class="index" href="#some-case-branch-blocks-must-be-explicit">Some <code>case</code> branch blocks must be explicit.</a>
+	</li>
+	<li>
+		<a class="index" href="#defer-modify-results">Nested deferred function calls can modify return result values of nesting functions.</a>
+	</li>
+	<li>
+		<a class="index" href="#no-op-recover-calls">Some <code>recover</code> calls may be no-ops.</a>
+	</li>
+	<li>
+		<a class="index" href="#os-exit-runtime-goexit">Exit a program with a <code>os.Exit</code> function call and exit a goroutine with a <code>runtime.Goexit</code> function call</a>.
+	</li>
+	</ul>
+</li>
+<li>
+	Operator related details:
+	<ul class="index">
+	<li>
+		<a class="index" href="#some-operator-precedence">The precedence of the increment operator <code>++</code> and the decrement <code>--</code> is lower than the dereference operator <code>*</code> and the address-taking operator <code>&amp;</code>, which are lower than the property selection operator <code>.</code> in selectors.</a>
+	</li>
+	<li>
+		<a class="index" href="#type-deduction-in-bit-shift">The type deduction rule for the left untyped operand of a bit-shift operation depends on whether or not the right operand is a constant.</a>
+	</li>
+	</ul>
+</li>
+<li>
+	Pointer related details:
+	<ul class="index">
+	<li>
+		<a class="index" href="#conversion-of-pointers-with-different-underlying-types">Values of two pointer types with different underlying types can be converted to each other if the base types of their underlying types share the same underlying type.</a>
+	</li>
+	<li>
+		<a class="index" href="#addresses-of-zeor-sized-values">Addresses of different zero-sized values may be equal, or not.</a>
+	</li>
+	<li>
+		<a class="index" href="#self-based-pointer-type">The base type of a pointer type may be the pointer type itself.</a>
+	</li>
+	<li>
+		<a class="index" href="#pointer-selector-shorthands">A detail about selector shorthands.</a>
+	</li>
+	</ul>
+</li>
+<li>
+	Container related details:
+	<ul class="index">
+	<li>
+		<a class="index" href="#composite-literal-simplification">Sometimes, nested composite literals can be simplified.</a>
+	</li>
+	<li>
+		<a class="index" href="#use-pointer-as-array">In some scenarios, it is ok to use array pointers as arrays.</a>
+	</li>
+	<li>
+		<a class="index" href="#nil-map-element-retrieving">Retrieving elements from nil maps will not panic. The result is a zero element value.</a>
+	</li>
+	<li>
+		<a class="index" href="#nil-map-element--deletion">Deleting an entry from a nil map will not panic. It is a no-op.</a>
+	</li>
+	<li>
+		<a class="index" href="#append-slice-elements">The result slice of an <code>append</code> function call may share some elements with the original slice, or not.</a>
+	</li>
+	<li>
+		<a class="index" href="#subslice">The length of a subslice may be larger than the base slice the subslice derives from.</a>
+	</li>
+	<li>
+		<a class="index" href="#derive-from-nil-slice">Deriving a subslice from a nil slice is ok if all the indexes used in the subslice expression are zero. The result subslice is also a nil slice.</a>
+	</li>
+	<li>
+		<a class="index" href="#range-over-nil-map-and-slice">Ranging over a nil maps or a nil slices is ok, it is a no-op.</a>
+	</li>
+	<li>
+		<a class="index" href="#range-over-nil-array-pointer">Range over a nil array pointer is ok if the second iteration variable is ignored or omitted.</a>
+	</li>
+	<li>
+		<a class="index" href="#modify-slice-length-and-capacity-separately">The length and capacity of a slice can be modified separately.</a>
+	</li>
+	<li>
+		<a class="index" href="#indexes-in-composite-literals">The indexes in slice and array composite literals must be constants and non-negative.</a>
+	</li>
+	<li>
+		<a class="index" href="#constant-keys-in-composite-literals">The constant indexes or keys in slice/array/map composite literals can't be duplicate.</a>
+	</li>
+	<li>
+		<a class="index" href="#array-slice-element-addressability">Elements of unaddressable arrays are also unaddressable, but elements of unaddressable slices are always addressable.</a>
+	</li>
+	<li>
+		<a class="index" href="#array-slice-derivable">It is ok to derive subslices from unaddressable slices, but not ok from unaddressable arrays. It is ok to take addresses for elements of unaddressable slices, but not ok for elements of unaddressable arrays.</a>
+	</li>
+	<li>
+		<a class="index" href="#nan-as-map-keys">Putting entries with <code>NaN</code> as keys to a map is like putting the entries in a black hole.</a>
+	</li>
+	<li>
+		<a class="index" href="#capacity-of-slice-from-string">The capacity of the result slice of a conversion from a string to byte/rune slice may be larger than the length of the result slice.</a>
+	</li>
+	<li>
+		<a class="index" href="#different-loops">For a slice <code>s</code>, the loop <code>for i = range s {...}</code> is not equivalent to the loop <code>for i = 0; i &lt; len(s); i++ {...}</code>.</a>
+	</li>
+	<li>
+		<a class="index" href="#map-entry-iteration">The iteration order over maps is not guaranteed to be the same from one iteration to the next.</a>
+	</li>
+	<li>
+		<a class="index" href="#create-entry-in-map-entry-iteration">If a map entry is created during an iteration of the map, that entry may be iterated during the iteration or may be skipped.</a>
+	</li>
+	</ul>
+</li>
+
+<li>
+	Function and method related details:
+	<ul class="index">
+	<li>
+		<a class="index" href="#call-as-expression">A multi-result function call can't mix with other expressions when the call is used as the sources in an assignment or the arguments of another function call.</a>
+	</li>
+	<li>
+		<a class="index" href="#compile-time-evaluated-calls">Some function calls are evaluated at compile time.</a>
+	</li>
+	<li>
+		<a class="index" href="#method-as-function">Each method corresponds to an implicit function.</a>
+	</li>
+	</ul>
+</li>
+<li>
+	Interface related details:
+	<ul class="index">
+	<li>
+		<a class="index" href="#comparison-interfaces-may-panic">Comparing two interface values with the same dynamic incomparable type produces a panic.</a>
+	</li>
+	<li>
+		<a class="index" href="#type-assertion-to-interface-type">Type assertions can be used to convert a value of an interface type to another interface type, even if the former interface type doesn't implement the latter one.</a>
+	</li>
+	<li>
+		<a class="index" href="#failed-type-assertion-may-panic">Whether or not the second optional result of a failed type assertion is present will affect the behavior of the type assertion.</a>
+	</li>
+	<li>
+		<a class="index" href="#impossible-to-interface-assertion">About the impossible to-interface assertions which can be detected at compile time.</a>
+	</li>
+	<!--
+	<li>
+		<a class="index" href="#interface-comparison-complexity">For the standard Go compiler, the time complexity of comparing two equal interface values may be <code><i>O</i>(1)</code> or <code><i>O</i>(n)</code>.</a>
+	</li>
+	<li>
+		<a class="index" href="#interface-copy-complexity">For the standard Go compiler, the time complexity of copying an interface value is <code><i>O</i>(1)</code>.</a>
+	</li>
+	-->
+	<li>
+		<a class="index" href="#errors-new-different-returns">Two <code>error</code> values returned by two <code>errors.New</code> calls with the same argument are not equal.</a>
+	</li>
+	</ul>
+</li>
+<li>
+	Channel related details:
+	<ul class="index">
+	<li>
+		<a class="index" href="#receive-only-channel-canot-be-closed">Receive-only channels can't be closed.</a>
+	</li>
+	<li>
+		<a class="index" href="#send-to-closed-channel-is-non-blocking">Sending a value to a closed channel is viewed as a non-blocking operation, and this operation causes a panic.</a>
+	</li>
+	</ul>
+</li>
+<li>
+	More type and value related details:
+	<ul class="index">
+	<li>
+		<a class="index" href="#local-type-declaration">Types can be declared within function bodies.</a>
+	</li>
+	<li>
+		<a class="index" href="#final-zero-size-field">For the standard compiler, zero-sized fields in a struct may be treated as one-byte-sized value.</a>
+	</li>
+	<li>
+		<a class="index" href="#nan-inf">NaN != NaN, Inf == Inf.</a>
+	</li>
+	<li>
+		<a class="index" href="#non-exported-names-from-different-packages">Non-exported method names and struct field names from different packages are viewed as different names.</a>
+	</li>
+	<!--li>
+		<a class="index" href="#compare-values-with-both-comparable-and-incomparable-parts">The behavior of comparing struct values with both comparable and incomparable fields or array values with both comparable and incomparable elements is unspecified.</a>
+	</li-->
+	<li>
+		<a class="index" href="#blank-fields-are-ignored-in-comparisons">In struct value comparisons, blank fields will be ignored.</a>
+	</li>
+	</ul>
+</li>
+<li>
+	Miscellanies:
+	<ul class="index">
+	<li>
+		<a class="index" href="#sometimes-parentheses-are-required">Parentheses are required in several rare scenarios to make code compile okay.</a>
+	</li>
+	<!--
+	<li>
+		<a class="index" href="#main-entry-function-absence">A program doesn't need a <code>main</code> entry function to run.</a>
+	</li>
+	-->
+	<li>
+		<a class="index" href="#stack-overflow-is-unrecoverable">Stack overflow is unrecoverable.</a>
+	</li>
+	<li>
+		<a class="index" href="#some-evaluation-order-are-compiler-dependent">Some expression evaluation orders in Go are compiler implementation dependent.</a>
+	</li>
+
+	</ul>
+</li>
+<li>
+	Standard packages related:
+	<ul class="index">
+	<li>
+		<a class="index" href="#reflect-deep-equal">The results of <code>reflect.DeepEqual(x, y)</code> and <code>x == y</code> may be different.</a>
+	</li>
+	<li>
+		<a class="index" href="#reflect-value-bytes">The <code>reflect.Value.Bytes()</code> method returns a <code>[]byte</code> value, which element type, <code>byte</code>, might be not the same as the Go slice value represented by the receiver parameter.</a>
+	</li>
+	<li>
+		<a class="index" href="#check-file-existent">We should use <code>os.IsNotExist(err)</code> instead of <code>err == os.ErrNotExist</code> to check whether or not a file exists.</a>
+	</li>
+	<li>
+		<a class="index" href="#boolean-flag">The <code>flag</code> standard package treats boolean command flags differently than number and string flags.</a>
+	</li>
+	<li>
+		<a class="index" href="#printf-positional-arguments"><code>[Sp|Fp|P]rintf</code> functions support positional arguments.</a>
+	</li>
+	</ul>
+</li>
+</ul>
+</div>
+
+<div class="summaries-items">
+
+<a class="anchor" id="import-package-multiple-times"></a>
+<h3>A package can be imported more than once in a source file.</h3>
+
+<div>
+<p>
+A Go source file can imports the same package multiple times,
+but the import names must be different.
+These same-package imports reference the same package instance.
+</p>
+
+For example:
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+import "io"
+import inout "io"
+
+func main() {
+	fmt.Println(&inout.EOF == &io.EOF) // true
+}
+</code></pre>
+</div>
+
+<!--a class="anchor" id="force-import-path"></a>
+<h3>The comment <code>// import "x.y.z/mypkg"</code> following <code>package mypkg</code> is meaningful for the standard Go compiler.</h3>
+
+<div>
+For example, when the source files importing this package are compiled by the standard Go compiler,
+the import path of the following package must be <code>"x.y.z/mypkg"</code>.
+
+<pre class="line-numbers"><code class="language-go">package mypkg // import "x.y.z/mypkg"
+...
+</code></pre>
+
+<p>
+However, since Go Toolchain 1.11, the restriction <a href="https://golang.org/cmd/go/#hdr-Import_path_checking">doesn't apply for modules based and vendored packages</a>.
+</p>
+</div-->
+
+<a class="anchor" id="default-branch-position"></a>
+<h3>The <code>default</code> branch in <code>switch</code> and <code>select</code> blocks can be put before all <code>case</code> branches, after all <code>case</code> branches, or between <code>case</code> branches.</h3>
+
+<div>
+For example:
+
+<pre class="line-numbers"><code class="language-go">	switch n := rand.Intn(3); n {
+	case 0: fmt.Println("n == 0")
+	case 1: fmt.Println("n == 1")
+	default: fmt.Println("n == 2")
+	}
+
+	switch n := rand.Intn(3); n {
+	default: fmt.Println("n == 2")
+	case 0: fmt.Println("n == 0")
+	case 1: fmt.Println("n == 1")
+	}
+
+	switch n := rand.Intn(3); n {
+	case 0: fmt.Println("n == 0")
+	default: fmt.Println("n == 2")
+	case 1: fmt.Println("n == 1")
+	}
+
+	var x, y chan int
+
+	select {
+	case <-x:
+	case y <- 1:
+	default:
+	}
+
+	select {
+	case <-x:
+	default:
+	case y <- 1:
+	}
+
+	select {
+	default:
+	case <-x:
+	case y <- 1:
+	}
+</code></pre>
+
+<p>
+</p>
+
+</div>
+
+<a class="anchor" id="constant-case-expressions"></a>
+<h3>The numeric constant case expressions in a <code>switch</code> block can't be duplicate, but boolean ones can.</h3>
+
+<div>
+For example, the following program fails to compile.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+func main() {
+	switch 123 {
+	case 123:
+	case 123: // error: duplicate case
+	}
+}
+</code></pre>
+
+But the following program compiles okay.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+func main() {
+	switch false {
+	case false:
+	case false:
+	}
+}
+</code></pre>
+
+<p>
+For reasons, please read <a href="https://github.com/golang/go/issues/28357">this issue</a>.
+The behavior is compiler dependent.
+In fact, the standard Go compiler also doesn't allow duplicate string case expressions, but gccgo allows.
+</p>
+</div>
+
+<a class="anchor" id="switch-expressions-are-typed"></a>
+<h3>The switch expressions in <code>switch</code> block are always evaluated to typed values.</h3>
+
+<div>
+For example, the switch expression <code>123</code> in the following <code>switch</code> block
+is viewed as a value of <code>int</code> instead of an untyped integer.
+So the following program fails to compile.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+func main() {
+	switch 123 {
+	case int64(123):  // error: mismatched types
+	case uint32(789): // error: mismatched types
+	}
+}
+</code></pre>
+
+<p>
+</p>
+</div>
+
+<a class="anchor" id="default-switch-expression-value"></a>
+<h3>The default switch expression of a <code>switch</code> block is a typed value <code>true</code> of the predeclared type <code>bool</code>.</h3>
+
+<div>
+For example, the following program will print <code>true</code>.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+func main() {
+	switch { // <=> switch true {
+	case true:  fmt.Println("true")
+	case false: fmt.Println("false")
+	}
+}
+</code></pre>
+
+<p>
+</p>
+</div>
+
+<a class="anchor" id="open-brace-on-the-next-line"></a>
+<h3>Sometimes, the open brace <code>{</code> of an explicit code block can be put on the next line.</h3>
+
+<div>
+For example:
+
+<pre class="line-numbers"><code class="language-go">package main
+
+func main() {
+	var i = 0
+Outer:
+	for
+	{ // okay on the next line
+		switch
+		{ // okay on the next line
+		case i == 5:
+			break Outer
+		default:
+			i++
+		}
+	}
+}
+</code></pre>
+
+<p></p>
+
+What result will the following program print? <code>true</code> or <code>false</code>?
+The answer is <code>true</code>.
+Please read <a href="line-break-rules.html">line break rules in Go</a> for reasons.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+func False() bool {
+	return false
+}
+
+func main() {
+	switch False()
+	{
+	case true:  fmt.Println("true")
+	case false: fmt.Println("false")
+	}
+}
+</code></pre>
+
+<p>
+</p>
+
+</div>
+
+<a class="anchor" id="some-case-branch-blocks-must-be-explicit"></a>
+<h3>Some <code>case</code> branch blocks must be explicit.</h3>
+
+<div>
+For example, the following program fails to compile.
+
+<pre class="line-numbers"><code class="language-go">func demo(n, m int) (r int) {
+	switch n {
+	case 123:
+		if m > 0 {
+			goto End
+		}
+		r++
+
+		End: // syntax error: missing statement after label
+	default:
+		r = 1
+	}
+	return
+}
+</code></pre>
+
+To make it compile okay, the <code>case</code> branch code block should be explicit:
+
+<pre class="line-numbers"><code class="language-go">func demo(n, m int) (r int) {
+	switch n {
+	case 123: {
+		if m > 0 {
+			goto End
+		}
+		r++
+
+		End:
+	}
+	default:
+		r = 1
+	}
+	return
+}
+</code></pre>
+
+Alternatively, we can let a semicolon follow the label declaration <code>End:</code>:
+
+<pre class="line-numbers"><code class="language-go">func demo(n, m int) (r int) {
+	switch n {
+	case 123:
+		if m > 0 {
+			goto End
+		}
+		r++
+
+		End:;
+	default:
+		r = 1
+	}
+	return
+}
+</code></pre>
+
+<p>
+Please read <a href="line-break-rules.html">line break rules in Go</a> for reasons.
+</p>
+
+</div>
+
+<a class="anchor" id="defer-modify-results"></a>
+<h3>A nested deferred function calls can modify return result values of its innermost nesting function.</h3>
+
+<div>
+For example:
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+func F() (r int) {
+	defer func() {
+		r = 789
+	}()
+
+	return 123 // <=> r = 123; return
+}
+
+func main() {
+	fmt.Println(F()) // 789
+}
+</code></pre>
+
+<p>
+</p>
+</div>
+
+<a class="anchor" id="no-op-recover-calls"></a>
+<h3>Some <code>recover</code> calls may be no-ops.</h3>
+
+<p>
+We should call the <code>recover</code> function at the right places.
+Please read <a href="panic-and-recover-more.html">the right places to call the built-in <code>recover</code> function</a> for details.
+</p>
+
+<a class="anchor" id="os-exit-runtime-goexit"></a>
+<h3>Exit a program with a <code>os.Exit</code> function call and exit a goroutine with a <code>runtime.Goexit</code> function call.</h3>
+
+<!--
+https://github.com/golang/go/issues/29226 a bug of goexit
+-->
+
+<div>
+<p>
+We can exit a program from any function by calling the <code>os.Exit</code> function.
+An <code>os.Exit</code> function call takes an <code>int</code> code as
+argument and returns the code to operating system.
+</p>
+
+An example:
+
+<pre class="line-numbers"><code class="language-go">// exit-example.go
+package main
+
+import "os"
+import "time"
+
+func main() {
+	go func() {
+		time.Sleep(time.Second)
+		os.Exit(1)
+	}()
+	select{}
+}
+</code></pre>
+
+Run it:
+
+<pre class="output"><code>$ go run a.go
+exit status 1
+$ echo $?
+1
+</code></pre>
+
+<p>
+</p>
+
+<p>
+We can make a goroutine exit by calling the <code>runtime.Goexit</code> function.
+The <code>runtime.Goexit</code> function has no parameters.
+</p>
+
+In the following example, the <code>Java</code> word will not be printed.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+import "runtime"
+
+func main() {
+	c := make(chan int)
+	go func() {
+		defer func() {c <- 1}()
+		defer fmt.Println("Go")
+		func() {
+			defer fmt.Println("C")
+			runtime.Goexit()
+		}()
+		fmt.Println("Java")
+	}()
+	<-c
+}
+</code></pre>
+
+<p>
+</p>
+
+</div>
+
+<a class="anchor" id="some-operator-precedence"></a>
+<h3>The precedence of the increment operator <code>++</code> and the decrement <code>--</code> is lower than the dereference operator <code>*</code> and the address-taking operator <code>&amp;</code>, which are lower than the property selection operator <code>.</code> in selectors.</h3>
+
+<div>
+For example:
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+type T struct {
+	x int
+	y *int
+}
+
+func main() {
+	var t T
+	p := &t.x // <=> p := &(t.x)
+	fmt.Printf("%T\n", p) // *int
+
+	*p++ // <=> (*p)++
+	*p-- // <=> (*p)--
+
+	t.y = p
+	a := *t.y // <=> *(t.y)
+	fmt.Printf("%T\n", a) // int
+}
+</code></pre>
+
+<p>
+</p>
+</div>
+
+<a class="anchor" id="type-deduction-in-bit-shift"></a>
+<h3>The type deduction rule for the left untyped operand of a bit-shift operation depends on whether or not the right operand is a constant.</h3>
+
+<div>
+
+
+<pre class="line-numbers"><code class="language-go">package main
+
+func main() {
+}
+
+const M  = 2
+// Compiles okay. 1.0 is deduced as an int value.
+var _ = 1.0 << M
+
+var N = 2
+// Fails to compile. 1.0 is deduced as a float64 value.
+var _ = 1.0 << N
+</code></pre>
+
+<p>
+Please read <a href="operators.html#bitwise-shift-left-operand-type-deduction">this article</a> for reasons.
+</p>
+</div>
+
+<a class="anchor" id="conversion-of-pointers-with-different-underlying-types"></a>
+<h3>Values of two pointer types with different underlying types can be converted to each other if the base types of their underlying types share the same underlying type.</h3>
+
+<div>
+
+An example:
+
+<pre class="line-numbers"><code class="language-go">package main
+
+type MyInt int64
+type Ta    *int64
+type Tb    *MyInt
+
+func main() {
+	var a Ta
+	var b Tb
+
+	// Direct conversion is not allowed.
+	//a = Ta(b) // error
+
+	// But indirect conversion is possible.
+	y := (*MyInt)(b)
+	x := (*int64)(y)
+	a = x           // <=> the next line
+	a = (*int64)(y) // <=> the next line
+	a = (*int64)((*MyInt)(b))
+	_ = a
+}
+</code></pre>
+
+<p>
+</p>
+</div>
+
+<a class="anchor" id="addresses-of-zeor-sized-values"></a>
+<h3>Addresses of different zero-sized values may be equal, or not.</h3>
+<!--
+https://github.com/golang/go/issues/12726
+-->
+
+<div>
+Whether or not the addresses of two zero-sized values are equal
+is compiler and compiler version dependent.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+func main() {
+	a := struct{}{}
+	b := struct{}{}
+	x := struct{}{}
+	y := struct{}{}
+	m := [10]struct{}{}
+	n := [10]struct{}{}
+	o := [10]struct{}{}
+	p := [10]struct{}{}
+
+	fmt.Println(&x, &y, &o, &p)
+
+	// For the standard Go compiler (1.20),
+	// x, y, o and p escape to heap, but
+	// a, b, m and n are allocated on stack.
+
+	fmt.Println(&a == &b) // false
+	fmt.Println(&x == &y) // true
+	fmt.Println(&a == &x) // false
+
+	fmt.Println(&m == &n) // false
+	fmt.Println(&o == &p) // true
+	fmt.Println(&n == &p) // false
+}
+</code></pre>
+
+<p>
+The outputs indicated in the above code are for the standard Go compiler 1.20.
+</p>
+</div>
+
+<a class="anchor" id="self-based-pointer-type"></a>
+<h3>The base type of a pointer type may be the pointer type itself.</h3>
+
+<div>
+
+An example:
+
+<pre class="line-numbers"><code class="language-go">package main
+
+func main() {
+	type P *P
+	var p P
+	p = &p
+	p = **************p
+}
+</code></pre>
+
+<p>
+</p>
+
+Similarly,
+<ul>
+<li>
+	the element type of a slice type can be the slice type itself,
+</li>
+<li>
+	the element type of a map type can be the map type itself,
+</li>
+<li>
+	the element type of a channel type can be the channel type itself,
+</li>
+<li>
+	and the argument and result types of a function type can be the function type itself.
+</li>
+</ul>
+
+<pre class="line-numbers"><code class="language-go">package main
+
+func main() {
+	type S []S
+	type M map[string]M
+	type C chan C
+	type F func(F) F
+
+	s := S{0:nil}
+	s[0] = s
+	m := M{"Go": nil}
+	m["Go"] = m
+	c := make(C, 3)
+	c <- c; c <- c; c <- c
+	var f F
+	f = func(F)F {return f}
+
+	_ = s[0][0][0][0][0][0][0][0]
+	_ = m["Go"]["Go"]["Go"]["Go"]
+	<-<-<-c
+	f(f(f(f(f))))
+}
+</code></pre>
+
+<p>
+</p>
+
+</div>
+
+<a class="anchor" id="pointer-selector-shorthands"></a>
+<h3>A detail about selector shorthands.</h3>
+
+<div>
+
+<p>
+For a pointer value, which type is either named or not,
+if the base type of its (pointer) type is a struct type,
+then we can select the fields of the struct value
+referenced by the pointer value through the pointer value.
+However, if the type of the pointer value is a named type,
+then we can't select the methods of the struct value
+referenced by the pointer value through the pointer value.
+</p>
+
+<pre class="line-numbers"><code class="language-go">package main
+
+type T struct {
+	x int
+}
+func (T) m(){} // T has one method.
+
+type P *T  // a named one-level pointer type.
+type PP *P // a named two-level pointer type.
+
+func main() {
+	var t T
+	var tp = &t
+	var tpp = &tp
+	var p P = tp
+	var pp PP = &p
+	tp.x = 12  // okay
+	p.x = 34   // okay
+	pp.x = 56  // error: type PP has no field or method x
+	tpp.x = 78 // error: type **T has no field or method x
+
+	tp.m()  // okay. Type *T also has a "m" method.
+	p.m()   // error: type P has no field or method m
+	pp.m()  // error: type PP has no field or method m
+	tpp.m() // error: type **T has no field or method m
+}
+</code></pre>
+<p>
+</p>
+</div>
+
+<a class="anchor" id="composite-literal-simplification"></a>
+<h3>Sometimes, nested composite literals can be simplified.</h3>
+
+<p>
+Please read <a href="container.html#composite-literal-simplification">nested composite literals can be simplified</a> for details.
+</p>
+
+<a class="anchor" id="use-pointer-as-array"></a>
+<h3>In some scenarios, it is ok to use array pointers as arrays.</h3>
+
+<p>
+Please read <a href="container.html#use-pointer-as-array">use array pointers as arrays</a> for details.
+</p>
+
+<a class="anchor" id="nil-map-element-retrieving"></a>
+<h3>Retrieving elements from nil maps will not panic. The result is a zero element value.</h3>
+
+<div>
+
+For example, the <code>Foo1</code> and the <code>Foo2</code> functions are equivalent,
+but the function <code>Foo2</code> is much tidier than the function <code>Foo1</code>.
+
+<pre class="line-numbers"><code class="language-go">func Foo1(m map[string]int) int {
+	if m != nil {
+		return m["foo"]
+	}
+	return 0
+}
+
+func Foo2(m map[string]int) int {
+	return m["foo"]
+}
+</code></pre>
+
+<p>
+</p>
+</div>
+
+<a class="anchor" id="nil-map-element--deletion"></a>
+<h3>Deleting an entry from a nil map will not panic. It is a no-op.</h3>
+
+<div>
+
+For example, the following program will not panic.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+func main() {
+	var m map[string]int // nil
+	delete(m, "foo")
+}
+</code></pre>
+
+<p>
+</p>
+</div>
+
+<a class="anchor" id="append-slice-elements"></a>
+<h3>The result slice of an <code>append</code> function call may share some elements with the original slice, or not.</h3>
+
+<p>
+Please read <a href="container.html#element-addition-deletion">append and delete container elements</a> for details.
+</p>
+
+<a class="anchor" id="subslice"></a>
+<h3>The length of a subslice may be larger than the base slice the subslice derives from.</h3>
+
+<div>
+
+For example,
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+func main() {
+	s := make([]int, 3, 9)
+	fmt.Println(len(s)) // 3
+	s2 := s[2:7]
+	fmt.Println(len(s2)) // 5
+}
+</code></pre>
+
+<p>
+Please read <a href="container.html#subslice">derive slices from arrays and slices</a> for details.
+</p>
+</div>
+
+<a class="anchor" id="derive-from-nil-slice"></a>
+<h3>Deriving a subslice from a nil slice is ok if all the indexes used in the subslice expression are zero. The result subslice is also a nil slice.</h3>
+
+<div>
+
+For example, the following program will not panic at run time.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+func main() {
+	var x []int // nil
+	a := x[:]
+	b := x[0:0]
+	c := x[:0:0]
+	// Print three "true".
+	fmt.Println(a == nil, b == nil, c == nil)
+}
+</code></pre>
+
+<p>
+Please read <a href="container.html#subslice">derive slices from arrays and slices</a> for details.
+</p>
+</div>
+
+<a class="anchor" id="range-over-nil-map-and-slice"></a>
+<h3>Ranging over a nil maps or a nil slices is ok, it is a no-op.</h3>
+
+<div>
+
+For example, the following program compiles okay.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+func main() {
+	var s []int // nil
+	for range s {
+	}
+
+	var m map[string]int // nil
+	for range m {
+	}
+}
+</code></pre>
+
+<p>
+</p>
+</div>
+
+<a class="anchor" id="range-over-nil-array-pointer"></a>
+<h3>Range over a nil array pointer is ok if the second iteration variable is ignored or omitted.</h3>
+
+<div>
+
+For example, the following program will print <code>01234</code>.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+func main() {
+	var a *[5]int // nil
+	for i, _ := range a {
+		fmt.Print(i)
+	}
+}
+</code></pre>
+
+<p>
+</p>
+</div>
+
+<a class="anchor" id="modify-slice-length-and-capacity-separately"></a>
+<h3>The length and capacity of a slice can be modified separately.</h3>
+
+<p>
+We can modify the length and capacity of a slice separately through the reflection way.
+Please read <a href="container.html#modify-slice-length-and-capacity">modify the length and capacity properties of a slice individually</a> for details.
+</p>
+
+<a class="anchor" id="indexes-in-composite-literals"></a>
+<h3>The indexes in slice and array composite literals must be constants and non-negative.</h3>
+
+<div>
+For example, the following code fails to compile.
+
+<pre class="line-numbers"><code class="language-go">var k = 1
+// error: index must be non-negative integer constant
+var x = [2]int{k: 1}
+// error: index must be non-negative integer constant
+var y = []int{k: 1}
+</code></pre>
+
+<p>
+Note, the keys in map composite literals are not required to be constants.
+</p>
+</div>
+
+<a class="anchor" id="constant-keys-in-composite-literals"></a>
+<h3>The constant indexes or keys in slice/array/map composite literals can't be duplicate.</h3>
+
+<div>
+For example, the following code fails to compile.
+
+<pre class="line-numbers"><code class="language-go">// error: duplicate index in array literal: 1
+var a = []bool{0: false, 1: true, 1: true}
+// error: duplicate index in array literal: 0
+var b = [...]string{0: "foo", 1: "bar", 0: "foo"}
+// error: duplicate key "foo" in map literal
+var c = map[string]int{"foo": 1, "foo": 2}
+</code></pre>
+
+<p>
+This feature can be used to <a href="tips.html#assert-at-compile-time">assert some conditions at compile time</a>.
+</p>
+</div>
+
+<a class="anchor" id="array-slice-element-addressability"></a>
+<h3>Elements of unaddressable arrays are also unaddressable, but elements of unaddressable slices are always addressable.</h3>
+
+<div>
+<p>
+The reason is the elements of an array value and the array will be stored
+in the same memory block when the array is stored in memory.
+But <a href="unofficial-faq.html#slice-elements-always-addressable">the
+situation is different for slices</a>.
+</p>
+
+An example:
+
+<pre class="line-numbers"><code class="language-go">package main
+
+func main() {
+	// Container composite literals are unaddressable.
+
+	// It is ok to take slice literal element addresses.
+	_ = &[]int{1}[0] // ok
+	// Cannot take addresses of array literal elements.
+	_ = &[5]int{}[0] // error
+
+	// It is ok to modify slice literal elements.
+	[]int{1,2,3}[1] = 9  // ok
+	// Cannot modify array literal elements.
+	[3]int{1,2,3}[1] = 9 // error
+}
+</code></pre>
+
+<p>
+</p>
+</div>
+
+<a class="anchor" id="array-slice-derivable"></a>
+<h3>
+It is ok to derive subslices from unaddressable slices, but not ok from unaddressable arrays.
+</h3>
+
+<div>
+<p>
+The reason is the same as the last detail.
+</p>
+
+An example:
+<pre class="line-numbers"><code class="language-go">package main
+
+func main() {
+	// Map elements are unaddressable in Go.
+
+	// The following lines compile okay. Deriving
+	// slices from unaddressable slices is allowed.
+	_ = []int{6, 7, 8, 9}[1:3]
+	var ms = map[string][]int{"abc": {0, 1, 2, 3}}
+	_ = ms["abc"][1:3]
+
+	// The following lines fail to compile. Deriving
+	// slices from unaddressable arrays is not allowed.
+	/*
+	_ = [...]int{6, 7, 8, 9}[1:3] // error
+	var ma = map[string][4]int{"abc": {0, 1, 2, 3}}
+	_ = ma["abc"][1:3]  // error
+	*/
+}
+</code></pre>
+<p>
+</p>
+</div>
+
+<a class="anchor" id="nan-as-map-keys"></a>
+<h3>Putting entries with <code>NaN</code> as keys to a map is like putting the entries in a black hole.</h3>
+
+<div>
+This reason is <code>NaN != NaN</code>, which is another detail will be described <a href="#nan-inf">below</a>.
+Before Go 1.12, the elements with <code>NaN</code> as keys can only be found out in a <code>for-range</code> loop,
+Since Go 1.12, the elements with <code>NaN</code> as keys can also be printed out by
+<code>fmt.Print</code> alike functions.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+import "math"
+
+func main() {
+	var a = math.NaN()
+	fmt.Println(a) // NaN
+
+	var m = map[float64]int{}
+	m[a] = 123
+	v, present := m[a]
+	fmt.Println(v, present) // 0 false
+	m[a] = 789
+	v, present = m[a]
+	fmt.Println(v, present) // 0 false
+
+	fmt.Println(m) // map[NaN:789 NaN:123]
+	delete(m, a)   // no-op
+	fmt.Println(m) // map[NaN:789 NaN:123]
+
+	for k, v := range m {
+		fmt.Println(k, v)
+	}
+	// the above loop outputs:
+	// NaN 123
+	// NaN 789
+}
+</code></pre>
+
+<p>
+Please note, before Go 1.12, the two <code>fmt.Println(m)</code>
+calls both printed <code>map[NaN:&lt;nil&gt; NaN:&lt;nil&gt;]</code>.
+</p>
+</div>
+
+<a class="anchor" id="capacity-of-slice-from-string"></a>
+<h3>The capacity of the result slice of a conversion from a string to byte/rune slice may be larger than the length of the result slice.</h3>
+
+<div>
+<p>
+We should not assume the length and the capacity of the result slice are always equal.
+</p>
+
+In the following example, if the last <code>fmt.Println</code> line is removed,
+the outputs of the two lines before it print the same value <code>32</code>,
+otherwise, one print <code>32</code> and one print <code>8</code>
+(for the standard Go compiler 1.20).
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+func main() {
+	s := "a"
+	x := []byte(s)              // len(s) == 1
+	fmt.Println(cap([]byte(s))) // 32
+	fmt.Println(cap(x))         // 8
+	fmt.Println(x)
+}
+</code></pre>
+
+<p>
+<a href="https://github.com/go101/go101/wiki/The-capacity-of-the-result-byte-%28or-rune%29-slice-of-a-conversion-from-a-string-is-undefined">Some buggy code will be written</a> if we assume the length and the capacity of the result slice are always equal.
+</p>
+</div>
+
+<a class="anchor" id="different-loops"></a>
+<h3>For a slice <code>s</code>, the loop <code>for i = range s {...}</code> is not equivalent to the loop <code>for i = 0; i &lt; len(s); i++ {...}</code>.</h3>
+
+<div>
+The respective final values of the iteration variable <code>i</code>
+may be different for the two loops.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+var i int
+
+func fa(s []int, n int) int {
+	i = n
+	for i = 0; i < len(s); i++ {}
+	return i
+}
+
+func fb(s []int, n int) int {
+	i = n
+	for i = range s {}
+	return i
+}
+
+func main() {
+	s := []int{2, 3, 5, 7, 11, 13}
+	fmt.Println(fa(s, -1), fb(s, -1)) // 6 5
+	s = nil
+	fmt.Println(fa(s, -1), fb(s, -1)) // 0 -1
+}
+</code></pre>
+
+<p>
+</p>
+</div>
+
+<a class="anchor" id="map-entry-iteration"></a>
+<h3>The iteration order over maps is not guaranteed to be the same from one iteration to the next.</h3>
+
+<div>
+
+For example, the following program will not run infinitely:
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+func f(m map[byte]byte) string {
+	bs := make([]byte, 0, 2*len(m))
+	for k, v := range m {
+		bs = append(bs, k, v)
+	}
+	return string(bs)
+}
+
+func main() {
+	m := map[byte]byte{'a':'A', 'b':'B', 'c':'C'}
+	s0 := f(m)
+	for i := 1; ; i++{
+		if s := f(m); s != s0 {
+			fmt.Println(s0)
+			fmt.Println(s)
+			fmt.Println(i)
+			return
+		}
+	}
+}
+</code></pre>
+
+<p>
+Please note, the entries in the JSON marshal result on maps are sorted by their keys.
+And since Go 1.12, printing maps (with the print functions in the standard
+<code>fmt</code> package) also results sorted entries.
+</p>
+</div>
+
+<a class="anchor" id="create-entry-in-map-entry-iteration"></a>
+<h3>If a map entry is created during an iteration of the map, that entry may be iterated during the iteration or may be skipped.</h3>
+
+<div>
+A proof:
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+func main() {
+	m := map[int]int{0: 0, 1: 100, 2: 200}
+	r, n, i:= len(m), len(m), 0
+	for range m {
+		m[n] = n*100
+		n++
+		i++
+	}
+	fmt.Printf("%d new entries, iterate %d and skip %d\n",
+		i, i - r, n - i,
+	)
+}
+</code></pre>
+
+<p>
+Thanks to Valentin Deleplace for the above <a href="https://twitter.com/val_deleplace/status/1358784287399698434">two detail suggestions</a>.
+</p>
+</div>
+
+<a class="anchor" id="call-as-expression"></a>
+<h3>A multi-result function call can't mix with other expressions when the call is used as the sources in an assignment or the arguments of another function call.</h3>
+
+<p>
+Please read <a href="function.html#call-as-expression">use function calls as expressions</a> for details.
+</p>
+
+<a class="anchor" id="compile-time-evaluated-calls"></a>
+<h3>Some function calls are evaluated at compile time.</h3>
+
+<p>
+Please read <a href="function.html#compile-time-evaluated-calls">some function calls are evaluated at compile time</a> for details.
+</p>
+
+<a class="anchor" id="method-as-function"></a>
+<h3>Each method corresponds to an implicit function.</h3>
+
+<p>
+Please read <a href="method.html#method-as-function">each Method Corresponds to an Implicit Function</a> for details.
+</p>
+
+<a class="anchor" id="comparison-interfaces-may-panic"></a>
+<h3>Comparing two interface values with the same dynamic incomparable type produces a panic.</h3>
+
+<div>
+For example:
+
+<pre class="line-numbers"><code class="language-go">package main
+
+func main() {
+	var x interface{} = []int{}
+	_ = x == x // panic
+}
+</code></pre>
+
+<p>
+</p>
+</div>
+
+<a class="anchor" id="type-assertion-to-interface-type"></a>
+<h3>Type assertions can be used to convert a value of an interface type to another interface type, even if the former interface type doesn't implement the latter one.</h3>
+
+<div>
+For example:
+
+<pre class="line-numbers"><code class="language-go">package main
+
+type Foo interface {
+	foo()
+}
+
+type T int
+func (T) foo() {}
+
+func main() {
+	var x interface{} = T(123)
+	// The following two lines fails to compile, for the
+	// same reason: interface{} does not implement Foo.
+	/*
+	var _ Foo = x   // error
+	var _ = Foo(x)  // error
+	*/
+	// But the following line compiles and runs okay.
+	var _ = x.(Foo) // okay
+}
+</code></pre>
+
+<p>
+</p>
+</div>
+
+<a class="anchor" id="failed-type-assertion-may-panic"></a>
+<h3>Whether or not the second optional result of a type assertion is present will affect the behavior of the type assertion.</h3>
+
+<div>
+If the second optional result presents in a failed type assertion, the type assertion will not produce a panic.
+Otherwise, a panic will occur.
+For example:
+
+<pre class="line-numbers"><code class="language-go">package main
+
+func main() {
+	var x interface{} = true
+
+	// Assertion fails, but doesn't cause a panic.
+	_, _ = x.(int)
+
+	// Assertion fails, which causes a panic.
+	_ = x.(int)
+}
+</code></pre>
+
+<p>
+</p>
+</div>
+
+<a class="anchor" id="impossible-to-interface-assertion"></a>
+<h3>About the impossible to-interface assertions which can be detected at compile time.</h3>
+
+<div>
+At compile time, some to-interface assertions can be deducted as impossible to succeed.
+For example, the assertion shown in the following code:
+
+<pre class="line-numbers"><code class="language-go">package main
+
+type Ia interface {
+	m()
+}
+
+type Ib interface {
+	m() int
+}
+
+type T struct{}
+
+func (T) m() {}
+
+func main() {
+	var x Ia = T{}
+	_ = x.(Ib) // panic: main.T is not main.Ib
+}
+</code></pre>
+
+<p>
+Such assertions will not make code compilations fail (but the program will panic at run time).
+Since Go Toolchain 1.15, the <code>go vet</code> command warns on such assertions.
+</p>
+
+</div>
+
+<!--
+<a class="anchor" id="interface-comparison-complexity"></a>
+<h3>For the standard Go compiler, the time complexity of comparing two equal interface values may be <code><i>O</i>(1)</code> or <code><i>O</i>(n)</code>.</h3>
+
+<div>
+The time complexity depends on whether or not the direct parts
+of the two equal interfaces both reference the underlying value.
+Please read the article <a href="value-part.html#interface-structure">value parts</a> for detail.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+import "time"
+
+func main() {
+	bigarr := [1 << 20]int{}
+
+	type I interface{}
+
+	// i0, i1 and i2 are three equal interfaces.
+	var i0 I = bigarr // the dynamic value of i0 is a copy of bigarr.
+	var i1 I = bigarr // the dynamic value of i1 is also a copy of bigarr.
+	                  // Note, the dynamic values of i0 and i1 are
+	                  // two different copies of bigarr.
+	var i2 I = i1 // i2 shares the same dynamic value copy with i1.
+
+	startTime := time.Now()
+	_ = i0 == i1
+	duration := time.Since(startTime)
+	fmt.Println("duration for (i0 == i1):", duration)
+
+	startTime = time.Now()
+	_ = i1 == i2
+	duration = time.Since(startTime)
+	fmt.Println("duration for (i1 == i2):", duration)
+}
+</code></pre>
+
+The output:
+<pre class="output"><code>duration for (i0 == i1): 1.381337ms
+duration for (i1 == i2): 609ns
+</code></pre>
+<p>
+1ms is 1000000ns!
+</p>
+</div>
+
+<a class="anchor" id="interface-copy-complexity"></a>
+<h3>About the time complexity of copying a non-nil interface value.</h3>
+
+<p>
+The <a href="https://golang.org/doc/faq#pass_by_value">official Go FAQ</a>
+says <b><i>copying an interface value makes a copy of the thing stored in the interface value.</i></b>.
+The article <a href="interface.html#boxing">interfaces in Go</a> mentions that,
+for the standard Go compiler, the time complexity of copying an interface value
+is <code><i>O</i>(1)</code>.
+But the sizes of different dynamic values stored in interface values may
+be different, why isn't the complexity <code><i>O</i>(n)</code>?
+</p>
+
+<p>
+The reason is the dynamic values of interface values are all immutable,
+so the standard Go compiler makes an optimization here.
+As the article <a href="value-part.html#interface-structure">value parts</a>
+has explained, an non-nil interface value has an underlying part and
+the direct part of the interface value stores a pointer which
+references the underlying part. When the interface value is copied,
+only its direct part is copied. For the standard Go compiler,
+the sizes of the direct parts of all interface values are the same.
+</p>
+-->
+
+<a class="anchor" id="errors-new-different-returns"></a>
+<h3>Two <code>error</code> values returned by two <code>errors.New</code> calls with the same argument are not equal.</h3>
+
+<div>
+The reason is the <code>errors.New</code> function will copy the input string argument
+and use a pointer to the copied string as the dynamic value of the returned <code>error</code> value.
+Two different calls will produce two different pointers.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+import "errors"
+
+func main() {
+	notfound := "not found"
+	a, b := errors.New(notfound), errors.New(notfound)
+	fmt.Println(a == b) // false
+}
+</code></pre>
+
+<p>
+</p>
+</div>
+
+<a class="anchor" id="receive-only-channel-canot-be-closed"></a>
+<h3>Receive-only channels can't be closed.</h3>
+
+<div>
+For example, the following code fails to compile.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+func main() {
+}
+
+func foo(c <-chan int) {
+	close(c) // error: cannot close receive-only channel
+}
+</code></pre>
+
+<p>
+</p>
+</div>
+
+<a class="anchor" id="send-to-closed-channel-is-non-blocking"></a>
+<h3>Sending a value to a closed channel is viewed as a non-blocking operation, and this operation causes a panic.</h3>
+
+<div>
+For example, in the following program, when the second <code>case</code> branch gets selected, it will produce a panic at run time.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+func main() {
+	var c = make(chan bool)
+	close(c)
+	select {
+	case <-c:
+	case c <- true: // panic: send on closed channel
+	default:
+	}
+}
+</code></pre>
+
+<p>
+</p>
+</div>
+
+<a class="anchor" id="local-type-declaration"></a>
+<h3>Types can be declared within function bodies.</h3>
+
+<div>
+Types can be declared in function bodies. For example,
+
+<pre class="line-numbers"><code class="language-go">package main
+
+func main() {
+	type T struct{}
+	type S = []int
+}
+</code></pre>
+<p>
+</p>
+</div>
+
+<a class="anchor" id="final-zero-size-field"></a>
+<h3>For the standard compiler, zero-sized fields in a struct may be treated as one-byte-sized value.</h3>
+
+<p>
+Please read <a href="unofficial-faq.html#final-zero-size-field">this FAQ item</a> for details.
+</p>
+
+<a class="anchor" id="nan-inf"></a>
+<h3>NaN != NaN, Inf == Inf.</h3>
+
+<div>
+This follows IEEE-754 standard and is consistent with most other programming languages:
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+import "math"
+
+func main() {
+	var a = math.Sqrt(-1.0)
+	fmt.Println(a)      // NaN
+	fmt.Println(a == a) // false
+
+	var x = 0.0
+	var y = 1.0 / x
+	var z = 2.0 * y
+	fmt.Println(y, z, y == z) // +Inf +Inf true
+}
+</code></pre>
+<p>
+</p>
+</div>
+
+<a class="anchor" id="non-exported-names-from-different-packages"></a>
+<h3>Non-exported method names and struct field names from different packages are viewed as different names.</h3>
+
+<div>
+For example, if the following types are declared in package <code>foo</code>:
+
+<pre class="line-numbers"><code class="language-go">package foo
+
+type I = interface {
+	about() string
+}
+
+type S struct {
+	a string
+}
+
+func (s S) about() string {
+	return s.a
+}
+</code></pre>
+
+and the following types are declared in package <code>bar</code>:
+
+<pre class="line-numbers"><code class="language-go">package bar
+
+type I = interface {
+	about() string
+}
+
+type S struct {
+	a string
+}
+
+func (s S) about() string {
+	return s.a
+}
+</code></pre>
+
+then,
+<ul>
+<li>
+	values of the two respective types <code>S</code> from the two packages
+	can't be converted to each other.
+</li>
+<li>
+	the two respective interface types <code>S</code> from the two packages
+	denote two distinct method sets.
+</li>
+<li>
+	type <code>foo.S</code> doesn't implement the interface type <code>bar.I</code>.
+</li>
+<li>
+	type <code>bar.S</code> doesn't implement the interface type <code>foo.I</code>.
+</li>
+</ul>
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import "包2/foo"
+import "包2/bar"
+
+func main() {
+	var x foo.S
+	var y bar.S
+	var _ foo.I = x
+	var _ bar.I = y
+
+	// The following lines fail to compile.
+	x = foo.S(y)
+	y = bar.S(x)
+	var _ foo.I = y
+	var _ bar.I = x
+}
+</code></pre>
+
+</div>
+
+
+<!--
+<a class="anchor" id="compare-values-with-both-comparable-and-incomparable-parts"></a>
+<h3>The behavior of comparing struct values with both comparable and incomparable fields or array values with both comparable and incomparable elements is unspecified.</h3>
+
+<div>
+<p>
+Surely, the mentioned incomparable values here must present as interfaces, otherwise, the comparisons fail to compile.
+</p>
+
+Although it looks the implementation by the official standard Go compiler is comparing struct values fields by fields,
+and comparing array values elements by elements, until an inequality is found or a panic occurs, 
+but <a href="https://github.com/golang/go/issues/8606">the behavior is really unspecified</a> currently (Go 1.15).
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+func cmpS(a, b S) {
+	defer func() {
+		if recover() != nil {
+			fmt.Println("panic")
+		}
+	}()
+	fmt.Println(a == b)
+}
+
+func cmpA(x, y A) {
+	defer func() {
+		if recover() != nil {
+			fmt.Println("panic")
+		}
+	}()
+	fmt.Println(x == y)
+}
+
+type S struct{x, y interface{}}
+type A [2]interface{}
+
+func main() {
+	var f func()
+	cmpS(S{1, f}, S{2, f}) // false (but panic is ok)
+	cmpS(S{f, 1}, S{f, 2}) // panic (but false is ok)
+	cmpA(A{1, f}, A{2, f}) // false (but panic is ok)
+	cmpA(A{f, 1}, A{f, 2}) // panic (but false is ok)
+}
+</code></pre>
+
+</div>
+-->
+
+<a class="anchor" id="blank-fields-are-ignored-in-comparisons"></a>
+<h3>In struct value comparisons, blank fields will be ignored.</h3>
+
+<div>
+Blank fields are those fields whose name are the blank identifier <code>_</code>.
+The following program will print <code>true</code>.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+type T struct {
+	_ int
+	_ bool
+}
+
+func main() {
+	var t1 = T{123, true}
+	var t2 = T{789, false}
+	fmt.Println(t1 == t2) // true
+}
+</code></pre>
+
+<p>
+</p>
+
+</div>	
+
+<a class="anchor" id="sometimes-parentheses-are-required"></a>
+<h3>Parentheses are required in several rare scenarios to make code compile okay.</h3>
+
+<div>
+For example:
+
+<pre class="line-numbers"><code class="language-go">package main
+
+type T struct{x, y int}
+
+func main() {
+	// Each of the following three lines makes code
+	// fail to compile. Some "{}"s confuse compilers.
+	/*
+	if T{} == T{123, 789} {}
+	if T{} == (T{123, 789}) {}
+	if (T{}) == T{123, 789} {}
+	var _ = func()(nil) // nil is viewed as a type
+	*/
+
+	// We must add parentheses like the following
+	// two lines to make code compile okay.
+	if (T{} == T{123, 789}) {}
+	if (T{}) == (T{123, 789}) {}
+	var _ = (func())(nil) // nil is viewed as a value
+}
+</code></pre>
+
+<p>
+</p>
+</div>
+
+<!--
+<a class="anchor" id="main-entry-function-absence"></a>
+<h3>A program doesn't need a <code>main</code> entry function to run.</h3>
+
+<div>
+The following program <a href="https://github.com/golang/go/issues/21256">compiles okay before Go 1.11</a>,
+for the standard Go compiler.
+But since Go 1.11, it fails to compile.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import (
+    "fmt"
+    "time"
+)
+
+func init() {
+	for {
+		time.Sleep(time.Second)
+		fmt.Println("hi")
+	}
+}
+
+var main int
+</code></pre>
+
+<p>
+</p>
+</div>
+-->
+
+<a class="anchor" id="stack-overflow-is-unrecoverable"></a>
+<h3>Stack overflow is not panic.</h3>
+
+<div>
+
+For the current main stream Go compilers, stack overflows are fatal errors.
+Once a stack overflow happens, the whole program will crash without recovery ways.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+func f() {
+	f()
+}
+
+func main() {
+	defer func() {
+		recover() // helpless to avoid program crashing
+	}()
+	f()
+}
+</code></pre>
+
+the running result:
+
+<pre class="output"><code>runtime: goroutine stack exceeds 1000000000-byte limit
+fatal error: stack overflow
+
+runtime stack:
+...
+</code></pre>
+
+<p>
+</p>
+
+<p>
+About more crash cases, please read <a href="https://github.com/go101/go101/wiki/Panic-and-crash-cases">this wiki article</a>.
+</p>
+</div>
+
+<a class="anchor" id="some-evaluation-order-are-compiler-dependent"></a>
+<h3>Some expression evaluation orders in Go are compiler implementation dependent.</h3>
+
+<p>
+Please read <a href="evaluation-orders.html">expression evaluation orders in Go</a> for details.
+</p>
+
+<a class="anchor" id="reflect-deep-equal"></a>
+<h3>The results of <code>reflect.DeepEqual(x, y)</code> and <code>x == y</code> may be different.</h3>
+
+<div>
+<p>
+The function call <code>reflect.DeepEqual(x, y)</code> will always return
+<code>false</code> if the types of its two arguments are different,
+whereas <code>x == y</code> may return <code>true</code> even if
+the types of the two operands are different.
+</p>
+
+<p>
+The second difference is a <code>DeepEqual</code> call with
+two pointer argument values of the same type returns whether or not
+the two respective values referenced by the two pointers are deep equal.
+So the call might return <code>true</code> even if the two pointers are not equal.
+</p>
+
+<p>
+The third difference is the result of a <code>DeepEqual</code> call might return
+<code>true</code> if both of its arguments are in cyclic reference chains
+(to avoid infinite looping in the call).
+</p>
+
+<p>
+The fourth difference is, the function call
+<code>reflect.DeepEqual(x, y)</code> is not expected to panic generally,
+whereas <code>x == y</code> will panic if the two operands are both
+interface values and their dynamic types are identical and incomparable.
+</p>
+
+An example showing these differences:
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import (
+	"fmt"
+	"reflect"
+)
+
+func main() {
+	type Book struct {page int}
+	x := struct {page int}{123}
+	y := Book{123}
+	fmt.Println(reflect.DeepEqual(x, y)) // false
+	fmt.Println(x == y)                  // true
+
+	z := Book{123}
+	fmt.Println(reflect.DeepEqual(&z, &y)) // true
+	fmt.Println(&z == &y)                  // false
+
+	type Node struct{peer *Node}
+	var q, r, s Node
+	q.peer = &q // form a cyclic reference chain
+	r.peer = &s // form a cyclic reference chain
+	s.peer = &r
+	println(reflect.DeepEqual(&q, &r)) // true
+	fmt.Println(q == r)                // false
+
+	var f1, f2 func() = nil, func(){}
+	fmt.Println(reflect.DeepEqual(f1, f1)) // true
+	fmt.Println(reflect.DeepEqual(f2, f2)) // false
+
+	var a, b interface{} = []int{1, 2}, []int{1, 2}
+	fmt.Println(reflect.DeepEqual(a, b)) // true
+	fmt.Println(a == b)                  // panic
+}
+</code></pre>
+
+<p>
+</p>
+
+Note, if the two arguments of a <code>DeepEqual</code> call are both function values,
+then the call returns <code>true</code> only if the two function arguments are both nil and their types are identical.
+It is similar to compare container values whose elements contain function values or compare struct values whose fields contain function values.
+But please also note that the result of comparing two slices (of the same type) is always <code>true</code> if the two slices exactly share
+the same elements (in other words, they have the same length and each pair of their corresponding elements have the same address).
+An example:
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import (
+	"fmt"
+	"reflect"
+)
+
+func main() {
+	a := [1]func(){func(){}}
+	b := a
+	fmt.Println(reflect.DeepEqual(a, a))       // false
+	fmt.Println(reflect.DeepEqual(a[:], a[:])) // true
+	fmt.Println(reflect.DeepEqual(a[:], b[:])) // false
+	a[0], b[0] = nil, nil
+	fmt.Println(reflect.DeepEqual(a[:], b[:])) // true
+}
+</code></pre>
+
+<p>
+</p>
+</div>
+
+<a class="anchor" id="reflect-value-bytes"></a>
+<h3>The <code>reflect.Value.Bytes()</code> method returns a <code>[]byte</code> value, which element type, <code>byte</code>, might be not the same as the Go slice value represented by the receiver parameter.</h3>
+
+<div>
+<p>
+Assume the underlying type of a defined type <code>MyByte</code> is the
+predeclared type <code>byte</code>, we know that Go type system forbids
+the conversions between <code>[]MyByte</code> and <code>[]byte</code> values.
+However, it looks the implementation of the method <code>Bytes</code> of the
+<code>reflect.Value</code> type partially violates this restriction unintentionally,
+by allowing converting a <code>[]MyByte</code> value to <code>[]byte</code>.
+</p>
+
+Example:
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import "bytes"
+import "fmt"
+import "reflect"
+
+type MyByte byte
+
+func main() {
+	var mybs = []MyByte{'a', 'b', 'c'}
+	var bs []byte
+
+	// bs = []byte(mybs) // this line fails to compile
+
+	v := reflect.ValueOf(mybs)
+	bs = v.Bytes() // okay. Violating Go type system.
+	fmt.Println(bytes.HasPrefix(bs, []byte{'a', 'b'})) // true
+
+	bs[1], bs[2] = 'r', 't'
+	fmt.Printf("%s \n", mybs) // art
+}
+</code></pre>
+
+<p>
+But it looks the violation is not harmful.
+On the contrary, it makes some benefits.
+For example, with this violation, we can use the functions in the
+<code>bytes</code> standard package for the <code>[]MyByte</code> values.
+</p>
+
+<p>
+Note, the <code>reflect.Value.Bytes()</code> method <a href="https://github.com/golang/go/issues/27727">might be removed later</a>.
+</p>
+
+</div>
+
+<a class="anchor" id="check-file-existent"></a>
+<h3>We should use <code>os.IsNotExist(err)</code> instead of <code>err == os.ErrNotExist</code> to check whether or not a file exists.</h3>
+
+<div>
+
+Using <code>err == os.ErrNotExist</code> may miss errors.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import (
+	"fmt"
+	"os"
+)
+
+func main() {
+	_, err := os.Stat("a-nonexistent-file.abcxyz")
+	fmt.Println(os.IsNotExist(err))    // true
+	fmt.Println(err == os.ErrNotExist) // false
+}
+</code></pre>
+
+<p>
+</p>
+
+For projects only supporting Go 1.13+, <code>errors.Is(err, os.ErrNotExist)</code> is
+<a href="https://github.com/golang/go/issues/38198">more recommended to be used</a> to check whether or not a file exists.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import (
+	"errors"
+	"fmt"
+	"os"
+)
+
+func main() {
+	_, err := os.Stat("a-nonexistent-file.abcxyz")
+	fmt.Println(errors.Is(err, os.ErrNotExist)) // true
+}
+</code></pre>
+
+<p>
+</p>
+</div>
+
+<a class="anchor" id="boolean-flag"></a>
+<h3>The <code>flag</code> standard package treats boolean command flags differently than integer and string flags.</h3>
+
+<div>
+There are three forms to pass flag options.
+<ol>
+<li>
+	<code>-flag</code>, for boolean flags only.
+</li>
+<li>
+	<code>-flag=x</code>, for any flag.
+</li>
+<li>
+	<code>-flag x</code>, for non-boolean flags only.
+</li>
+</ol>
+
+<p>
+And please note that, a boolean flag with the first form
+is viewed as the last flag, all items following it are viewed as arguments.
+</p>
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+import "flag"
+
+var b = flag.Bool("b", true, "a boolean flag")
+var i = flag.Int("i", 123, "an integer flag")
+var s = flag.String("s", "hi", "a string flag")
+
+func main() {
+	flag.Parse()
+	fmt.Print("b=", *b, ", i=", *i, ", s=", *s, "\n")
+	fmt.Println("arguments:", flag.Args())
+}
+</code></pre>
+
+<p>
+</p>
+
+If we run this program with the below shown flags and arguments
+
+<pre class="output"><code>./exampleProgram -b false -i 789 -s bye arg0 arg1
+</code></pre>
+
+the output will be
+
+<pre class="output"><code>b=true, i=123, s=hi
+arguments: [false -i 789 -s bye arg0 arg1]
+</code></pre>
+
+<p>
+This output is obviously not what we expect.
+</p>
+
+We should pass the flags and arguments like
+
+<pre class="output"><code>./exampleProgram -b=false -i 789 -s bye arg0 arg1
+</code></pre>
+
+or
+
+<pre class="output"><code>./exampleProgram -i 789 -s bye -b arg0 arg1
+</code></pre>
+
+to get the output we expect:
+
+<pre class="output"><code>b=true, i=789, s=bye
+arguments: [arg0 arg1]
+</code></pre>
+
+<!--
+reason: https://github.com/golang/go/issues/36263#thread-subscription-status
+-->
+
+</div>
+
+<a class="anchor" id="printf-positional-arguments"></a>
+<h3><code>[Sp|Fp|P]rintf</code> functions support positional arguments.</h3>
+
+<div>
+The following program will print <code>coco</code>.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+func main() {
+	// The next line prints: coco
+	fmt.Printf("%[2]v%[1]v%[2]v%[1]v", "o", "c")
+}
+</code></pre>
+
+<p>
+</p>
+</div>
+
+
+
+
+</div> <!-- summaries-items -->
+
+<!--
+<a class="anchor" id="remove-spaces-in-template"></a>
+<h3>Since Go 1.6, we can .</h3>
+
+https://golang.org/doc/go1.6 : {{a -}} sss {{- b}}
+
+
+
+The exported fields and methods of embedded non-exported fields
+are still exported for the embedding struct type.
+
+
+json:"name: empty" // doesn't work
+
+syscall package docs show current O arch defaultly
+  https://golang.org/pkg/syscall/?GOOS=linux&GOARCH=mips64le
+
+two unnamed struct types embedding two type aliases which denote the same type are two different types.
+if the two aliases have different names.
+
+non-exported field can't be set by reflection, but can be listed. Can read?
+
+reflection created embedding type will not obtain methods. still?
+
+
+
+https://golang.org/pkg/reflect/#pkg-note-BUG
+
+https://golang.org/pkg/reflect/#Value.String
+Print functions not always print the result of the String() method of a value.
+
+
+
+
+an untyped rune or int constant can be bound with a value which is larger than the max <code>rune</code> or <code>int</code> value in memory.
+
+-128/-1 = -128
+
+
+greedy goroutine https://github.com/golang/go/issues/10958
+* It look some goroutines never get yielded, this make some other goroutines never get chances to run, why?
+http://stackoverflow.com/questions/13107958/what-exactly-does-runtime-gosched-do
+tight loops should be preemptible
+https://github.com/golang/go/issues/10958
+(eliminated since Go Toolchain 1.15) https://twitter.com/go100and1/status/1225258083745558528
+
+internal package
+
+"go doc xyz" may show the docs of the first package named with "xyz"
+https://github.com/golang/go/issues/24462
+For example, "go doc rand" show docs of "math/rand" instead of "crypto/rand".
+
+
+runtime.Caller/ Callers: depth inconsistency
+
+https://github.com/golang/go/issues/13890
+
+https://github.com/golang/go/issues/24693
+
+https://github.com/golang/go/issues/24721
+
+
+
+Try not to use multi-value assignments.
+Reason 1: maybe bug. Reason 3: unspecified behaviors. 2: maybe inefficient.
+https://github.com/golang/go/issues/23188#issuecomment-361482955
+https://github.com/golang/go/issues/23017
+https://github.com/golang/go/issues/22881
+https://github.com/golang/go/issues/24448
+
+https://github.com/golang/go/issues/24746
+
+https://github.com/golang/go/issues/20135
+https://github.com/golang/go/issues/26463 maps do not shrink
+
+Values of <code>expvar.Int</code> and <code>expvar.Float</code> need to be 64-bit aligned.
+
+func main() {
+	var a, b = 1.0, 0.0
+	x, y := a/b, 0.0
+	println(x, y) // +Inf +0.000000e+000
+	println(x * y) // NaN
+}
+
+The String method of a reflect.Value value v returns the string form of the underlying value of v.
+However, the functions in the fmt package try to print the string form of the underlying value of the underlying value of v,
+if the underlying value of v is also a reflect.Value value.
+
+	package main
+
+	import (
+		"fmt"
+		"reflect"
+	)
+
+	func main() {
+		var v reflect.Value
+		fmt.Println(v.IsValid()) // false
+		fmt.Println(v)           // <invalid reflect.Value>
+		fmt.Println(v.String())  // <invalid Value>
+		
+		v = reflect.ValueOf(v)
+		fmt.Println(v.IsValid()) // true
+		fmt.Println(v)           // <invalid Value>
+		fmt.Println(v.String())  // <reflect.Value Value>
+		
+		v = reflect.ValueOf(v)
+		fmt.Println(v.IsValid()) // true
+		fmt.Println(v)           // <reflect.Value Value>
+		fmt.Println(v.String())  // <reflect.Value Value>
+	}
+
+io/ioutil since Go 1.11
+    The TempFile function now supports specifying where the random characters in the filename are placed.
+    If the prefix argument includes a "*", the random string replaces the "*".
+    For example, a prefix argument of "myname.*.bat" will result in a random filename such as "myname.123456.bat".
+    If no "*" is included the old behavior is retained, and the random digits are appended to the end.
+io/ioutil is deprecated since Go 1.16
+
+
+
+go term(inoledgie)s 101
+
+go contests 101 / summaries / snippets
+
+
+
+1.13+: one more DeepEqual exception: https://go-review.googlesource.com/c/go/+/168438/3/src/reflect/deepequal.go
+* (cancelled)
+
+bytes.TrimSpace may return nil even if the input is not: https://github.com/golang/go/issues/31038
+
+
+
+
+method value evaluation timing
+* https://github.com/golang/go/issues/32021
+* https://github.com/golang/go/issues/32035
+
+https://github.com/golang/go/issues/22075
+
+https://github.com/golang/go/issues/18531
+
+https://github.com/golang/go/issues/23224
+
+deferred calls will be called after runtime.Goexit 
+but will not after os.Exit. Note, log.Fatal wraps os.Exit.
+If a program does clean-up work in deferred calls, don't use os.Exit to terminate the program.
+
+package main
+import "C" // program crashes if this line is commented out
+func main() {
+  select{}
+}
+
+https://github.com/golang/go/issues/34684
+
+The print result of nil and blank slices are the same. (Similar to maps).
+* history reason
+
+
+the source part of a type alias declaration can't reference the declared alias.
+
+cgo should not call Go before all init functions exit:
+https://github.com/golang/go/issues/36530#issuecomment-574213023
+
+force gc every 2 minutes: https://github.com/golang/go/blob/895b7c85addfffe19b66d8ca71c31799d6e55990/src/runtime/proc.go#L4481-L448
+
+Go time
+https://github.com/golang/go/issues/27090
+
+Remove element from list
+	for e := l.Front(); e != nil; e = e.Next() {
+		l.Remove(e) // bug
+	}
+	for e := l.Front(); e != nil; {
+		next = e.Next()
+		l.Remove(e)
+		e = next
+	}
+
+reflect: DeepEqual always returns true for unexported C structures in dynamic library
+https://github.com/golang/go/issues/38980
+
+
+https://twitter.com/dgryski/status/1302984936870223874
+An http.ResponseWriter will set the status to "200 Ok" if Write() is called before the status code is set explicitly with WriteHeader().
+If you call WriteHeader afterwards, the new status code is ignored but the server will log to stderr.
+Check your logs!
+
+
+...
+f is much faster than g, for f makes no allocations (optimized by Go Toolchain).
+	func f(x, y, z []byte){
+	  switch {
+	  case string(x) == string(y):
+	  case string(x) == string(z):
+	  }
+	}
+	func g(x, y, z []byte){
+	  switch string(x) {
+	  case string(y):
+	  case string(z):
+	  }
+	}
+
+func foo(buf []byte) {
+	f := func() {
+		type buf struct{} // mute buf in this block to avoid misusing it.
+		data := make([]byte, 100)
+		...
+	}
+}
+
+
+"// +build go1.16" specify the minimum Go Toolchain version needed to compile a source file.
+"go 1.N" directive in a "go.mod" file specifies the features the containing module could use (https://golang.org/ref/mod#go-mod-file-go). It likes the "-lang=go1.N" compilation option. So
+  it doesn't specify the minimum Go Toolchain version to compile the module. Higher or lower Toolchain versions may be used if the desired features are supported these Toolchain versions.
+  it doesn't cover other modules in a program. https://play.golang.org/p/hMNDpRPh7Em
+
+
+https://github.com/golang/go/issues/44391
+https://github.com/golang/go/issues/14830
+	key := []byte{}
+	fmt.Printf("%#[1]v %[1]T\n", key)  // []byte{} []uint8
+	fmt.Printf("%#[1]v %[1]T\n", &key) // &[]uint8{} *[]uint8
+
+
+https://groups.google.com/g/golang-nuts/c/90fYaXNRmVM
+https://groups.google.com/g/golang-nuts/c/90fYaXNRmVM/m/ZfKRE1vwFQAJ
+
+https://github.com/golang/go/issues/44830
+reflect: TypeOf(unsafe.Pointer(nil)).PkgPath() returns "", not "unsafe"
+
+https://github.com/golang/go/issues/46789
+runtime.NumCgoCall() decrease when some goroutines exit? bug or should?
+
+https://github.com/golang/go/issues/46827#issuecomment-864694337
+tiny object might implicitly share memory blocks with others.
+https://go-review.googlesource.com/c/go/+/337391/5/src/runtime/mfinal.go
+
+Max embed size is 2G: https://github.com/golang/go/issues/47627
+
+Missing go directive in go.mod: language version is defaulted to 1.16:
+https://groups.google.com/g/golang-nuts/c/lhedc8YaWlM
+https://github.com/golang/go/issues/44976
+
+
+-->
+
+
+
+
+
+
+
+
+<hr>
+
+<div class="text-center"><a href="#i-details.html">Index↡</a></div>
+
+
+
+<hr>
+
+<div id="contact" class="alert alert-success"><small>
+
+<p>
+The <b><i>Go 101</i></b> 프로젝트는 <a href="https://github.com/go101/go101">Github</a>
+에서 호스팅됩니다.
+오타, 문법 오류, 부정확한 표현, 설명 결함, 코드 버그, 끊어진 링크와 같은 모든
+종류의 실수에 대한 수정 사항을 제출하여 Go 101을 개선을 돕는 것은 언제나 환영합니다.
+</p>
+
+<p>
+주기적으로 Go에 대한 깊이 있는 정보를 얻고 싶다면 Go 101의 공식 트위터 계정인
+<a href="https://twitter.com/go100and1">@go100and1</a>을 팔로우하거나
+<a href="https://join.slack.com/t/go-101/shared_invite/zt-y2pvwg00-Oz7lDDJu44l~hZsFRUApiA">Go 101 슬랙 채널</a>에j가입해주세요.
+</p>
+
+</small></div>
+
+<div class="alert alert-warning"><small>
+
+
+<div id="ebooks">
+이 책의 디지털 버전은 아래와 같은 곳을 통해서 구매할 수 있습니다.
+<ul>
+<li>
+	<a href="https://leanpub.com/go101">Leanpub</a>,
+	<i>최소 19.99 달러</i>.
+</li>
+<li>
+	
+	아마존 킨들 스토어, <i>(현재는 사용 불가)</i>.
+</li>
+<li>
+	<a href="https://books.apple.com/book/id1459984231">애플 북 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://play.google.com/store/books/details?id=Dc1wEAAAQBAJ">구글 플레이 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://github.com/go101/go101/releases">무료 전자책</a>,
+	pdf, epub과 azw3 포맷을 지원
+</li>
+</ul>
+	</div>
+<div>
+
+Go 101의 저자인 Tapir는 2016년 7월부터 Go 101 시리즈 책들을 집필하고 go101.org 웹사이트를 유지 관리하고 있습니다.
+새로운 콘텐츠는 책과 웹사이트에 수시로 추가될 예정입니다.
+Tapir는 인디 게임 개발자이기도 합니다.
+<a href="https://www.tapirgames.com">Tapir의 게임</a>을 플레이하여 Go 101을 지원할 수도 있습니다.
+(안드로이드와 아이폰/아이패드용):
+<ul>
+<li>
+	<a href="https://www.tapirgames.com/App/Color-Infection">Color Infection</a> (★★★★★), 140개 이상의 단계로 이루어진 물리 기반의 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Rectangle-Pushers">Rectangle Pushers</a> (★★★★★), 2가지 모드와 104개 이상의 단계로 이루어진 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Let-Us-Play-With-Particles">Let's Play With Particles</a>, 세가지 미니 게임이 있는 캐주얼 액션 게임
+</li>
+</ul>
+</div>
+
+<a href="https://paypal.me/tapirliu">페이팔</a>을 통한 개인 기부도 환영합니다.</small></div>
+
+<hr>
+색인:
+
+
+<div id="book-index">
+
+<!-- kindle starts: 1 -->
+
+<ul class="index part">
+	<li><a class="index" href="101-about.html">Go 101에 대해</a> - 이 책이 쓰여진 이유</li>
+	<li><a class="index" href="acknowledgements.html">감사의 말</a></li>
+</ul>
+
+<ul class="index part">
+	<li><a class="index" href="introduction.html">Go 소개</a> - Go를 배우는 가치</li>
+	<li><a class="index" href="go-toolchain.html">Go 툴체인</a> - Go 프로그램을 컴파일하고 실행하는 방법</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 코드에 익숙해지기
+
+	<ul class="index chapters">
+	<li><a class="index" href="basic-code-elements-introduction.html">소스 코드 요소 소개</a></li>
+	<li><a class="index" href="keywords-and-identifiers.html">키워드와 식별자</a></li>
+	<li><a class="index" href="basic-types-and-value-literals.html">기본 자료형과 기본 값 리터럴</a></li>
+	<li><a class="index" href="constants-and-variables.html">상수와 변수</a> - 무형성(untyped) 값과 자료형 추론 소개를 포함</li>
+	<li><a class="index" href="operators.html">일반 연산자</a> - 더 많은 자료형 추론 규칙 소개를 포함</li>
+	<li><a class="index" href="function-declarations-and-calls.html">함수 선언과 호출</a></li>
+	<li><a class="index" href="packages-and-imports.html">코드 패키지와 패키지 들여오기</a></li>
+	<li><a class="index" href="expressions-and-statements.html">표현식, 구문과 단순 구문</a></li>
+	<li><a class="index" href="control-flows.html">기본 흐름 제어</a></li>
+	<li><a class="index" href="control-flows-more.html">고루틴, 지연된 함수 호출과 패닉/복구</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 자료형 체계
+
+	<ul class="index chapters">
+	<li><a class="index" href="type-system-overview.html">Go 자료형 체계 개요</a> - Go 프로그래밍 숙달을 위해 반드시 읽어봐야 하는</li>
+	<li><a class="index" href="pointer.html">포인터</a></li>
+	<li><a class="index" href="struct.html">구조체</a></li>
+	<li><a class="index" href="value-part.html">변수</a> - Go 변수에 대한 더 깊은 이해</li>
+	<li><a class="index" href="container.html">배열, 슬라이스와 맵</a> - 1급 객체 컨테이너 자료형</li>
+	<li><a class="index" href="string.html">문자열</a></li>
+	<li><a class="index" href="function.html">함수</a> - 함수 자료형과 값, 가변 인자 함수</li>
+	<li><a class="index" href="channel.html">채널</a> - Go에서 동시성 동기화를 하는 방법</li>
+	<li><a class="index" href="method.html">메서드</a></li>
+	<li><a class="index" href="interface.html">인터페이스</a> - 리플렉션과 다형성을 하는 값 상자</li>
+	<li><a class="index" href="type-embedding.html">자료형 임베딩</a> - 자료형을 확장하는 방법</li>
+	<li><a class="index" href="unsafe.html">자료형에 안전하지 않는 포인터</a></li>
+	<li><a class="index" href="generic.html">제네릭</a> - 합성 자료형의 사용과 읽는 법</li>
+	<li><a class="index" href="reflection.html">리플렉션</a> - <code>reflect</code> 표준 패키지</li>
+	</ul>
+</li>
+</ul>
+
+<!-- kindle ends: 1 -->
+
+<!-- kindle starts: 2 -->
+
+<ul class="index part">
+<li>
+특별 주제
+
+	<ul class="index chapters">
+	<li><a class="index" href="line-break-rules.html">개행 규칙</a></li>
+	<li><a class="index" href="defer-more.html">지연된 함수 호출 더 알아보기</a></li>
+	<li><a class="index" href="panic-and-recover-use-cases.html">패닉/복구 사용 사례</a></li>
+	<li><a class="index" href="panic-and-recover-more.html">패닉/복구 메커니즘에 대한 고찰</a> - 함수 호출 종료 단계를 포함</li>
+	<li><a class="index" href="blocks-and-scopes.html">코드 블록과 식별자 스코프</a></li>
+	<li><a class="index" href="evaluation-orders.html">표현식 평가 순서</a></li>
+	<li><a class="index" href="value-copy-cost.html">Go의 값 복사 비용</a></li>
+	<li><a class="index" href="bounds-check-elimination.html">경계 검사 제거(BCE)</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+동시성 프로그래밍
+
+	<ul class="index chapters">
+	<li><a class="index" href="concurrent-synchronization-overview.html">동시성 동기화 개요</a></li>
+	<li><a class="index" href="channel-use-cases.html">채널 사용 사례</a></li>
+	<li><a class="index" href="channel-closing.html">채널을 깔끔하게 닫는 방법</a></li>
+	<li><a class="index" href="concurrent-synchronization-more.html">기타 동시성 동기화 기술</a> - <code>sync</code> 표준 패키지</li>
+	<li><a class="index" href="concurrent-atomic-operation.html">원자적 연산</a> - <code>sync/atomic</code> 표준 패키지</li>
+	<li><a class="index" href="memory-model.html">Go의 메모리 순서 보장</a></li>
+	<li><a class="index" href="concurrent-common-mistakes.html">흔히들 저지르는 동시성 프로그래밍 실수들</a></li>
+	</ul>
+
+</li>
+</ul>
+
+
+<ul class="index part">
+<li>
+메모리 관련
+
+	<ul class="index chapters">
+	<li><a class="index" href="memory-block.html">메모리 블록</a></li>
+	<li><a class="index" href="memory-layout.html">메모리 레이아웃</a></li>
+	<li><a class="index" href="memory-leaking.html">메모리 누수 시나리오</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+일부 요약
+
+	<ul class="index chapters">
+	<li><a class="index" href="summaries.html">몇 가지 간단한 요약</a></li>
+	<li><a class="index" href="nil.html">Go의 <code>nil</code></a></li>
+	<li><a class="index" href="value-conversions-assignments-and-comparisons.html">값 변환, 할당과 비교 규칙</a></li>
+	<li><a class="index" href="exceptions.html">구문/의미 예외</a></li>
+	<!-- (to remove) for printing -->
+	<li><b class="index" id="i-details.html">Go Details 101</b></li>
+	<li><a class="index" href="unofficial-faq.html">Go FAQ 101</a></li>
+	<li><a class="index" href="tips.html">Go Tips 101</a></li>
+	<!-- (to remove) -->
+	</ul>
+
+</li>
+</ul>
+
+<!-- kindle ends: 2 -->
+
+<!-- kindle starts: 0 -->
+
+<ul class="index part">
+<li><a class="index" href="more.html">더 많은 토픽</a></li>
+</ul>
+
+<!-- kindle ends: 0 -->
+
+</div>
+
+
+
+
+
+
+
+
+		</div>
+	</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

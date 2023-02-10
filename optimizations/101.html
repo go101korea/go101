@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Golang online books, articles, tools, etc.">
+		<meta name="author" content="">
+		<meta name="go-version" content="go1.20">
+		<link rel="icon" href="/static/go101/images/101-v1.ico">
+		<link rel="apple-touch-icon" sizes="152x152" href="/static/go101/images/iphone-v1.jpeg">
+	
+		<title>Go Optimizations 101 -Go 101</title><link id="css-bs" href="/static/bootstrap/v4.0.3-dark/css/bootstrap.min.css" rel="stylesheet">
+		<link id="css-go101" href="/static/go101/css/v991-dark.css" rel="stylesheet">
+		<link id="css-prism" href="/static/prism/2020-08-03-dark/prism.css" rel="stylesheet">
+		<script id="js-prism" src="/static/prism/2020-08-03-dark/prism.js"></script>
+
+
+		<script src="/static/jquery/jquery.min-v1.11.2.js"></script>
+		<script src="/static/go101/js/v5.js"></script>
+		
+		
+		<style>
+		div, p, ul, li, td, th {line-height: 1.55;}
+		</style>
+
+		<script>
+		var theme = ""
+		</script>
+	</head>
+
+	<body>
+		<div class="container">
+
+		<div class="row nav-bar-with-borders">
+	<div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/"><small>Home</small></a> <span class="new-text"><sup>new!</sup></span>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/article/101.html"><small>Go 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/generics/101.html"><small>Go Generics 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/details-and-tips/101.html"><small>Go Details &amp; Tips 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-active">
+		<small>Go Optimizations 101</small>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/quizzes/101.html"><small>Go Quizzes 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go HowTo 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Practices 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Agg 101</small></div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/blog/101.html"><small>Go 101 Blog</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/apps-and-libs/101.html"><small>Go 101 Apps &amp; Libs</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;" id="theme-switch"><small>테마: 다크/라이트</small></div>
+
+</div>
+
+<div class="alert alert-warning text-center"><small>
+현재 3권의 신간들인 <a href="/optimizations/101.html">Go Optimizations 101</a>,
+<a href="/details-and-tips/101.html">Go Details &amp; Tips 101</a>
+과 <a href="/generics/101.html">Go Generics 101</a>이 출간되어 있습니다.
+Leanpub 서점에서 <a href="https://leanpub.com/b/go-optimizations-details-generics">번들</a>을 모두 구입하시는 방법이 비용 대비 효율이 가장 좋습니다.
+<p></p>
+Go에 대한 많은 정보들과 Go 101 책들의 최신 소식을 얻으시려면 Go 101 트위터 계정인 <a href="https://twitter.com/go100and1">@Go100and1</a>을
+팔로잉 해주세요.
+</small></div>
+<p>
+</p>
+
+
+
+<h1>Go Optimizations 101</h1>
+
+
+
+<p>
+This book provides some code performance optimization tricks, tips, and suggestions,
+which include
+</p>
+
+<ul>
+<li>how to consume less CPU resources.</li>
+<li>how to consume less memory.</li>
+<li>how to make less memory allocations.</li>
+<li>how to control memory allocation places.</li>
+<li>how to reduce garbage collection pressure.</li>
+</ul>
+
+<p>
+The book is Go 1.20 ready now (<a href="100-updates.html">update history</a>).
+</p>
+
+<p><small><i>
+(Please follow Go 101's official Twitter account <a href="https://twitter.com/go100and1">@go100and1</a>
+to get latest Go 101 news and learn all kinds of Go knowledge.)
+</i></small></p>
+
+<div id="ebooks" class="alert alert-success row item-row">
+	<div class="col-xs-12 col-sm-3 text-center" style="font-size: small;">
+		<img src="res/cover-1000x.jpg" style="width: 160px;" alt="Go Optimizations 101"></img>
+		<p>(about 150 pages, 75+ facts and suggestions)</p>
+	</div>
+	<div class="col-xs-12 col-sm-9" style="padding-top: 6px;"><small>
+		The digital versions of this book are available at the following places:
+		<ul>
+		<li>
+			<a href="https://leanpub.com/go-optimizations-101">Leanpub store</a>,
+			<i>$9.99+</i> (Or buy this book through <a href="https://leanpub.com/b/go-optimizations-details-generics">this</a> or <a href="https://leanpub.com/b/go-optimizations-details">this</a> book bundle).
+		</li>
+		<li>
+			<a href="https://books.apple.com/book/id1609924340">Apple Books store</a>,
+			<i>$9.99</i>.
+		</li>
+		<li>
+			<a href="https://www.amazon.com/dp/B09NT2HJCM">Amazon Kindle store</a>,
+			<i>$9.99</i>.
+		</li>
+		<li>
+			<a href="https://play.google.com/store/books/details?id=Ac1wEAAAQBAJ">Google Play store</a>,
+			<i>$9.99</i>.
+		</li>
+		</ul>
+		
+		<p>
+		Honestly speaking, the book is worth $20+.
+		</p>
+
+		<p>
+		Tapir, the author of Go 101, has been on writing the Go 101 series books and maintaining the go101.org website since July 2016.
+		New contents are still being (and will be) continually added to the book series and the website from time to time.
+		</p>
+
+		<p>
+		Tapir is also an indie game developer.
+		If you would like to, you can also support the book and the website by
+		playing <a href="https://www.tapirgames.com">Tapir's games</a>
+		(made for both Android and iPhone/iPad).
+		Individual donations are also accepted <a href="https://paypal.me/tapirliu">via PayPal</a>.
+		</p>
+
+		<p>
+		Thanks to Olexandr Shalakhin for the permission of using one of
+		<a href="https://github.com/shalakhin/gophericons">the wonderful gopher icon images</a>
+		in the book cover.
+		</p>
+	</small></div>
+</div>
+
+
+
+<div>
+
+<h3>Index:</h3>
+
+<!-- index starts (don't remove) -->
+
+<div id="book-index">
+	
+<ul class="index part">
+	<li><a class="index" href="0.0-acknowledgements.html">Acknowledgments</a></li>
+	<li><a class="index" href="0.1-introduction.html">About Go Optimizations 101</a></li>
+	<li>Value Parts and Value Sizes <sup><small>(available in <a href="#ebooks">the paid ebooks</a>)</small></sup></li>
+	<ul>
+		<li>value/type sizes</li>
+		<li>memory alignments</li>
+		<li>struct padding</li>
+		<li>avoid larger copy costs</li>
+	</ul>
+	<li><a class="index" href="0.3-memory-allocations.html">Memory Allocations</a></li>
+	<li>Stack and Escape Analysis <sup><small>(available in <a href="#ebooks">the paid ebooks</a>)</small></sup></li>
+	<ul>
+		<li>escape analysis</li>
+		<li>how to control value allocation places</li>
+		<li>stacks growth and shrinkage</li>
+		<li>how to reduce stack grow times</li>
+	</ul>
+	<li>Garbage Collection <sup><small>(available in <a href="#ebooks">the paid ebooks</a>)</small></sup></li>
+	<ul>
+		<li>GC pacer</li>
+		<li>how to reduce GC pressure</li>
+		<li>control GC frequency</li>
+	</ul>
+	<li><a class="index" href="1-pointer.html">Pointers</a></li>
+	<li>Structs <sup><small>(available in <a href="#ebooks">the paid ebooks</a>)</small></sup></li>
+	<ul>
+		<li>3 facts/suggestions</li>
+	</ul>
+	<li>Arrays and Slices <sup><small>(available in <a href="#ebooks">the paid ebooks</a>)</small></sup></li>
+	<ul>
+		<li>10+ facts/suggestions</li>
+	</ul>
+	<li>String and Byte Slices <sup><small>(available in <a href="#ebooks">the paid ebooks</a>)</small></sup></li>
+	<ul>
+		<li>10+ facts/suggestions</li>
+	</ul>
+	<li>BCE (Bound Check Eliminate) <sup><small>(available in <a href="#ebooks">the paid ebooks</a>)</small></sup></li>
+	<ul>
+		<li>the cases BCE works for</li>
+		<li>the cases BCE doesn't work for</li>
+		<li>the cases BCE works for when given hints</li>
+	</ul>
+	<li><a class="index" href="6-map.html">Maps</a></li>
+	<li>Channels <sup><small>(available in <a href="#ebooks">the paid ebooks</a>)</small></sup></li>
+	<ul>
+		<li>3 facts/suggestions</li>
+	</ul>
+	<li>Functions <sup><small>(available in <a href="#ebooks">the paid ebooks</a>)</small></sup></li>
+	<ul>
+		<li>how to make a function inline-able</li>
+		<li>how to make a function not inline-able</li>
+		<li>pointer parameters/results vs. non-pointer ones</li>
+		<li>named results vs. anonymous ones</li>
+		<li>10+ facts/suggestions</li>
+	</ul>
+	<li>Interfaces <sup><small>(available in <a href="#ebooks">the paid ebooks</a>)</small></sup></li>
+	<ul>
+		<li>value boxing costs</li>
+		<li>3+ facts/suggestions</li>
+	</ul>
+</ul>
+
+
+</div>
+
+<!-- index ends (don't remove) -->
+
+</div>
+
+
+<hr>
+
+<div id="contact" class="alert alert-success"><small>
+
+<p>
+The <b><i>Go 101</i></b> 프로젝트는 <a href="https://github.com/go101/go101">Github</a>
+에서 호스팅됩니다.
+오타, 문법 오류, 부정확한 표현, 설명 결함, 코드 버그, 끊어진 링크와 같은 모든
+종류의 실수에 대한 수정 사항을 제출하여 Go 101을 개선을 돕는 것은 언제나 환영합니다.
+</p>
+
+<p>
+주기적으로 Go에 대한 깊이 있는 정보를 얻고 싶다면 Go 101의 공식 트위터 계정인
+<a href="https://twitter.com/go100and1">@go100and1</a>을 팔로우하거나
+<a href="https://join.slack.com/t/go-101/shared_invite/zt-y2pvwg00-Oz7lDDJu44l~hZsFRUApiA">Go 101 슬랙 채널</a>에j가입해주세요.
+</p>
+
+</small></div>
+
+<div class="alert alert-warning"><small>
+
+
+<div>
+
+Go 101의 저자인 Tapir는 2016년 7월부터 Go 101 시리즈 책들을 집필하고 go101.org 웹사이트를 유지 관리하고 있습니다.
+새로운 콘텐츠는 책과 웹사이트에 수시로 추가될 예정입니다.
+Tapir는 인디 게임 개발자이기도 합니다.
+<a href="https://www.tapirgames.com">Tapir의 게임</a>을 플레이하여 Go 101을 지원할 수도 있습니다.
+(안드로이드와 아이폰/아이패드용):
+<ul>
+<li>
+	<a href="https://www.tapirgames.com/App/Color-Infection">Color Infection</a> (★★★★★), 140개 이상의 단계로 이루어진 물리 기반의 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Rectangle-Pushers">Rectangle Pushers</a> (★★★★★), 2가지 모드와 104개 이상의 단계로 이루어진 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Let-Us-Play-With-Particles">Let's Play With Particles</a>, 세가지 미니 게임이 있는 캐주얼 액션 게임
+</li>
+</ul>
+</div>
+
+<a href="https://paypal.me/tapirliu">페이팔</a>을 통한 개인 기부도 환영합니다.</small></div>
+
+
+
+
+
+
+		</div>
+	</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

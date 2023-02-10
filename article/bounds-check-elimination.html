@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Golang online books, articles, tools, etc.">
+		<meta name="author" content="">
+		<meta name="go-version" content="go1.20">
+		<link rel="icon" href="/static/go101/images/101-v1.ico">
+		<link rel="apple-touch-icon" sizes="152x152" href="/static/go101/images/iphone-v1.jpeg">
+	
+		<title>Bounds Check Elimination -Go 101</title><link id="css-bs" href="/static/bootstrap/v4.0.3-dark/css/bootstrap.min.css" rel="stylesheet">
+		<link id="css-go101" href="/static/go101/css/v991-dark.css" rel="stylesheet">
+		<link id="css-prism" href="/static/prism/2020-08-03-dark/prism.css" rel="stylesheet">
+		<script id="js-prism" src="/static/prism/2020-08-03-dark/prism.js"></script>
+
+
+		<script src="/static/jquery/jquery.min-v1.11.2.js"></script>
+		<script src="/static/go101/js/v5.js"></script>
+		
+		
+		<style>
+		div, p, ul, li, td, th {line-height: 1.55;}
+		</style>
+
+		<script>
+		var theme = ""
+		</script>
+	</head>
+
+	<body>
+		<div class="container">
+
+		<div class="row nav-bar-with-borders">
+	<div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/"><small>Home</small></a> <span class="new-text"><sup>new!</sup></span>
+	</div><div class="col-xs-6 col-sm-4 nav-item-active">
+		<a href="/article/101.html"><small>Go 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/generics/101.html"><small>Go Generics 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/details-and-tips/101.html"><small>Go Details &amp; Tips 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/optimizations/101.html"><small>Go Optimizations 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/quizzes/101.html"><small>Go Quizzes 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go HowTo 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Practices 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Agg 101</small></div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/blog/101.html"><small>Go 101 Blog</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/apps-and-libs/101.html"><small>Go 101 Apps &amp; Libs</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;" id="theme-switch"><small>테마: 다크/라이트</small></div>
+
+</div>
+
+<div class="alert alert-warning text-center"><small>
+현재 3권의 신간들인 <a href="/optimizations/101.html">Go Optimizations 101</a>,
+<a href="/details-and-tips/101.html">Go Details &amp; Tips 101</a>
+과 <a href="/generics/101.html">Go Generics 101</a>이 출간되어 있습니다.
+Leanpub 서점에서 <a href="https://leanpub.com/b/go-optimizations-details-generics">번들</a>을 모두 구입하시는 방법이 비용 대비 효율이 가장 좋습니다.
+<p></p>
+Go에 대한 많은 정보들과 Go 101 책들의 최신 소식을 얻으시려면 Go 101 트위터 계정인 <a href="https://twitter.com/go100and1">@Go100and1</a>을
+팔로잉 해주세요.
+</small></div>
+<p>
+</p>
+
+
+
+<h1>Bounds Check Elimination</h1>
+
+
+
+<p>
+Go is a memory safe language.
+In array/slice element indexing and subslice operations,
+Go runtime will check whether or not the involved indexes are out of range.
+If an index is out of range, a panic will be produced to prevent the invalid index from doing harm.
+This is called bounds check.
+Bounds checks make our code run safely, on the other hand, they also make our code run a little slower.
+</p>
+
+<p>
+Since Go Toolchain 1.7, the standard Go compiler
+has used a new compiler backend, which based on SSA (static single-assignment form).
+SSA helps Go compilers effectively use optimizations like
+<a href="https://en.wikipedia.org/wiki/Bounds-checking_elimination">BCE</a> (bounds check elimination)
+and <a href="https://en.wikipedia.org/wiki/Common_subexpression_elimination">CSE</a> (common subexpression elimination).
+BCE can avoid some unnecessary bounds checks, and CSE can avoid some duplicate calculations,
+so that the standard Go compiler can generate more efficient programs.
+Sometimes the improvement effects of these optimizations are obvious.
+</p>
+
+<p>
+This article will list some examples to show how BCE works with the standard Go compiler 1.7+.
+</p>
+
+<p>
+For Go Toolchain 1.7+, we can use <code>-gcflags="-d=ssa/check_bce"</code> compiler flag to
+show which code lines still need bounds checks.
+</p>
+
+<h3>Example 1</h3>
+
+<div>
+<pre class="line-numbers must-line-numbers"><code class="language-go">// example1.go
+package main
+
+func f1(s []int) {
+	_ = s[0] // line 5: bounds check
+	_ = s[1] // line 6: bounds check
+	_ = s[2] // line 7: bounds check
+}
+
+func f2(s []int) {
+	_ = s[2] // line 11: bounds check
+	_ = s[1] // line 12: bounds check eliminated!
+	_ = s[0] // line 13: bounds check eliminated!
+}
+
+func f3(s []int, index int) {
+	_ = s[index] // line 17: bounds check
+	_ = s[index] // line 18: bounds check eliminated!
+}
+
+func f4(a [5]int) {
+	_ = a[4] // line 22: bounds check eliminated!
+}
+
+func main() {}
+</code></pre>
+
+<pre class="output"><code>$ go run -gcflags="-d=ssa/check_bce" example1.go
+./example1.go:5: Found IsInBounds
+./example1.go:6: Found IsInBounds
+./example1.go:7: Found IsInBounds
+./example1.go:11: Found IsInBounds
+./example1.go:17: Found IsInBounds
+</code></pre>
+
+<p>
+We can see that there are no needs to do bounds checks for line <i>12</i>
+and line <i>13</i> in function <code>f2</code>,
+for the bounds check at line <i>11</i> ensures that the indexes in
+line <i>12</i> and line <i>13</i> will not be out of range.
+</p>
+
+<p>
+But in function <code>f1</code>, bounds checks must be performed for all three lines.
+The bounds check at line <i>5</i> can't ensure line <i>6</i>
+and line <i>7</i> are safe,
+and the bounds check at line <i>6</i> can't ensure line <i>7</i> is safe.
+</p>
+
+<p>
+For function <code>f3</code>, the compiler knows the second
+<code>s[index]</code> is absolutely safe if the first <code>s[index]</code>
+is safe.
+</p>
+
+<p>
+The compiler also correctly thinks the only line (line <i>22</i>)
+in function <code>f4</code> is safe.
+</p>
+
+<p>
+Please note that, up to now (Go Toolchain 1.20), the standard compiler
+doesn't check BCE for an operation in a generic function if the operation
+involves type parameters and the generic function is never instantiated.
+</p>
+
+A demo case:
+
+<pre class="line-numbers must-line-numbers"><code class="language-go">// example1b.go
+package main
+
+func foo[E any](s []E) {
+	_ = s[0] // line 5
+	_ = s[1] // line 6
+	_ = s[2] // line 7
+}
+
+// var _ = foo[bool]
+
+func main() {
+}
+</code></pre>
+
+When the variable declaration line is disabled, the compiler outputs nothing:
+
+<pre class="output"><code>$ go run -gcflags="-d=ssa/check_bce" example1b.go
+</code></pre>
+
+<p>
+</p>
+
+When the variable declaration line is enabled, the compiler outputs:
+
+<pre class="output"><code>./aaa.go:5:7: Found IsInBounds
+./example1b.go:6:7: Found IsInBounds
+./example1b.go:7:7: Found IsInBounds
+./example1b.go:4:6: Found IsInBounds
+</code></pre>
+
+<p>
+</p>
+
+</div>
+
+<h3>Example 2</h3>
+
+<div>
+<pre class="line-numbers must-line-numbers"><code class="language-go">// example2.go
+package main
+
+func f5(s []int) {
+	for i := range s {
+		_ = s[i]
+		_ = s[i:len(s)]
+		_ = s[:i+1]
+	}
+}
+
+func f6(s []int) {
+	for i := 0; i < len(s); i++ {
+		_ = s[i]
+		_ = s[i:len(s)]
+		_ = s[:i+1]
+	}
+}
+
+func f7(s []int) {
+	for i := len(s) - 1; i >= 0; i-- {
+		_ = s[i]
+		_ = s[i:len(s)]
+	}
+}
+
+func f8(s []int, index int) {
+	if index >= 0 && index < len(s) {
+		_ = s[index]
+		_ = s[index:len(s)]
+	}
+}
+
+func f9(s []int) {
+	if len(s) > 2 {
+	    _, _, _ = s[0], s[1], s[2]
+	}
+}
+
+func main() {}
+</code></pre>
+
+<pre class="output"><code>$ go run -gcflags="-d=ssa/check_bce" example2.go
+</code></pre>
+
+<p>
+Cool! The standard compiler removes all bound checks in this program.
+</p>
+
+<p>
+Note: before Go Toolchain version 1.11, the standard compiler is not smart enough to detect
+line <i>22</i> is safe.
+</p>
+
+</div>
+
+<h3>Example 3</h3>
+
+<div>
+<pre class="line-numbers must-line-numbers"><code class="language-go">// example3.go
+package main
+
+import "math/rand"
+
+func fa() {
+	s := []int{0, 1, 2, 3, 4, 5, 6}
+	index := rand.Intn(7)
+	_ = s[:index] // line 9: bounds check
+	_ = s[index:] // line 10: bounds check eliminated!
+}
+
+func fb(s []int, i int) {
+	_ = s[:i] // line 14: bounds check
+	_ = s[i:] // line 15: bounds check, not smart enough?
+}
+
+func fc() {
+	s := []int{0, 1, 2, 3, 4, 5, 6}
+	s = s[:4]
+	i := rand.Intn(7)
+	_ = s[:i] // line 22: bounds check
+	_ = s[i:] // line 23: bounds check, not smart enough?
+}
+
+func main() {}
+</code></pre>
+
+<pre class="output"><code>$ go run -gcflags="-d=ssa/check_bce" example3.go
+./example3.go:9: Found IsSliceInBounds
+./example3.go:14: Found IsSliceInBounds
+./example3.go:15: Found IsSliceInBounds
+./example3.go:22: Found IsSliceInBounds
+./example3.go:23: Found IsSliceInBounds
+</code></pre>
+
+<p>
+Oh, so many places still need to do bounds check!
+</p>
+
+<p>
+But wait, why does the standard Go compiler think line <i>10</i>
+is safe but line <i>15</i> and line <i>23</i> are not?
+Is the compiler still not smart enough?
+</p>
+
+<p>
+In fact, the compiler is right here! Why?
+The reason is the start index in a subslice expression may be larger than the length of the base slice.
+Let's view a simple example:
+</p>
+
+<pre class="line-numbers must-line-numbers"><code class="language-go">package main
+
+func main() {
+	s0 := make([]int, 5, 10) // len(s0) == 5, cap(s0) == 10
+
+	index := 8
+
+	// In Go, for the subslice syntax s[a:b],
+	// the relations 0 <= a <= b <= cap(s) must
+	// be ensured to avoid panicking.
+
+	_ = s0[:index]
+	// The above line is safe can't ensure the
+	// following line is also safe. In fact, the
+	// following line will panic, for the starting
+	// index is larger than the end index.
+	_ = s0[index:] // panic
+}
+</code></pre>
+
+<p>
+So the conclusion that <b>if <code>s[:index]</code> is safe then <code>s[index:]</code>
+is also safe</b> is only right when <code>len(s)</code> is equal to <code>cap(s)</code>.
+This is why the code lines in function <code>fb</code> and <code>fc</code>
+of example 3 still need to do bounds checks.
+</p>
+
+<p>
+Standard Go compiler successfully detects <code>len(s)</code> is equal to
+<code>cap(s)</code> in function <code>fa</code>.
+Great work! Go team!
+</p>
+
+</div>
+
+<h3>Example 4</h3>
+
+<div>
+<pre class="line-numbers must-line-numbers"><code class="language-go">// example4.go
+package main
+
+import "math/rand"
+
+func fb2(s []int, index int) {
+	_ = s[index:] // line 7: bounds check
+	_ = s[:index] // line 8: bounds check eliminated!
+}
+
+func fc2() {
+	s := []int{0, 1, 2, 3, 4, 5, 6}
+	s = s[:4]
+	index := rand.Intn(7)
+	_ = s[index:] // line 15 bounds check
+	_ = s[:index] // line 16: bounds check eliminated!
+}
+
+func main() {}
+</code></pre>
+
+<pre class="output"><code>$ go run -gcflags="-d=ssa/check_bce" example4.go
+./example4.go:7:7: Found IsSliceInBounds
+./example4.go:15:7: Found IsSliceInBounds
+</code></pre>
+
+In this example, The standard Go compiler successfully concludes
+<ul>
+<li>
+	line <i>8</i> is also safe if line <i>7</i> is safe in function <code>fb2</code>.
+</li>
+<li>
+	line <i>16</i> is also safe if line <i>15</i> is safe in function <code>fc2</code>.
+</li>
+</ul>
+
+<p>
+Note: the standard Go compiler in Go Toolchain earlier than version 1.9 fails to
+detect line <i>8</i> doesn't need bounds check.
+</p>
+
+</div>
+
+<h3>Example 5</h3>
+
+<div>
+The current version of the standard Go compiler is not smart
+enough to eliminate all unnecessary bounds checks.
+Sometimes, we can make some hints to help the compiler eliminate some unnecessary bounds checks.
+
+<pre class="line-numbers must-line-numbers"><code class="language-go">// example5.go
+package main
+
+func fd(is []int, bs []byte) {
+	if len(is) >= 256 {
+		for _, n := range bs {
+			_ = is[n] // line 7: bounds check
+		}
+	}
+}
+
+func fd2(is []int, bs []byte) {
+	if len(is) >= 256 {
+		is = is[:256] // line 14: a hint
+		for _, n := range bs {
+			_ = is[n] // line 16: BCEed!
+		}
+	}
+}
+
+func main() {}
+</code></pre>
+
+<!--
+since Go Toolchain 1.11, the compiler becomes more smarter
+
+func ff(s []int) []int {
+	s2 := make([]int, len(s))
+	for i := range s {
+		s2[i] = -s[i] // line 41: bounds check, not smart enough
+	}
+	return s2
+}
+
+func ff2(s []int) []int {
+	s2 := make([]int, len(s))
+	s2 = s2[:len(s)] // line 48: to avoid bounds check at line 50
+	for i := range s {
+		s2[i] = -s[i] // line 50: bounds check eliminated!
+	}
+	return s2
+}
+-->
+
+<pre class="output"><code>$ go run -gcflags="-d=ssa/check_bce" example5.go
+./example5.go:7: Found IsInBounds
+</code></pre>
+</div>
+
+<!--
+<a class="anchor" id="slice-comparison"></a>
+<h3>A Use Case of BCE: Efficient Slice Comparison</h3>
+
+<p><b><i>
+(Note: as Erik Dubbelboer pointed out, <a href="https://github.com/go101/go101/issues/64">the trick shown in this section
+to optimize slice comparisons is not needed any more since Go Toolchain 1.11</a>.
+The standard Go compiler 1.11+ becomes even smarter so that this trick is not needed ay more.
+I will remove this section after some time.)
+</i></b></p>
+
+<div>
+
+<p>
+We all know that slice types don't support comparison in Go.
+To compare two slices, we must write custom comparison code,
+or use the <code>DeepEqual</code> function in the <code>reflect</code>
+standard package. But the <code>reflect.DeepEqual</code> function is too slow.
+</p>
+
+The following is a custom slice comparison function.
+
+<pre class="line-numbers"><code class="language-go">func CompareSlices_General(a, b []int) bool {
+	if len(a) != len(b) {
+		return false
+	}
+
+	if (a == nil) != (b == nil) {
+		return false
+	}
+
+	for i, v := range a {
+		if v != b[i] { // here bounds check is needed for b[i]
+			return false
+		}
+	}
+
+	return true
+}
+</code></pre>
+
+Bounds check is still needed for the <code>b[i]</code> in the
+<code>for-range</code> loop block to avoid index <code>i</code> out of range.
+We can modify the function a bit to remove the bounds check.
+
+<pre class="line-numbers"><code class="language-go">func CompareSlices_BCE(a, b []int) bool {
+	if len(a) != len(b) {
+		return false
+	}
+
+	if (a == nil) != (b == nil) {
+		return false
+	}
+
+	b = b[:len(a)] // this line is the key.
+	for i, v := range a {
+		if v != b[i] { // no bounds check for b[i] now!
+			return false
+		}
+	}
+
+	return true
+}
+</code></pre>
+
+Let's <a href="https://github.com/go101/go-benchmarks/blob/master/bce/bce_test.go">benchmark the two functions</a>.
+The result (update: no differences for the standard compiler 1.11+):
+
+<pre class="output"><code>Benchmark_SliceComparison/General-4         	 5000000	       287 ns/op
+Benchmark_SliceComparison/BCE-4             	 5000000	       251 ns/op
+</code></pre>
+
+<p>
+The BCE version is about 12.5% faster than the general version.
+Really not bad.
+</p>
+
+</div>
+-->
+
+<h3>Summary</h3>
+
+<p>
+There are more BCE optimizations made by the standard Go compiler.
+They might be not as obvious as the above listed ones,
+So this article will not show them all.
+</p>
+
+<p>
+Although the BCE feature in the standard Go compiler is still not perfect,
+it really does well for many common cases.
+It is no doubt that standard Go compiler will do better in later versions
+so that it is possible the hints made in the above 5th example will become unnecessary.
+
+Thank Go team for adding this wonderful feature!
+</p>
+
+<h3>References:</h3>
+<div>
+<ol>
+<li><a href="https://docs.google.com/document/d/1vdAEAjYdzjnPA9WDOQ1e4e05cYVMpqSxJYZT33Cqw2g">Bounds Check Elimination</a></li>
+<li>
+	<a href="https://talks.godoc.org/github.com/klauspost/talks/2016/go17-compiler.slide">Utilizing the Go 1.7 SSA Compiler</a>
+	(and <a href="https://talks.godoc.org/github.com/klauspost/talks/2016/go17-compiler-2.slide">the second part</a>)
+</li>
+</ol>
+</div>
+
+<!--
+<p class="well well-sm">
+[edit@2016/09/22] added example 5 and refs.
+</p>
+-->
+<hr>
+
+<div class="text-center"><a href="#i-bounds-check-elimination.html">Index↡</a></div>
+
+
+
+<hr>
+
+<div id="contact" class="alert alert-success"><small>
+
+<p>
+The <b><i>Go 101</i></b> 프로젝트는 <a href="https://github.com/go101/go101">Github</a>
+에서 호스팅됩니다.
+오타, 문법 오류, 부정확한 표현, 설명 결함, 코드 버그, 끊어진 링크와 같은 모든
+종류의 실수에 대한 수정 사항을 제출하여 Go 101을 개선을 돕는 것은 언제나 환영합니다.
+</p>
+
+<p>
+주기적으로 Go에 대한 깊이 있는 정보를 얻고 싶다면 Go 101의 공식 트위터 계정인
+<a href="https://twitter.com/go100and1">@go100and1</a>을 팔로우하거나
+<a href="https://join.slack.com/t/go-101/shared_invite/zt-y2pvwg00-Oz7lDDJu44l~hZsFRUApiA">Go 101 슬랙 채널</a>에j가입해주세요.
+</p>
+
+</small></div>
+
+<div class="alert alert-warning"><small>
+
+
+<div id="ebooks">
+이 책의 디지털 버전은 아래와 같은 곳을 통해서 구매할 수 있습니다.
+<ul>
+<li>
+	<a href="https://leanpub.com/go101">Leanpub</a>,
+	<i>최소 19.99 달러</i>.
+</li>
+<li>
+	
+	아마존 킨들 스토어, <i>(현재는 사용 불가)</i>.
+</li>
+<li>
+	<a href="https://books.apple.com/book/id1459984231">애플 북 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://play.google.com/store/books/details?id=Dc1wEAAAQBAJ">구글 플레이 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://github.com/go101/go101/releases">무료 전자책</a>,
+	pdf, epub과 azw3 포맷을 지원
+</li>
+</ul>
+	</div>
+<div>
+
+Go 101의 저자인 Tapir는 2016년 7월부터 Go 101 시리즈 책들을 집필하고 go101.org 웹사이트를 유지 관리하고 있습니다.
+새로운 콘텐츠는 책과 웹사이트에 수시로 추가될 예정입니다.
+Tapir는 인디 게임 개발자이기도 합니다.
+<a href="https://www.tapirgames.com">Tapir의 게임</a>을 플레이하여 Go 101을 지원할 수도 있습니다.
+(안드로이드와 아이폰/아이패드용):
+<ul>
+<li>
+	<a href="https://www.tapirgames.com/App/Color-Infection">Color Infection</a> (★★★★★), 140개 이상의 단계로 이루어진 물리 기반의 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Rectangle-Pushers">Rectangle Pushers</a> (★★★★★), 2가지 모드와 104개 이상의 단계로 이루어진 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Let-Us-Play-With-Particles">Let's Play With Particles</a>, 세가지 미니 게임이 있는 캐주얼 액션 게임
+</li>
+</ul>
+</div>
+
+<a href="https://paypal.me/tapirliu">페이팔</a>을 통한 개인 기부도 환영합니다.</small></div>
+
+<hr>
+색인:
+
+
+<div id="book-index">
+
+<!-- kindle starts: 1 -->
+
+<ul class="index part">
+	<li><a class="index" href="101-about.html">Go 101에 대해</a> - 이 책이 쓰여진 이유</li>
+	<li><a class="index" href="acknowledgements.html">감사의 말</a></li>
+</ul>
+
+<ul class="index part">
+	<li><a class="index" href="introduction.html">Go 소개</a> - Go를 배우는 가치</li>
+	<li><a class="index" href="go-toolchain.html">Go 툴체인</a> - Go 프로그램을 컴파일하고 실행하는 방법</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 코드에 익숙해지기
+
+	<ul class="index chapters">
+	<li><a class="index" href="basic-code-elements-introduction.html">소스 코드 요소 소개</a></li>
+	<li><a class="index" href="keywords-and-identifiers.html">키워드와 식별자</a></li>
+	<li><a class="index" href="basic-types-and-value-literals.html">기본 자료형과 기본 값 리터럴</a></li>
+	<li><a class="index" href="constants-and-variables.html">상수와 변수</a> - 무형성(untyped) 값과 자료형 추론 소개를 포함</li>
+	<li><a class="index" href="operators.html">일반 연산자</a> - 더 많은 자료형 추론 규칙 소개를 포함</li>
+	<li><a class="index" href="function-declarations-and-calls.html">함수 선언과 호출</a></li>
+	<li><a class="index" href="packages-and-imports.html">코드 패키지와 패키지 들여오기</a></li>
+	<li><a class="index" href="expressions-and-statements.html">표현식, 구문과 단순 구문</a></li>
+	<li><a class="index" href="control-flows.html">기본 흐름 제어</a></li>
+	<li><a class="index" href="control-flows-more.html">고루틴, 지연된 함수 호출과 패닉/복구</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 자료형 체계
+
+	<ul class="index chapters">
+	<li><a class="index" href="type-system-overview.html">Go 자료형 체계 개요</a> - Go 프로그래밍 숙달을 위해 반드시 읽어봐야 하는</li>
+	<li><a class="index" href="pointer.html">포인터</a></li>
+	<li><a class="index" href="struct.html">구조체</a></li>
+	<li><a class="index" href="value-part.html">변수</a> - Go 변수에 대한 더 깊은 이해</li>
+	<li><a class="index" href="container.html">배열, 슬라이스와 맵</a> - 1급 객체 컨테이너 자료형</li>
+	<li><a class="index" href="string.html">문자열</a></li>
+	<li><a class="index" href="function.html">함수</a> - 함수 자료형과 값, 가변 인자 함수</li>
+	<li><a class="index" href="channel.html">채널</a> - Go에서 동시성 동기화를 하는 방법</li>
+	<li><a class="index" href="method.html">메서드</a></li>
+	<li><a class="index" href="interface.html">인터페이스</a> - 리플렉션과 다형성을 하는 값 상자</li>
+	<li><a class="index" href="type-embedding.html">자료형 임베딩</a> - 자료형을 확장하는 방법</li>
+	<li><a class="index" href="unsafe.html">자료형에 안전하지 않는 포인터</a></li>
+	<li><a class="index" href="generic.html">제네릭</a> - 합성 자료형의 사용과 읽는 법</li>
+	<li><a class="index" href="reflection.html">리플렉션</a> - <code>reflect</code> 표준 패키지</li>
+	</ul>
+</li>
+</ul>
+
+<!-- kindle ends: 1 -->
+
+<!-- kindle starts: 2 -->
+
+<ul class="index part">
+<li>
+특별 주제
+
+	<ul class="index chapters">
+	<li><a class="index" href="line-break-rules.html">개행 규칙</a></li>
+	<li><a class="index" href="defer-more.html">지연된 함수 호출 더 알아보기</a></li>
+	<li><a class="index" href="panic-and-recover-use-cases.html">패닉/복구 사용 사례</a></li>
+	<li><a class="index" href="panic-and-recover-more.html">패닉/복구 메커니즘에 대한 고찰</a> - 함수 호출 종료 단계를 포함</li>
+	<li><a class="index" href="blocks-and-scopes.html">코드 블록과 식별자 스코프</a></li>
+	<li><a class="index" href="evaluation-orders.html">표현식 평가 순서</a></li>
+	<li><a class="index" href="value-copy-cost.html">Go의 값 복사 비용</a></li>
+	<li><b class="index" id="i-bounds-check-elimination.html">경계 검사 제거(BCE)</b></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+동시성 프로그래밍
+
+	<ul class="index chapters">
+	<li><a class="index" href="concurrent-synchronization-overview.html">동시성 동기화 개요</a></li>
+	<li><a class="index" href="channel-use-cases.html">채널 사용 사례</a></li>
+	<li><a class="index" href="channel-closing.html">채널을 깔끔하게 닫는 방법</a></li>
+	<li><a class="index" href="concurrent-synchronization-more.html">기타 동시성 동기화 기술</a> - <code>sync</code> 표준 패키지</li>
+	<li><a class="index" href="concurrent-atomic-operation.html">원자적 연산</a> - <code>sync/atomic</code> 표준 패키지</li>
+	<li><a class="index" href="memory-model.html">Go의 메모리 순서 보장</a></li>
+	<li><a class="index" href="concurrent-common-mistakes.html">흔히들 저지르는 동시성 프로그래밍 실수들</a></li>
+	</ul>
+
+</li>
+</ul>
+
+
+<ul class="index part">
+<li>
+메모리 관련
+
+	<ul class="index chapters">
+	<li><a class="index" href="memory-block.html">메모리 블록</a></li>
+	<li><a class="index" href="memory-layout.html">메모리 레이아웃</a></li>
+	<li><a class="index" href="memory-leaking.html">메모리 누수 시나리오</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+일부 요약
+
+	<ul class="index chapters">
+	<li><a class="index" href="summaries.html">몇 가지 간단한 요약</a></li>
+	<li><a class="index" href="nil.html">Go의 <code>nil</code></a></li>
+	<li><a class="index" href="value-conversions-assignments-and-comparisons.html">값 변환, 할당과 비교 규칙</a></li>
+	<li><a class="index" href="exceptions.html">구문/의미 예외</a></li>
+	<!-- (to remove) for printing -->
+	<li><a class="index" href="details.html">Go Details 101</a></li>
+	<li><a class="index" href="unofficial-faq.html">Go FAQ 101</a></li>
+	<li><a class="index" href="tips.html">Go Tips 101</a></li>
+	<!-- (to remove) -->
+	</ul>
+
+</li>
+</ul>
+
+<!-- kindle ends: 2 -->
+
+<!-- kindle starts: 0 -->
+
+<ul class="index part">
+<li><a class="index" href="more.html">더 많은 토픽</a></li>
+</ul>
+
+<!-- kindle ends: 0 -->
+
+</div>
+
+
+
+
+
+
+
+
+		</div>
+	</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

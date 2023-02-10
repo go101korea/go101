@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Golang online books, articles, tools, etc.">
+		<meta name="author" content="">
+		<meta name="go-version" content="go1.20">
+		<link rel="icon" href="/static/go101/images/101-v1.ico">
+		<link rel="apple-touch-icon" sizes="152x152" href="/static/go101/images/iphone-v1.jpeg">
+	
+		<title>Some Panic/Recover Use Cases -Go 101</title><link id="css-bs" href="/static/bootstrap/v4.0.3-dark/css/bootstrap.min.css" rel="stylesheet">
+		<link id="css-go101" href="/static/go101/css/v991-dark.css" rel="stylesheet">
+		<link id="css-prism" href="/static/prism/2020-08-03-dark/prism.css" rel="stylesheet">
+		<script id="js-prism" src="/static/prism/2020-08-03-dark/prism.js"></script>
+
+
+		<script src="/static/jquery/jquery.min-v1.11.2.js"></script>
+		<script src="/static/go101/js/v5.js"></script>
+		
+		
+		<style>
+		div, p, ul, li, td, th {line-height: 1.55;}
+		</style>
+
+		<script>
+		var theme = ""
+		</script>
+	</head>
+
+	<body>
+		<div class="container">
+
+		<div class="row nav-bar-with-borders">
+	<div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/"><small>Home</small></a> <span class="new-text"><sup>new!</sup></span>
+	</div><div class="col-xs-6 col-sm-4 nav-item-active">
+		<a href="/article/101.html"><small>Go 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/generics/101.html"><small>Go Generics 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/details-and-tips/101.html"><small>Go Details &amp; Tips 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/optimizations/101.html"><small>Go Optimizations 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/quizzes/101.html"><small>Go Quizzes 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go HowTo 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Practices 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Agg 101</small></div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/blog/101.html"><small>Go 101 Blog</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/apps-and-libs/101.html"><small>Go 101 Apps &amp; Libs</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;" id="theme-switch"><small>테마: 다크/라이트</small></div>
+
+</div>
+
+<div class="alert alert-warning text-center"><small>
+현재 3권의 신간들인 <a href="/optimizations/101.html">Go Optimizations 101</a>,
+<a href="/details-and-tips/101.html">Go Details &amp; Tips 101</a>
+과 <a href="/generics/101.html">Go Generics 101</a>이 출간되어 있습니다.
+Leanpub 서점에서 <a href="https://leanpub.com/b/go-optimizations-details-generics">번들</a>을 모두 구입하시는 방법이 비용 대비 효율이 가장 좋습니다.
+<p></p>
+Go에 대한 많은 정보들과 Go 101 책들의 최신 소식을 얻으시려면 Go 101 트위터 계정인 <a href="https://twitter.com/go100and1">@Go100and1</a>을
+팔로잉 해주세요.
+</small></div>
+<p>
+</p>
+
+
+
+<h1>Some Panic/Recover Use Cases</h1>
+
+
+
+<p>
+Panic and recover have been
+<a href="control-flows-more.html#panic-recover">introduced before</a>.
+The following of the current article will introduce some (good and bad)
+panic/recover use cases.
+</p>
+
+<a class="anchor" id="avoid-crashing"></a>
+<h3>Use Case 1: Avoid Panics Crashing Programs</h3>
+
+<div>
+<p>
+This should be the most popular use case of panic/recover.
+The use case is used commonly in concurrent programs, especially client-server programs.
+</p>
+
+An example:
+<pre class="line-numbers"><code class="language-go">package main
+
+import "errors"
+import "log"
+import "net"
+
+func main() {
+	listener, err := net.Listen("tcp", ":12345")
+	if err != nil {
+		log.Fatalln(err)
+	}
+	for {
+		conn, err := listener.Accept()
+		if err != nil {
+			log.Println(err)
+		}
+		// Handle each client connection
+		// in a new goroutine.
+		go ClientHandler(conn)
+	}
+}
+
+func ClientHandler(c net.Conn) {
+	defer func() {
+		if v := recover(); v != nil {
+			log.Println("capture a panic:", v)
+			log.Println("avoid crashing the program")
+		}
+		c.Close()
+	}()
+	panic(errors.New("just a demo.")) // a demo-purpose panic
+}
+</code></pre>
+
+<p>
+Start the server and run <code>telnet localhost 12345</code> in another terminal,
+we can observe that the server will not crash down
+for the panics created in each client handler goroutine.
+</p>
+
+<p>
+If we don't recover the potential panic in each client handler goroutine,
+the potential panic will crash the program.
+</p>
+
+</div>
+
+<a class="anchor" id="auto-restart"></a>
+<h3>Use Case 2: Automatically Restart a Crashed Goroutine</h3>
+
+<div>
+
+When a panic is detected in a goroutine, we can create a new goroutine for it.
+An example:
+<pre class="line-numbers"><code class="language-go">package main
+
+import "log"
+import "time"
+
+func shouldNotExit() {
+	for {
+		// Simulate a workload.
+		time.Sleep(time.Second)
+
+		// Simulate an unexpected panic.
+		if time.Now().UnixNano() & 0x3 == 0 {
+			panic("unexpected situation")
+		}
+	}
+}
+
+func NeverExit(name string, f func()) {
+	defer func() {
+		if v := recover(); v != nil {
+			// A panic is detected.
+			log.Println(name, "is crashed. Restart it now.")
+			go NeverExit(name, f) // restart
+		}
+	}()
+	f()
+}
+
+func main() {
+	log.SetFlags(0)
+	go NeverExit("job#A", shouldNotExit)
+	go NeverExit("job#B", shouldNotExit)
+	select{} // block here for ever
+}
+</code></pre>
+</div>
+
+<a class="anchor" id="long-jump"></a>
+<h3>Use Case 3: Use <code>panic</code>/<code>recover</code> Calls to Simulate Long Jump Statements</h3>
+
+<div>
+<p>
+Sometimes, we can use panic/recover as a way to
+simulate crossing-function long jump statements
+and crossing-function returns,
+though generally this way is not recommended to use.
+This way does harm for both code readability and execution efficiency.
+The only benefit is sometimes it can make code look less verbose.
+</p>
+
+In the following example, once a panic is created in an inner function,
+the execution will jump to the deferred call.
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+func main() {
+	n := func () (result int)  {
+		defer func() {
+			if v := recover(); v != nil {
+				if n, ok := v.(int); ok {
+					result = n
+				}
+			}
+		}()
+
+		func () {
+			func () {
+				func () {
+					// ...
+					panic(123) // panic on succeeded
+				}()
+				// ...
+			}()
+		}()
+		// ...
+		return 0
+	}()
+	fmt.Println(n) // 123
+}
+</code></pre>
+</div>
+
+<a class="anchor" id="avoid-verbose"></a>
+<h3>Use Case 4: Use <code>panic</code>/<code>recover</code> Calls to Reduce Error Checks</h3>
+
+<div>
+
+An example:
+
+<pre class="line-numbers"><code class="language-go">func doSomething() (err error) {
+	defer func() {
+		err, _ = recover().(error)
+	}()
+
+	doStep1()
+	doStep2()
+	doStep3()
+	doStep4()
+	doStep5()
+
+	return
+}
+
+// In reality, the prototypes of the doStepN functions
+// might be different. For each of them,
+// * panic with nil for success and no needs to continue.
+// * panic with error for failure and no needs to continue.
+// * not panic for continuing.
+func doStepN() {
+	...
+	if err != nil {
+		panic(err)
+	}
+	...
+	if done {
+		panic(nil)
+	}
+}
+</code></pre>
+
+<p>
+The above code is less verbose than the following one.
+</p>
+
+<pre class="line-numbers"><code class="language-go">func doSomething() (err error) {
+	shouldContinue, err := doStep1()
+	if !shouldContinue {
+		return err
+	}
+	shouldContinue, err = doStep2()
+	if !shouldContinue {
+		return err
+	}
+	shouldContinue, err = doStep3()
+	if !shouldContinue {
+		return err
+	}
+	shouldContinue, err = doStep4()
+	if !shouldContinue {
+		return err
+	}
+	shouldContinue, err = doStep5()
+	if !shouldContinue {
+		return err
+	}
+
+	return
+}
+
+// If err is not nil, then shouldContinue must be true.
+// If shouldContinue is true, err might be nil or non-nil.
+func doStepN() (shouldContinue bool, err error) {
+	...
+	if err != nil {
+		return false, err
+	}
+	...
+	if done {
+		return false, nil
+	}
+	return true, nil
+}
+</code></pre>
+
+
+<!--
+<pre class="line-numbers"><code class="language-go">func doSomething() (err error) {
+package main
+
+import "fmt"
+
+func doTask(n int) {
+	if n%2 != 0 {
+		// Create a demo-purpose panic.
+		panic(fmt.Errorf("bad number: %v", n))
+	}
+	return
+}
+
+func doSomething() (err error) {
+	defer func() {
+		// The second optional return must be present here,
+		// otherwise, the assertion will panic if no errors occur.
+		err, _ = recover().(error)
+	}()
+
+	doTask(22)
+	doTask(98)
+	doTask(100)
+	doTask(53)
+	return nil
+}
+
+func main() {
+	fmt.Println(doSomething()) // bad number: 53
+}
+</code></pre>
+
+<p>
+The above code is less verbose than the following one.
+</p>
+
+<pre class="line-numbers"><code class="language-go">func doTask(n int) error {
+	if n%2 != 0 {
+		return fmt.Errorf("bad number: %v", n)
+	}
+	return nil
+}
+
+func doSomething() (err error) {
+	err = doTask(22)
+	if err != nil {
+		return
+	}
+	err = doTask(98)
+	if err != nil {
+		return
+	}
+	err = doTask(100)
+	if err != nil {
+		return
+	}
+	err = doTask(53)
+	if err != nil {
+		return
+	}
+	return
+}
+</code></pre>
+-->
+
+<p>
+However, usually, this panic/recover use pattern is not recommended to use.
+It is less Go-idiomatic and less efficient.
+</p>
+
+And please note that, since a future Go version (probably Go 1.21),
+a <code>panic(nil)</code> call will become
+<a href="https://github.com/golang/go/issues/25448">eqivalent to <code>panic(new(runtime.PanicNilError))</code></a>.
+Since then, the above deferred function call should be written as
+
+<pre class="line-numbers"><code class="language-go">func doSomething() (err error) {
+	defer func() {
+		err, _ = recover().(error)
+		if e := (*runtime.PanicNilError)(nil); errors.As(err, &e) {
+			err = nil
+		}
+	}()
+
+	doStep1()
+	...
+}
+</code></pre>
+
+<p>
+</p>
+
+
+</div>
+
+
+<hr>
+
+<div class="text-center"><a href="#i-panic-and-recover-use-cases.html">Index↡</a></div>
+
+
+
+<hr>
+
+<div id="contact" class="alert alert-success"><small>
+
+<p>
+The <b><i>Go 101</i></b> 프로젝트는 <a href="https://github.com/go101/go101">Github</a>
+에서 호스팅됩니다.
+오타, 문법 오류, 부정확한 표현, 설명 결함, 코드 버그, 끊어진 링크와 같은 모든
+종류의 실수에 대한 수정 사항을 제출하여 Go 101을 개선을 돕는 것은 언제나 환영합니다.
+</p>
+
+<p>
+주기적으로 Go에 대한 깊이 있는 정보를 얻고 싶다면 Go 101의 공식 트위터 계정인
+<a href="https://twitter.com/go100and1">@go100and1</a>을 팔로우하거나
+<a href="https://join.slack.com/t/go-101/shared_invite/zt-y2pvwg00-Oz7lDDJu44l~hZsFRUApiA">Go 101 슬랙 채널</a>에j가입해주세요.
+</p>
+
+</small></div>
+
+<div class="alert alert-warning"><small>
+
+
+<div id="ebooks">
+이 책의 디지털 버전은 아래와 같은 곳을 통해서 구매할 수 있습니다.
+<ul>
+<li>
+	<a href="https://leanpub.com/go101">Leanpub</a>,
+	<i>최소 19.99 달러</i>.
+</li>
+<li>
+	
+	아마존 킨들 스토어, <i>(현재는 사용 불가)</i>.
+</li>
+<li>
+	<a href="https://books.apple.com/book/id1459984231">애플 북 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://play.google.com/store/books/details?id=Dc1wEAAAQBAJ">구글 플레이 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://github.com/go101/go101/releases">무료 전자책</a>,
+	pdf, epub과 azw3 포맷을 지원
+</li>
+</ul>
+	</div>
+<div>
+
+Go 101의 저자인 Tapir는 2016년 7월부터 Go 101 시리즈 책들을 집필하고 go101.org 웹사이트를 유지 관리하고 있습니다.
+새로운 콘텐츠는 책과 웹사이트에 수시로 추가될 예정입니다.
+Tapir는 인디 게임 개발자이기도 합니다.
+<a href="https://www.tapirgames.com">Tapir의 게임</a>을 플레이하여 Go 101을 지원할 수도 있습니다.
+(안드로이드와 아이폰/아이패드용):
+<ul>
+<li>
+	<a href="https://www.tapirgames.com/App/Color-Infection">Color Infection</a> (★★★★★), 140개 이상의 단계로 이루어진 물리 기반의 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Rectangle-Pushers">Rectangle Pushers</a> (★★★★★), 2가지 모드와 104개 이상의 단계로 이루어진 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Let-Us-Play-With-Particles">Let's Play With Particles</a>, 세가지 미니 게임이 있는 캐주얼 액션 게임
+</li>
+</ul>
+</div>
+
+<a href="https://paypal.me/tapirliu">페이팔</a>을 통한 개인 기부도 환영합니다.</small></div>
+
+<hr>
+색인:
+
+
+<div id="book-index">
+
+<!-- kindle starts: 1 -->
+
+<ul class="index part">
+	<li><a class="index" href="101-about.html">Go 101에 대해</a> - 이 책이 쓰여진 이유</li>
+	<li><a class="index" href="acknowledgements.html">감사의 말</a></li>
+</ul>
+
+<ul class="index part">
+	<li><a class="index" href="introduction.html">Go 소개</a> - Go를 배우는 가치</li>
+	<li><a class="index" href="go-toolchain.html">Go 툴체인</a> - Go 프로그램을 컴파일하고 실행하는 방법</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 코드에 익숙해지기
+
+	<ul class="index chapters">
+	<li><a class="index" href="basic-code-elements-introduction.html">소스 코드 요소 소개</a></li>
+	<li><a class="index" href="keywords-and-identifiers.html">키워드와 식별자</a></li>
+	<li><a class="index" href="basic-types-and-value-literals.html">기본 자료형과 기본 값 리터럴</a></li>
+	<li><a class="index" href="constants-and-variables.html">상수와 변수</a> - 무형성(untyped) 값과 자료형 추론 소개를 포함</li>
+	<li><a class="index" href="operators.html">일반 연산자</a> - 더 많은 자료형 추론 규칙 소개를 포함</li>
+	<li><a class="index" href="function-declarations-and-calls.html">함수 선언과 호출</a></li>
+	<li><a class="index" href="packages-and-imports.html">코드 패키지와 패키지 들여오기</a></li>
+	<li><a class="index" href="expressions-and-statements.html">표현식, 구문과 단순 구문</a></li>
+	<li><a class="index" href="control-flows.html">기본 흐름 제어</a></li>
+	<li><a class="index" href="control-flows-more.html">고루틴, 지연된 함수 호출과 패닉/복구</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 자료형 체계
+
+	<ul class="index chapters">
+	<li><a class="index" href="type-system-overview.html">Go 자료형 체계 개요</a> - Go 프로그래밍 숙달을 위해 반드시 읽어봐야 하는</li>
+	<li><a class="index" href="pointer.html">포인터</a></li>
+	<li><a class="index" href="struct.html">구조체</a></li>
+	<li><a class="index" href="value-part.html">변수</a> - Go 변수에 대한 더 깊은 이해</li>
+	<li><a class="index" href="container.html">배열, 슬라이스와 맵</a> - 1급 객체 컨테이너 자료형</li>
+	<li><a class="index" href="string.html">문자열</a></li>
+	<li><a class="index" href="function.html">함수</a> - 함수 자료형과 값, 가변 인자 함수</li>
+	<li><a class="index" href="channel.html">채널</a> - Go에서 동시성 동기화를 하는 방법</li>
+	<li><a class="index" href="method.html">메서드</a></li>
+	<li><a class="index" href="interface.html">인터페이스</a> - 리플렉션과 다형성을 하는 값 상자</li>
+	<li><a class="index" href="type-embedding.html">자료형 임베딩</a> - 자료형을 확장하는 방법</li>
+	<li><a class="index" href="unsafe.html">자료형에 안전하지 않는 포인터</a></li>
+	<li><a class="index" href="generic.html">제네릭</a> - 합성 자료형의 사용과 읽는 법</li>
+	<li><a class="index" href="reflection.html">리플렉션</a> - <code>reflect</code> 표준 패키지</li>
+	</ul>
+</li>
+</ul>
+
+<!-- kindle ends: 1 -->
+
+<!-- kindle starts: 2 -->
+
+<ul class="index part">
+<li>
+특별 주제
+
+	<ul class="index chapters">
+	<li><a class="index" href="line-break-rules.html">개행 규칙</a></li>
+	<li><a class="index" href="defer-more.html">지연된 함수 호출 더 알아보기</a></li>
+	<li><b class="index" id="i-panic-and-recover-use-cases.html">패닉/복구 사용 사례</b></li>
+	<li><a class="index" href="panic-and-recover-more.html">패닉/복구 메커니즘에 대한 고찰</a> - 함수 호출 종료 단계를 포함</li>
+	<li><a class="index" href="blocks-and-scopes.html">코드 블록과 식별자 스코프</a></li>
+	<li><a class="index" href="evaluation-orders.html">표현식 평가 순서</a></li>
+	<li><a class="index" href="value-copy-cost.html">Go의 값 복사 비용</a></li>
+	<li><a class="index" href="bounds-check-elimination.html">경계 검사 제거(BCE)</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+동시성 프로그래밍
+
+	<ul class="index chapters">
+	<li><a class="index" href="concurrent-synchronization-overview.html">동시성 동기화 개요</a></li>
+	<li><a class="index" href="channel-use-cases.html">채널 사용 사례</a></li>
+	<li><a class="index" href="channel-closing.html">채널을 깔끔하게 닫는 방법</a></li>
+	<li><a class="index" href="concurrent-synchronization-more.html">기타 동시성 동기화 기술</a> - <code>sync</code> 표준 패키지</li>
+	<li><a class="index" href="concurrent-atomic-operation.html">원자적 연산</a> - <code>sync/atomic</code> 표준 패키지</li>
+	<li><a class="index" href="memory-model.html">Go의 메모리 순서 보장</a></li>
+	<li><a class="index" href="concurrent-common-mistakes.html">흔히들 저지르는 동시성 프로그래밍 실수들</a></li>
+	</ul>
+
+</li>
+</ul>
+
+
+<ul class="index part">
+<li>
+메모리 관련
+
+	<ul class="index chapters">
+	<li><a class="index" href="memory-block.html">메모리 블록</a></li>
+	<li><a class="index" href="memory-layout.html">메모리 레이아웃</a></li>
+	<li><a class="index" href="memory-leaking.html">메모리 누수 시나리오</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+일부 요약
+
+	<ul class="index chapters">
+	<li><a class="index" href="summaries.html">몇 가지 간단한 요약</a></li>
+	<li><a class="index" href="nil.html">Go의 <code>nil</code></a></li>
+	<li><a class="index" href="value-conversions-assignments-and-comparisons.html">값 변환, 할당과 비교 규칙</a></li>
+	<li><a class="index" href="exceptions.html">구문/의미 예외</a></li>
+	<!-- (to remove) for printing -->
+	<li><a class="index" href="details.html">Go Details 101</a></li>
+	<li><a class="index" href="unofficial-faq.html">Go FAQ 101</a></li>
+	<li><a class="index" href="tips.html">Go Tips 101</a></li>
+	<!-- (to remove) -->
+	</ul>
+
+</li>
+</ul>
+
+<!-- kindle ends: 2 -->
+
+<!-- kindle starts: 0 -->
+
+<ul class="index part">
+<li><a class="index" href="more.html">더 많은 토픽</a></li>
+</ul>
+
+<!-- kindle ends: 0 -->
+
+</div>
+
+
+
+
+
+
+
+
+		</div>
+	</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

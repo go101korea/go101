@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Golang online books, articles, tools, etc.">
+		<meta name="author" content="">
+		<meta name="go-version" content="go1.20">
+		<link rel="icon" href="/static/go101/images/101-v1.ico">
+		<link rel="apple-touch-icon" sizes="152x152" href="/static/go101/images/iphone-v1.jpeg">
+	
+		<title>Maps -Go 101</title><link id="css-bs" href="/static/bootstrap/v4.0.3-dark/css/bootstrap.min.css" rel="stylesheet">
+		<link id="css-go101" href="/static/go101/css/v991-dark.css" rel="stylesheet">
+		<link id="css-prism" href="/static/prism/2020-08-03-dark/prism.css" rel="stylesheet">
+		<script id="js-prism" src="/static/prism/2020-08-03-dark/prism.js"></script>
+
+
+		<script src="/static/jquery/jquery.min-v1.11.2.js"></script>
+		<script src="/static/go101/js/v5.js"></script>
+		
+		
+		<style>
+		div, p, ul, li, td, th {line-height: 1.55;}
+		</style>
+
+		<script>
+		var theme = ""
+		</script>
+	</head>
+
+	<body>
+		<div class="container">
+
+		<div class="row nav-bar-with-borders">
+	<div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/"><small>Home</small></a> <span class="new-text"><sup>new!</sup></span>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/article/101.html"><small>Go 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/generics/101.html"><small>Go Generics 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/details-and-tips/101.html"><small>Go Details &amp; Tips 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-active">
+		<a href="/optimizations/101.html"><small>Go Optimizations 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/quizzes/101.html"><small>Go Quizzes 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go HowTo 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Practices 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Agg 101</small></div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/blog/101.html"><small>Go 101 Blog</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/apps-and-libs/101.html"><small>Go 101 Apps &amp; Libs</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;" id="theme-switch"><small>테마: 다크/라이트</small></div>
+
+</div>
+
+<div class="alert alert-warning text-center"><small>
+현재 3권의 신간들인 <a href="/optimizations/101.html">Go Optimizations 101</a>,
+<a href="/details-and-tips/101.html">Go Details &amp; Tips 101</a>
+과 <a href="/generics/101.html">Go Generics 101</a>이 출간되어 있습니다.
+Leanpub 서점에서 <a href="https://leanpub.com/b/go-optimizations-details-generics">번들</a>을 모두 구입하시는 방법이 비용 대비 효율이 가장 좋습니다.
+<p></p>
+Go에 대한 많은 정보들과 Go 101 책들의 최신 소식을 얻으시려면 Go 101 트위터 계정인 <a href="https://twitter.com/go100and1">@Go100and1</a>을
+팔로잉 해주세요.
+</small></div>
+<p>
+</p>
+
+
+
+<h1>Maps</h1>
+
+
+
+<p>In Go, the capacity of a map is unlimited in theory, it is only limited by available memory.
+That is why the built-in <code>cap</code> function doesn't apply to maps.</p>
+
+<p>In the official standard Go runtime implementation, maps are implemented as hashtables internally.
+Each map/hashtable maintains a backing array to store map entries (key-value pairs).
+Along with more and more entries are put into a map,
+the size of the backing array might be thought as too small to store more entries,
+thus a new larger backing array will be allocated
+and the current entries (in the old backing array) will be moved to it,
+then the old backing array will be discarded.</p>
+
+<p>In the official standard Go runtime implementation, the backing array of a map will never shrink,
+even if all entries are deleted from the map. This is a form of memory wasting.
+But in practice, this is seldom a problem and and actually often good for program performances.</p>
+
+<h2>Clear map entries</h2>
+
+<p>We could use the following loop to clear all entries in a map:</p>
+
+<pre><code class="language-Go">	for key := range aMap {
+		delete(aMap, key)
+	}
+</code></pre>
+
+<p>The loop is specially optimized (except entries with NaN keys exist) so that its execution is very fast.
+However, please note that, as mentioned above, the backing array of the cleared map doesn't shrink after the loop.
+Then how to release the backing array of the map? There are two ways:</p>
+
+<pre><code class="language-Go">	aMap = nil
+	// or
+	aMap = map(map[K]V)
+</code></pre>
+
+<p>If the backing array of the map is not referenced elsewhere, then the backing array will be collected eventually after being released.</p>
+
+<p>If there will be many new entries to be put in the map after it is cleared, then the former way is preferred;
+otherwise, the latter (release) ways are preferred.</p>
+
+<h2><code>aMap[key]++</code> is more efficient than <code>aMap[key] = aMap[key] + 1</code></h2>
+
+<p>In the statement <code>aMap[key] = aMap[key] + 1</code>, the <code>key</code> are hashed twice,
+but in the statement <code>aMap[key]++</code>, it is only hashed once.</p>
+
+<p>Similarly, <code>aMap[key] += value</code> is more efficient than <code>aMap[key] = aMap[key] + value</code>.</p>
+
+<p>These could be proved by the following benchmark code:</p>
+
+<pre><code class="language-Go">package maps
+
+import &quot;testing&quot;
+
+var m = map[int]int{}
+
+func Benchmark_increment(b *testing.B) {
+	for i := 0; i &lt; b.N; i++ {
+		m[99]++
+	}
+}
+
+func Benchmark_plusone(b *testing.B) {
+	for i := 0; i &lt; b.N; i++ {
+		m[99] += 1
+	}
+}
+
+func Benchmark_addition(b *testing.B) {
+	for i := 0; i &lt; b.N; i++ {
+		m[99] = m[99] + 1
+	}
+}
+</code></pre>
+
+<p>The benchmark results:</p>
+
+<pre><code>Benchmark_increment-4  11.31 ns/op
+Benchmark_plusone-4    11.21 ns/op
+Benchmark_addition-4   16.10 ns/op	
+</code></pre>
+
+<h2>Pointers in maps</h2>
+
+<p>If the key type and element type of a map both don't contain pointers,
+then in the scan phase of a GC cycle, the garbage collector will not scan the entries of the map.
+This could save much time.</p>
+
+<p>This tip is also valid for other kinds of container in Go, such as slices, arrays and channels.</p>
+
+<h2>Using byte arrays instead of short strings as keys</h2>
+
+<p>Internally, each string contains a pointer, which points to the underlying bytes of that string.
+So if the key or element type of a map is a string type, then all the entries of the map
+needs to be scanned in GC cycles.</p>
+
+<p>If we can make sure that the string values used in the entries of a map have a max length
+and the max length is small, then we could use the array type <code>[N]byte</code> to replace the string types
+(where <code>N</code> is the max string length). Doing this will save much garbage collection scanning time
+if the number of the entries in the map is very large.</p>
+
+<p>For example, in the following code,
+the entries of <code>mapB</code> contain no pointers, but the (string) keys of <code>mapA</code> contain pointers.
+So garbage collector will skip <code>mapB</code> during the scan phase of a GC cycle.</p>
+
+<pre><code class="language-Go">	var mapA = make(map[string]int, 1 &lt;&lt; 16)
+	var mapB = make(map[[32]byte]int, 1 &lt;&lt; 16)
+</code></pre>
+
+<h2>Lower map element modification frequency</h2>
+
+<p>In the previous &quot;strings and byte slices&quot; chapter, it has been mentioned that
+<a href="4-string-and-byte-slice.html#bytes-2-string-as-map-retrieval-key">a byte-slice-to-string conversion appearing as the index key in a map element retrieval expression
+doesn't allocate</a>,
+but such conversions in L-value map element index expressions will allocate.</p>
+
+<p>So sometimes, we could lower the frequency of using such conversions in
+L-value map element index expressions to improve program performance.</p>
+
+<p>In the following example, the B way (pointer element way) is more performant than the A way.
+The reason is the B way modifies element values rarely.
+The elements in the B way are pointers, once they are created, they are never changed.</p>
+
+<pre><code class="language-Go">package maps
+
+import &quot;testing&quot;
+
+var wordCounterA = make(map[string]int)
+var wordCounterB = make(map[string]*int)
+var key = make([]byte, 64)
+
+func IncA(w []byte) {
+	wordCounterA[string(w)]++
+}
+
+func IncB(w []byte) {
+	p := wordCounterB[string(w)]
+	if p == nil {
+		p = new(int)
+		wordCounterB[string(w)] = p
+	}
+	*p++
+}
+
+func Benchmark_A(b *testing.B) {
+	for i := 0; i &lt; b.N; i++ {
+		for i := range key {
+			IncA(key[:i])
+		}
+	}
+}
+
+func Benchmark_B(b *testing.B) {
+	for i := 0; i &lt; b.N; i++ {
+		for i := range key {
+			IncB(key[:i])
+		}
+	}
+}
+</code></pre>
+
+<p>The benchmark results:</p>
+
+<pre><code>Benchmark_A-4  11600 ns/op  2336 B/op  62 allocs/op
+Benchmark_B-4   1543 ns/op     0 B/op   0 allocs/op
+</code></pre>
+
+<p>Although the B way (pointer element way) is less CPU consuming,
+it creates many pointers, which increases the burden of pointer scanning in a GC cycle.
+But generally, the B way is more efficient.</p>
+
+<p>We could use an extra counter table (a slice) and let the map record indexes to the table,
+to avoid making many allocations and creating many pointers, as the following code shows:</p>
+
+<pre><code class="language-Go">var wordIndexes = make(map[string]int)
+var wordCounters []int
+
+func IncC(w []byte) {
+	if i, ok := wordIndexes[string(w)]; ok {
+		wordCounters[i]++
+	} else {
+		wordIndexes[string(w)] = len(wordCounters)
+		wordCounters = append(wordCounters, 1)
+	}
+}
+
+func Benchmark_C(b *testing.B) {
+	for i := 0; i &lt; b.N; i++ {
+		for i := range key {
+			IncC(key[:i])
+		}
+	}
+}
+</code></pre>
+
+<p>The benchmark results:</p>
+
+<pre><code>Benchmark_A-4  11600 ns/op  2336 B/op  62 allocs/op
+Benchmark_B-4   1543 ns/op     0 B/op   0 allocs/op
+Benchmark_C-4   1609 ns/op     0 B/op   0 allocs/op
+</code></pre>
+
+<p>From a short-period view, the C way is as almost performant as the B way,
+But as it uses much less pointers, it is actually more efficient than the B way in a long-period view.</p>
+
+<p>Please note that the above benchmark results show the latter two ways both make zero allocations.
+This is actually not true. It is just that each of latter two benchmark runs makes less than one allocation averagely, which is truncated to zero.
+This is a <a href="https://github.com/golang/go/issues/24631">deliberate design</a> of the benchmark reports in the standard packages.</p>
+
+<h2>Try to grow a map in one step</h2>
+
+<p>If we could predict the max number of entries will be put into a map at coding time,
+we should create the map with the <code>make</code> function and pass the max number as the <code>size</code> argument of the <code>make</code> call,
+to avoid growing the map in multiple steps later.</p>
+
+<h2>Use index tables instead of maps which key types have only a small set of possible values</h2>
+
+<p>Some programmers like to use a map with bool key to reduce verbose <code>if-else</code> code block uses.
+For example, the following code</p>
+
+<pre><code class="language-Go">	// Within a function ...
+	var condition bool
+	condition = evaluateCondition()
+	...
+	if condition {
+		counter++
+	} else {
+		counter--
+	}
+	...
+	if condition {
+		f()
+	} else {
+		g()
+	}
+	...
+</code></pre>
+
+<p>could be replaced with</p>
+
+<pre><code class="language-Go">// Package-level maps.
+var boolToInt = map[bool]int{true: 1, false: 0}
+var boolToFunc = map[bool]func(){true: f, false: g}
+
+	// Within a function ...
+	var condition bool
+	condition = evaluateCondition()
+	...
+	counter += boolToInt[condition]
+	...
+	boolToFunc[condition]()
+	...
+</code></pre>
+
+<p>If there are many such identical <code>if-else</code> blocks used in code,
+using maps with bool keys will reduce many boilerplates and make code look much cleaner.
+For most use cases, this is generally good.
+However, as of Go toolchain v1.20, <a href="https://github.com/golang/go/issues/44578">the map way is not very efficient from
+the code execution performance view</a>.
+The following benchmarks show the performance differences.</p>
+
+<pre><code class="language-Go">package maps
+
+import &quot;testing&quot;
+
+//go:noiline
+func f() {}
+
+//go:noiline
+func g() {}
+
+func IfElse(x bool) func() {
+	if x {
+		return f
+	} else {
+		return g
+	}
+}
+
+var m = map[bool]func() {true: f, false: g}
+func MapSwitch(x bool) func() {
+	return m[x]
+}
+
+func Benchmark_IfElse(b *testing.B) {
+	for i := 0; i &lt; b.N; i++ {
+		IfElse(true)()
+		IfElse(false)()
+	}
+}
+
+func Benchmark_MapSwitch(b *testing.B) {
+	for i := 0; i &lt; b.N; i++ {
+		MapSwitch(true)()
+		MapSwitch(false)()
+	}
+}
+</code></pre>
+
+<p>The benchmark results:</p>
+
+<pre><code>Benchmark_IfElse-4      4.155 ns/op
+Benchmark_MapSwitch-4  47.46 ns/op
+</code></pre>
+
+<p>From the benchmark results, we could get that the <code>if-else</code>
+block way is much more performant than the map-switch way.</p>
+
+<p>For the use cases which require high code performance,
+we can use index tables to reduce <code>if-else</code> boilerplates
+but still keep the simplicity of the map switch way,
+with the help of a bool-to-int function.
+The following benchmarks show how to use the index table way.</p>
+
+<pre><code class="language-Go">func b2i(b bool) (r int) {
+	if b {r = 1}
+	return
+}
+var a = [2]func() {g, f}
+func IndexTable(x bool) func() {
+	return a[b2i(x)]
+}
+
+func Benchmark_IndexTable(b *testing.B) {
+	for i := 0; i &lt; b.N; i++ {
+		IndexTable(true)()
+		IndexTable(false)()
+	}
+}
+</code></pre>
+
+<p>From the above code, we could find that the uses of the index table way is as clean as
+the map-switch way, though it needs to define an extra tiny <code>b2i</code> function.
+And from the following benchmark results, we know that the index table way
+is as performant as the <code>if-else</code> block way.</p>
+
+<pre><code>Benchmark_IfElse-4      4.155 ns/op
+Benchmark_MapSwitch-4  47.46 ns/op
+Benchmark_IndexTable-4  4.135 ns/op
+</code></pre>
+<hr>
+
+<div class="text-center"><a href="#i-6-map.html">Index↡</a></div>
+
+
+
+<hr>
+
+<div id="contact" class="alert alert-success"><small>
+
+<p>
+The <b><i>Go 101</i></b> 프로젝트는 <a href="https://github.com/go101/go101">Github</a>
+에서 호스팅됩니다.
+오타, 문법 오류, 부정확한 표현, 설명 결함, 코드 버그, 끊어진 링크와 같은 모든
+종류의 실수에 대한 수정 사항을 제출하여 Go 101을 개선을 돕는 것은 언제나 환영합니다.
+</p>
+
+<p>
+주기적으로 Go에 대한 깊이 있는 정보를 얻고 싶다면 Go 101의 공식 트위터 계정인
+<a href="https://twitter.com/go100and1">@go100and1</a>을 팔로우하거나
+<a href="https://join.slack.com/t/go-101/shared_invite/zt-y2pvwg00-Oz7lDDJu44l~hZsFRUApiA">Go 101 슬랙 채널</a>에j가입해주세요.
+</p>
+
+</small></div>
+
+<div class="alert alert-warning"><small>
+
+
+<div id="ebooks">
+이 책의 디지털 버전은 아래와 같은 곳을 통해서 구매할 수 있습니다.
+<ul>
+<li>
+	<a href="https://leanpub.com/go-optimizations-101">Leanpub</a>,
+	<i>최소 7.99 달러</i> (<a href="https://leanpub.com/b/go-optimizations-details-generics">이곳</a>이나 <a href="https://leanpub.com/b/go-optimizations-details">이곳</a>에서 번들로 구매하세요).
+</li>
+<li>
+	<a href="https://books.apple.com/book/id1609924340">애플 북스</a>,
+	<i>7.99 달러</i>.
+</li>
+<li>
+	<a href="https://www.amazon.com/dp/B09NT2HJCM">아마존 킨들 스토어</a>,
+	<i>7.99 달러</i>.
+</li>
+</ul>
+	</div>
+<div>
+
+Go 101의 저자인 Tapir는 2016년 7월부터 Go 101 시리즈 책들을 집필하고 go101.org 웹사이트를 유지 관리하고 있습니다.
+새로운 콘텐츠는 책과 웹사이트에 수시로 추가될 예정입니다.
+Tapir는 인디 게임 개발자이기도 합니다.
+<a href="https://www.tapirgames.com">Tapir의 게임</a>을 플레이하여 Go 101을 지원할 수도 있습니다.
+(안드로이드와 아이폰/아이패드용):
+<ul>
+<li>
+	<a href="https://www.tapirgames.com/App/Color-Infection">Color Infection</a> (★★★★★), 140개 이상의 단계로 이루어진 물리 기반의 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Rectangle-Pushers">Rectangle Pushers</a> (★★★★★), 2가지 모드와 104개 이상의 단계로 이루어진 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Let-Us-Play-With-Particles">Let's Play With Particles</a>, 세가지 미니 게임이 있는 캐주얼 액션 게임
+</li>
+</ul>
+</div>
+
+<a href="https://paypal.me/tapirliu">페이팔</a>을 통한 개인 기부도 환영합니다.</small></div>
+
+<hr>
+색인:
+
+
+<div id="book-index">
+	
+<ul class="index part">
+	<li><a class="index" href="0.0-acknowledgements.html">Acknowledgments</a></li>
+	<li><a class="index" href="0.1-introduction.html">About Go Optimizations 101</a></li>
+	<li>Value Parts and Value Sizes <sup><small>(available in <a href="#ebooks">the paid ebooks</a>)</small></sup></li>
+	<ul>
+		<li>value/type sizes</li>
+		<li>memory alignments</li>
+		<li>struct padding</li>
+		<li>avoid larger copy costs</li>
+	</ul>
+	<li><a class="index" href="0.3-memory-allocations.html">Memory Allocations</a></li>
+	<li>Stack and Escape Analysis <sup><small>(available in <a href="#ebooks">the paid ebooks</a>)</small></sup></li>
+	<ul>
+		<li>escape analysis</li>
+		<li>how to control value allocation places</li>
+		<li>stacks growth and shrinkage</li>
+		<li>how to reduce stack grow times</li>
+	</ul>
+	<li>Garbage Collection <sup><small>(available in <a href="#ebooks">the paid ebooks</a>)</small></sup></li>
+	<ul>
+		<li>GC pacer</li>
+		<li>how to reduce GC pressure</li>
+		<li>control GC frequency</li>
+	</ul>
+	<li><a class="index" href="1-pointer.html">Pointers</a></li>
+	<li>Structs <sup><small>(available in <a href="#ebooks">the paid ebooks</a>)</small></sup></li>
+	<ul>
+		<li>3 facts/suggestions</li>
+	</ul>
+	<li>Arrays and Slices <sup><small>(available in <a href="#ebooks">the paid ebooks</a>)</small></sup></li>
+	<ul>
+		<li>10+ facts/suggestions</li>
+	</ul>
+	<li>String and Byte Slices <sup><small>(available in <a href="#ebooks">the paid ebooks</a>)</small></sup></li>
+	<ul>
+		<li>10+ facts/suggestions</li>
+	</ul>
+	<li>BCE (Bound Check Eliminate) <sup><small>(available in <a href="#ebooks">the paid ebooks</a>)</small></sup></li>
+	<ul>
+		<li>the cases BCE works for</li>
+		<li>the cases BCE doesn't work for</li>
+		<li>the cases BCE works for when given hints</li>
+	</ul>
+	<li><b class="index" id="i-6-map.html">Maps</b></li>
+	<li>Channels <sup><small>(available in <a href="#ebooks">the paid ebooks</a>)</small></sup></li>
+	<ul>
+		<li>3 facts/suggestions</li>
+	</ul>
+	<li>Functions <sup><small>(available in <a href="#ebooks">the paid ebooks</a>)</small></sup></li>
+	<ul>
+		<li>how to make a function inline-able</li>
+		<li>how to make a function not inline-able</li>
+		<li>pointer parameters/results vs. non-pointer ones</li>
+		<li>named results vs. anonymous ones</li>
+		<li>10+ facts/suggestions</li>
+	</ul>
+	<li>Interfaces <sup><small>(available in <a href="#ebooks">the paid ebooks</a>)</small></sup></li>
+	<ul>
+		<li>value boxing costs</li>
+		<li>3+ facts/suggestions</li>
+	</ul>
+</ul>
+
+
+</div>
+
+
+
+
+
+
+
+
+		</div>
+	</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

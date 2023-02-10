@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Golang online books, articles, tools, etc.">
+		<meta name="author" content="">
+		<meta name="go-version" content="go1.20">
+		<link rel="icon" href="/static/go101/images/101-v1.ico">
+		<link rel="apple-touch-icon" sizes="152x152" href="/static/go101/images/iphone-v1.jpeg">
+	
+		<title>Go (Fundamentals) 101 Update History -Go 101</title><link id="css-bs" href="/static/bootstrap/v4.0.3-dark/css/bootstrap.min.css" rel="stylesheet">
+		<link id="css-go101" href="/static/go101/css/v991-dark.css" rel="stylesheet">
+		<link id="css-prism" href="/static/prism/2020-08-03-dark/prism.css" rel="stylesheet">
+		<script id="js-prism" src="/static/prism/2020-08-03-dark/prism.js"></script>
+
+
+		<script src="/static/jquery/jquery.min-v1.11.2.js"></script>
+		<script src="/static/go101/js/v5.js"></script>
+		
+		
+		<style>
+		div, p, ul, li, td, th {line-height: 1.55;}
+		</style>
+
+		<script>
+		var theme = ""
+		</script>
+	</head>
+
+	<body>
+		<div class="container">
+
+		<div class="row nav-bar-with-borders">
+	<div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/"><small>Home</small></a> <span class="new-text"><sup>new!</sup></span>
+	</div><div class="col-xs-6 col-sm-4 nav-item-active">
+		<a href="/article/101.html"><small>Go 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/generics/101.html"><small>Go Generics 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/details-and-tips/101.html"><small>Go Details &amp; Tips 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/optimizations/101.html"><small>Go Optimizations 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/quizzes/101.html"><small>Go Quizzes 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go HowTo 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Practices 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Agg 101</small></div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/blog/101.html"><small>Go 101 Blog</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/apps-and-libs/101.html"><small>Go 101 Apps &amp; Libs</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;" id="theme-switch"><small>테마: 다크/라이트</small></div>
+
+</div>
+
+<div class="alert alert-warning text-center"><small>
+현재 3권의 신간들인 <a href="/optimizations/101.html">Go Optimizations 101</a>,
+<a href="/details-and-tips/101.html">Go Details &amp; Tips 101</a>
+과 <a href="/generics/101.html">Go Generics 101</a>이 출간되어 있습니다.
+Leanpub 서점에서 <a href="https://leanpub.com/b/go-optimizations-details-generics">번들</a>을 모두 구입하시는 방법이 비용 대비 효율이 가장 좋습니다.
+<p></p>
+Go에 대한 많은 정보들과 Go 101 책들의 최신 소식을 얻으시려면 Go 101 트위터 계정인 <a href="https://twitter.com/go100and1">@Go100and1</a>을
+팔로잉 해주세요.
+</small></div>
+<p>
+</p>
+
+
+
+<h1>Go (Fundamentals) 101 Update History</h1>
+
+
+
+<h3>v1.20.a (2023/Feb/01)</h3>
+
+<ul>
+<li>Go 1.20 <a href="https://go101.org/article/container.html#slice-to-array">started to support slice to array conversions</a>.</li>
+<li>Go 1.20 <a href="https://go101.org/article/unsafe.html">added three new functions in the &quot;unsafe&quot; package</a>: <code>SliceData</code>, <code>String</code>, and <code>StringData</code>.</li>
+<li>Since Go 1.20, the global random generator in the <code>math/rand</code> package will be auto seeded.</li>
+<li>mentions that <code>-gcflags=&quot;-d=ssa/check_bce&quot;</code> doesn't work for some generic functions in the <a href="https://go101.org/article/bounds-check-elimination.html">Bounds Check Elimination</a> chapter.</li>
+</ul>
+
+<h3>v1.19.a (2022/Aug/29)</h3>
+
+<ul>
+<li>Go 1.19 <a href="https://go101.org/article/concurrent-atomic-operation.html">added some atomic types</a>.</li>
+<li>Go 1.19 <a href="https://go101.org/article/memory-model.html#atomic">updated memory order guarantees</a>.</li>
+</ul>
+
+<h3>v1.18.a (2022/Apr/06)</h3>
+
+<ul>
+<li>Go 1.18 added custom generics support. Several articles in Go 101 are adjusted accordingly, mainly including
+
+<ul>
+<li><a href="https://go101.org/article/interface.html">Interfaces in Go</a></li>
+<li><a href="https://go101.org/article/type-system-overview.html">Go Type System Overview</a> (note that the &quot;named type&quot; terminology was added back).</li>
+</ul></li>
+</ul>
+
+<h3>v1.17.b (2021/Sep/10)</h3>
+
+<ul>
+<li>improve implicit method value evaluation explanations. Read <a href="https://go101.org/article/method.html#method-value-Normalization">this</a> and <a href="https://go101.org/article/type-embedding.html#method-value-evaluation">this</a> for details.</li>
+</ul>
+
+<h3>1.16.b (2021/May/18)</h3>
+
+<ul>
+<li>add Go 1.17 contents</li>
+</ul>
+
+<h3>1.16.a (2021/Feb/18)</h3>
+
+<ul>
+<li>support Go 1.16 embedding feature.</li>
+</ul>
+
+<h3>1.15.b (2020/Oct/09)</h3>
+
+<ul>
+<li>describe more about <a href="https://go101.org/article/details.html#reflect-deep-equal">reflect.DeepEqual</a> related details.</li>
+<li>add <a href="https://go101.org/article/exceptions.html#code-block-following-else">a new syntax execption</a>.</li>
+</ul>
+
+<h3>1.15.a (2020/Aug/07)</h3>
+
+<ul>
+<li>point out that, since Go Toolchain 1.15, using make+copy to clone slices is always more efficient than using append to clone.</li>
+</ul>
+
+<h3>1.14.g (2020/Jun/12)</h3>
+
+<ul>
+<li>remove the new detail added in 1.14.e: The behavior of comparing struct values with both comparable and incomparable fields or array values with both comparable and incomparable elements is unspecified. The reason is <a href="https://github.com/golang/go/issues/8606">the behavior will be specified</a>.</li>
+<li>add <a href="https://go101.org/article/details.html#impossible-to-interface-assertion">a new detail</a>: About the impossible to-interface assertions which can be detected at compile time.</li>
+</ul>
+
+<h3>1.14.f (2020/Jun/02)</h3>
+
+<ul>
+<li>All &quot;Go SDK&quot; uses are changed to &quot;Go Toolchain&quot;.</li>
+</ul>
+
+<h3>1.14.e (2020/May/06)</h3>
+
+<ul>
+<li>add <a href="https://go101.org/article/details.html#compare-values-with-both-comparable-and-incomparable-parts">a new detail</a>: The behavior of comparing struct values with both comparable and incomparable fields or array values with both comparable and incomparable elements is unspecified.</li>
+<li>add <a href="https://go101.org/article/details.html#blank-fields-are-ignored-in-comparisons">a new detail</a>: In struct value comparisons, blank fields will be ignored.</li>
+</ul>
+
+<h3>1.14.d (2020/Apr/25)</h3>
+
+<ul>
+<li><code>runtime.KeepAlive</code> related concents are removed from <a href="https://go101.org/article/unsafe.html">Unsafe Pointers</a> article.
+I'm sorry for spreading some wrong information in this article before.</li>
+</ul>
+
+<h3>1.13.i (2019/Oct/31)</h3>
+
+<ul>
+<li>fix a bug in the example code in the <a href="https://go101.org/article/container.html#delete-slice-elements">Delete a segment of slice elements</a> section
+of the &quot;Arrays, Slices and Maps in Go&quot; article.</li>
+<li>correct explainations in <a href="https://go101.org/article/function.html#function-evaluation-time">The Evaluation Moment of Deferred Function Values</a>.</li>
+<li>the article &quot;The Right Places to Call the Built-in <code>recover</code> Function&quot; is <a href="https://go101.org/article/panic-and-recover-more.html">renamed to</a> &quot;Explain Panic/Recover Mechanism in Detail&quot;. It was almost wholly re-written.</li>
+</ul>
+
+<h3>1.13.h (2019/Oct/18)</h3>
+
+<ul>
+<li>correct the explanations for the <a href="https://go101.org/article/evaluation-orders.html#value-assignment">Evaluation and Assignment Orders in Assignment Statements</a> section
+in the &quot;Expression Evaluation Orders&quot; article.</li>
+<li>add <a href="https://go101.org/article/101.html#compiler-optimizations">two new summaries</a>.</li>
+</ul>
+
+<h3>1.13.e (2019/Oct/07)</h3>
+
+<ul>
+<li>I decided to withdraw the last erratum in 1.13.d. (Re-added in 1.14.d)</li>
+</ul>
+
+<h3>1.13.d (2019/Sep/30)</h3>
+
+<ul>
+<li>add <a href="https://go101.org/article/unsafe.html#fact-value-address-might-change">a new fact</a> to the &quot;type-unsafe pointers&quot; article
+and pointed out <a href="https://go101.org/article/unsafe.html#pattern-convert-to-uintptr-and-back">a serious mistake</a> was made in this article.</li>
+</ul>
+
+<h3>1.13.c (2019/Sep/25)</h3>
+
+<ul>
+<li>remove the section containing a stupid code mistake from the &quot;The Right Places to Call the recover Function&quot; article.</li>
+</ul>
+
+<h3>1.13.b (2019/Sep/19)</h3>
+
+<ul>
+<li>remove the inaccurate description &quot;the address of a variable will never change&quot;</li>
+</ul>
+
+<h3>1.13.a (2019/Sep/05)</h3>
+
+<ul>
+<li>Go 1.13 ready.</li>
+<li>add two situations in the article <a href="https://go101.org/article/channel-closing.html">How to Gracefully Close Channels</a>.</li>
+<li><a href="https://go101.org/article/type-system-overview.html#unnamed-type">the &quot;named type&quot; and &quot;unnamed type&quot; terminologies</a> are added back,
+but they are eqivalent to &quot;defined type&quot; and &quot;non-defined type&quot; now.</li>
+</ul>
+
+<h3>1.12.d (2019/May/18)</h3>
+
+<ul>
+<li>enrich the <a href="https://go101.org/article/evaluation-orders.html#package-level-variables">Package-level Variables Initialization Order</a> section.</li>
+</ul>
+
+<h3>1.12.c (2019/April/09)</h3>
+
+<ul>
+<li>remove the &quot;named type&quot; and &quot;unnamed type&quot; terminology.</li>
+<li>adjust some discriptions in <a href="https://go101.org/article/type-embedding.html">Type Embdding</a>.</li>
+</ul>
+
+<h3>1.12.b (2019/April/06)</h3>
+
+<ul>
+<li>add a <a href="https://go101.org/article/evaluation-orders.html#package-level-variables">Package-level Variables Initialization Order</a> section.</li>
+</ul>
+
+<h3>1.12.a (2019/March/02)</h3>
+
+<ul>
+<li>Go 1.12 ready.</li>
+</ul>
+
+<h3>1.11.f (2019/Jan/02)</h3>
+
+<ul>
+<li>remove &quot;Unused Variables&quot; from <a href="https://go101.org/article/exceptions.html">Syntax/Semantics Exceptions In Go</a>.</li>
+</ul>
+
+<h3>1.11.g (2018/Dec/27)</h3>
+
+<ul>
+<li>a serious mistake was just fixed in this book.
+Before, the book said the starting index in a subslice syntax
+can't be larger than the length of the base slice. This is wrong.
+Please read <a href="container.html#subslice">the corrected section</a> again for details.</li>
+</ul>
+
+<h3>1.11.f (2018/Nov/09)</h3>
+
+<ul>
+<li>rearrange <a href="https://go101.org/article/details.html">Go Details 101</a>, more details are added.</li>
+</ul>
+
+<h3>1.11.e (2018/Oct/26)</h3>
+
+<ul>
+<li>published <a href="https://go101.org/article/evaluation-orders.html">Evaluation Orders</a>.</li>
+<li>modify some descriptions for <a href="https://go101.org/article/packages-and-imports.html#initialization-order">program resource initialization order</a></li>
+</ul>
+
+<h3>1.11.d (2018/Oct/18)</h3>
+
+<ul>
+<li>remove &quot;Comparing Interface Values&quot; from <a href="https://go101.org/article/exceptions.html">Syntax/Semantics Exceptions In Go</a>.</li>
+<li>add &quot;Comparisons 2&quot; to <a href="https://go101.org/article/exceptions.html">Syntax/Semantics Exceptions In Go</a>.</li>
+<li>modify some descriptions for
+
+<ul>
+<li><a href="https://go101.org/article/value-conversions-assignments-and-comparisons.html#comparison-rules">comparison rules</a></li>
+<li><a href="https://go101.org/article/packages-and-imports.html#package">package hierarchy</a></li>
+</ul></li>
+</ul>
+
+<h3>1.11.c (2018/Sep/22)</h3>
+
+<ul>
+<li>add a new tip <a href="https://go101.org/article/tips.html#make-struct-type-uncomparable">How to make a struct type incomparable?</a>.</li>
+<li>add a new tip <a href="https://go101.org/article/tips.html#reset-pointers-for-dead-elements">Try to reset pointers in freed-up slice elements</a>.</li>
+<li>add a new tip <a href="https://go101.org/article/tips.html#make-using-of-bce">Make optimizations by using BCE</a>.</li>
+<li>remove &quot;Precedences Of Unary Operators&quot; from <a href="https://go101.org/article/exceptions.html">Syntax/Semantics Exceptions In Go</a>.</li>
+</ul>
+
+<h3>1.11.b (2018/Sep/09)</h3>
+
+<ul>
+<li>published <a href="https://go101.org/article/tips.html">Go Tips 101</a>.</li>
+</ul>
+
+<h3>1.11.a (2018/Sep/01)</h3>
+
+<ul>
+<li>mention 1.11 new <code>wasm</code> GOARCH in <a href="https://go101.org/article/more.html#cross-platform-compiling">More Go Related Knowledges</a>.</li>
+<li>mention 1.11 new <code>go mod</code> command in <a href="https://go101.org/article/go-toolchain.html">The Go Toolchain</a>.</li>
+</ul>
+
+<h3>1.10.g (2018/Jun/02)</h3>
+
+<ul>
+<li>published <a href="https://go101.org/article/101-about.html">About Go 101</a>.</li>
+<li>published <a href="https://go101.org/article/acknowledgements.html">Acknowledgments</a>.</li>
+</ul>
+
+<h3>1.10.f (2018/May/15)</h3>
+
+<ul>
+<li>published <a href="https://go101.org/article/reflection.html">Relections in Go</a>.</li>
+<li>added a channel use case: <a href="https://go101.org/article/channel-use-cases.html#rate-limiting">rate limiting</a>.</li>
+</ul>
+
+<h3>1.10.e (2018/Apr/28)</h3>
+
+<ul>
+<li>added a new detail: <a href="https://go101.org/article/details.html#os-exit-runtime-goexit">Exit a program with a <code>os.Exit</code> function call and exit a goroutine with a <code>runtime.Goexit</code> function call.</a>.</li>
+</ul>
+
+<h3>1.10.d (2018/Apr/18)</h3>
+
+<ul>
+<li>added a new detail: <a href="https://go101.org/article/details.html#non-exported-names-from-different-packages">Non-exported method names and struct field names from different packages are viewed as diffferent names.</a>.</li>
+<li>added a FAQ question: [What does the compiler error message <code>declared and not used</code> mean?](<a href="https://go101.org/article/unofficial-faq.html#error-declared-not-used&quot;">https://go101.org/article/unofficial-faq.html#error-declared-not-used&quot;</a>)</li>
+<li>added a FAQ question: <a href="https://go101.org/article/unofficial-faq.html#time-sleep-after">What is the difference between the function call <code>time.Sleep(d)</code> and the channel receive operation <code>&lt;-time.After(d)</code>?</a></li>
+<li>added a FAQ question: <a href="https://go101.org/article/unofficial-faq.html#math-crypto-rand">What is the difference between the random numbers produced by the <code>math/rand</code> standard package and the <code>crypto/rand</code> standard package?</a></li>
+<li>added a FAQ question: <a href="https://go101.org/article/unofficial-faq.html#fmt-print-println">What are the differences between the <code>fmt.Print</code> and <code>fmt.Println</code> functions?</a></li>
+<li>added a FAQ question: <a href="https://go101.org/article/unofficial-faq.html#print-builtin-fmt-log">What are the differences between the built-in <code>print</code>/<code>println</code> functions and the corresponding print functions in the <code>fmt</code> and <code>log</code> standard packages?</a></li>
+<li>added a FAQ question: <a href="https://go101.org/article/unofficial-faq.html#math-round">Why isn't there a <code>math.Round</code> function?</a></li>
+<li>added a FAQ question: <a href="https://go101.org/article/unofficial-faq.html#gopher">What does the word <b><i>gopher</i></b> mean in Go community?</a></li>
+</ul>
+
+<h3>1.10.c (2018/Apr/14)</h3>
+
+<ul>
+<li>finished the article <a href="https://go101.org/article/concurrent-common-mistakes.html">some common concurrent programming mistakes</a>.</li>
+<li>published <a href="https://go101.org/article/details.html">Go details 101</a>.</li>
+<li>unhid <a href="https://go101.org/article/unofficial-faq.html">Go FAQ 101</a>.</li>
+</ul>
+
+<h3>1.10.b (2018/Apr/06)</h3>
+
+<ul>
+<li>added <a href="https://go101.org/article/type-embedding.html#dead-loop-example">an interesting type embedding example</a></li>
+<li>mentioned <a href="https://go101.org/article/channel.html#assign-and-compare">receive-only channels can't be closed</a></li>
+<li>mentioned <a href="https://go101.org/article/container.html#value-literals">indexes in array and slice composite literals must be constants</a></li>
+</ul>
+
+<h3>1.10.a (2018/Mar/31)</h3>
+
+<p>First release, though some articles are still not finished.</p>
+
+
+<hr>
+
+<div id="contact" class="alert alert-success"><small>
+
+<p>
+The <b><i>Go 101</i></b> 프로젝트는 <a href="https://github.com/go101/go101">Github</a>
+에서 호스팅됩니다.
+오타, 문법 오류, 부정확한 표현, 설명 결함, 코드 버그, 끊어진 링크와 같은 모든
+종류의 실수에 대한 수정 사항을 제출하여 Go 101을 개선을 돕는 것은 언제나 환영합니다.
+</p>
+
+<p>
+주기적으로 Go에 대한 깊이 있는 정보를 얻고 싶다면 Go 101의 공식 트위터 계정인
+<a href="https://twitter.com/go100and1">@go100and1</a>을 팔로우하거나
+<a href="https://join.slack.com/t/go-101/shared_invite/zt-y2pvwg00-Oz7lDDJu44l~hZsFRUApiA">Go 101 슬랙 채널</a>에j가입해주세요.
+</p>
+
+</small></div>
+
+<div class="alert alert-warning"><small>
+
+
+<div id="ebooks">
+이 책의 디지털 버전은 아래와 같은 곳을 통해서 구매할 수 있습니다.
+<ul>
+<li>
+	<a href="https://leanpub.com/go101">Leanpub</a>,
+	<i>최소 19.99 달러</i>.
+</li>
+<li>
+	
+	아마존 킨들 스토어, <i>(현재는 사용 불가)</i>.
+</li>
+<li>
+	<a href="https://books.apple.com/book/id1459984231">애플 북 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://play.google.com/store/books/details?id=Dc1wEAAAQBAJ">구글 플레이 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://github.com/go101/go101/releases">무료 전자책</a>,
+	pdf, epub과 azw3 포맷을 지원
+</li>
+</ul>
+	</div>
+<div>
+
+Go 101의 저자인 Tapir는 2016년 7월부터 Go 101 시리즈 책들을 집필하고 go101.org 웹사이트를 유지 관리하고 있습니다.
+새로운 콘텐츠는 책과 웹사이트에 수시로 추가될 예정입니다.
+Tapir는 인디 게임 개발자이기도 합니다.
+<a href="https://www.tapirgames.com">Tapir의 게임</a>을 플레이하여 Go 101을 지원할 수도 있습니다.
+(안드로이드와 아이폰/아이패드용):
+<ul>
+<li>
+	<a href="https://www.tapirgames.com/App/Color-Infection">Color Infection</a> (★★★★★), 140개 이상의 단계로 이루어진 물리 기반의 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Rectangle-Pushers">Rectangle Pushers</a> (★★★★★), 2가지 모드와 104개 이상의 단계로 이루어진 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Let-Us-Play-With-Particles">Let's Play With Particles</a>, 세가지 미니 게임이 있는 캐주얼 액션 게임
+</li>
+</ul>
+</div>
+
+<a href="https://paypal.me/tapirliu">페이팔</a>을 통한 개인 기부도 환영합니다.</small></div>
+
+
+
+
+
+
+		</div>
+	</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

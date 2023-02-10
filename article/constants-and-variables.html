@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Golang online books, articles, tools, etc.">
+		<meta name="author" content="">
+		<meta name="go-version" content="go1.20">
+		<link rel="icon" href="/static/go101/images/101-v1.ico">
+		<link rel="apple-touch-icon" sizes="152x152" href="/static/go101/images/iphone-v1.jpeg">
+	
+		<title>Constants and Variables -Go 101</title><link id="css-bs" href="/static/bootstrap/v4.0.3-dark/css/bootstrap.min.css" rel="stylesheet">
+		<link id="css-go101" href="/static/go101/css/v991-dark.css" rel="stylesheet">
+		<link id="css-prism" href="/static/prism/2020-08-03-dark/prism.css" rel="stylesheet">
+		<script id="js-prism" src="/static/prism/2020-08-03-dark/prism.js"></script>
+
+
+		<script src="/static/jquery/jquery.min-v1.11.2.js"></script>
+		<script src="/static/go101/js/v5.js"></script>
+		
+		
+		<style>
+		div, p, ul, li, td, th {line-height: 1.55;}
+		</style>
+
+		<script>
+		var theme = ""
+		</script>
+	</head>
+
+	<body>
+		<div class="container">
+
+		<div class="row nav-bar-with-borders">
+	<div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/"><small>Home</small></a> <span class="new-text"><sup>new!</sup></span>
+	</div><div class="col-xs-6 col-sm-4 nav-item-active">
+		<a href="/article/101.html"><small>Go 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/generics/101.html"><small>Go Generics 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/details-and-tips/101.html"><small>Go Details &amp; Tips 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/optimizations/101.html"><small>Go Optimizations 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/quizzes/101.html"><small>Go Quizzes 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go HowTo 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Practices 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Agg 101</small></div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/blog/101.html"><small>Go 101 Blog</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/apps-and-libs/101.html"><small>Go 101 Apps &amp; Libs</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;" id="theme-switch"><small>테마: 다크/라이트</small></div>
+
+</div>
+
+<div class="alert alert-warning text-center"><small>
+현재 3권의 신간들인 <a href="/optimizations/101.html">Go Optimizations 101</a>,
+<a href="/details-and-tips/101.html">Go Details &amp; Tips 101</a>
+과 <a href="/generics/101.html">Go Generics 101</a>이 출간되어 있습니다.
+Leanpub 서점에서 <a href="https://leanpub.com/b/go-optimizations-details-generics">번들</a>을 모두 구입하시는 방법이 비용 대비 효율이 가장 좋습니다.
+<p></p>
+Go에 대한 많은 정보들과 Go 101 책들의 최신 소식을 얻으시려면 Go 101 트위터 계정인 <a href="https://twitter.com/go100and1">@Go100and1</a>을
+팔로잉 해주세요.
+</small></div>
+<p>
+</p>
+
+
+
+<h1>Constants and Variables</h1>
+
+
+
+<p>
+This article will introduce constant and variable declarations in Go.
+The concept of untyped values and explicit conversions will also be introduced.
+</p>
+
+<p>
+The literals introduced in <a href="basic-types-and-value-literals.html">the
+last article</a> are all called unnamed constants (or literal constants),
+except <code>false</code> and <code>true</code>,
+which are two predeclared (built-in) named constants.
+Custom named constant declarations will be introduced below in this article.
+</p>
+
+<a class="anchor" id="untyped-value"></a>
+<h3>Untyped Values and Typed Values</h3>
+
+<p>
+In Go, some values are untyped.
+An untyped value means the type of the value has not been confirmed yet.
+On the contrary, the type of a typed value is determined.
+</p>
+
+<p>
+For most untyped values, each of them has one default type.
+The predeclared <code>nil</code> is the only untyped value
+which has no default type.
+We will learn more about <code>nil</code> in other Go 101 articles later.
+</p>
+
+<p>
+All literal constants (unnamed constants) are untyped values. In fact, in Go,
+most untyped values are literal constants and named constants (which will be introduced
+below in the current article). The other untyped values include the just mentioned
+<code>nil</code> and some boolean results returned by some operations
+which will be introduced in other articles later.
+</p>
+
+<div>
+The default type of a literal constant is determined by its literal form.
+<ul>
+<li>
+	The default type of a string literal is <code>string</code>.
+</li>
+<li>
+	The default type of a boolean literal is <code>bool</code>.
+</li>
+<li>
+	The default type of an integer literal is <code>int</code>.
+</li>
+<li>
+	The default type of a rune literal is <code>rune</code> (a.k.a., <code>int32</code>).
+</li>
+<li>
+	The default type of a floating-point literal is <code>float64</code>.
+</li>
+<li>
+	If a literal contains an imaginary part,
+	then its default type is <code>complex128</code>.
+</li>
+</ul>
+
+<p>
+</p>
+
+</div>
+
+
+
+<a class="anchor" id="explicit-conversion"></a>
+<h3>Explicit Conversions of Untyped Constants</h3>
+
+<p>
+Like many other languages, Go also supports value conversions.
+We can use the form <code>T(v)</code> to convert a value <code>v</code>
+to the type denoted by <code>T</code>
+(or simply speaking, type <code>T</code>).
+If the conversion <code>T(v)</code> is legal,
+Go compilers view <code>T(v)</code> as a typed value of type <code>T</code>.
+Surely, for a certain type <code>T</code>,
+to make the conversion <code>T(v)</code> legal,
+the value <code>v</code> can't be arbitrary.
+</p>
+
+<p>
+The following mentioned rules apply for both the literal constants introduced in
+the last article and the untyped named constants which will be introduced soon.
+</p>
+
+<div>
+For an untyped constant value <code>v</code>,
+there are two scenarios where <code>T(v)</code> is legal.
+<ol>
+<li>
+	<code>v</code> (or the literal denoted by <code>v</code>) is
+	<a href="basic-types-and-value-literals.html#representability">representable</a>
+	as a value of a basic type <code>T</code>.
+	The result value is a typed constant of type <code>T</code>.
+</li>
+<li>
+	The default type of <code>v</code> is an integer type (<code>int</code>
+	or <code>rune</code>) and <code>T</code> is a string type.
+	The result of <code>T(v)</code> is a string of type <code>T</code>
+	and contains the UTF-8 representation of the integer as a Unicode code point.
+	Integer values outside the range of valid Unicode code points
+	result strings represented by <code>"\uFFFD"</code>
+	(a.k.a., <code>"\xef\xbf\xbd"</code>).
+	<code>0xFFFD</code> is the code point for the Unicode replacement character.
+	The result string of a conversion from an integer always contains one and only one rune.
+	(Note, later Go version might <a href="https://github.com/golang/go/issues/3939">only allow converting rune or byte integers to strings</a>.
+	Since Go Toolchain 1.15, the <code>go vet</code> command warns on conversions from non-rune and non-byte integers to strings.)
+</li>
+</ol>
+
+<div class="note">
+<p>
+In fact, the second scenario doesn't require <code>v</code> to be a constant.
+If <code>v</code> is a constant, then the result of the conversion is also a constant,
+otherwise, the result is not a constant.
+</p>
+</div>
+
+For example, the following conversions are all legal.
+<pre class="disable-line-numbers111"><code class="language-go">// Rounding happens in the following 3 lines.
+complex128(1 + -1e-1000i)  // 1.0+0.0i
+float32(0.49999999)        // 0.5
+float32(17000000000000000)
+// No rounding in the these lines.
+float32(123)
+uint(1.0)
+int8(-123)
+int16(6+0i)
+complex128(789)
+
+string(65)          // "A"
+string('A')         // "A"
+string('\u68ee')    // "森"
+string(-1)          // "\uFFFD"
+string(0xFFFD)      // "\uFFFD"
+string(0x2FFFFFFFF) // "\uFFFD"
+</code></pre>
+
+<p>
+</p>
+
+And the following conversions are all illegal.
+<pre class="disable-line-numbers111"><code class="language-go">// 1.23 is not representable as a value of int.
+int(1.23)
+// -1 is not representable as a value of uint8.
+uint8(-1)
+// 1+2i is not representable as a value of float64.
+float64(1+2i)
+
+// Constant -1e+1000 overflows float64.
+float64(-1e1000)
+// Constant 0x10000000000000000 overflows int.
+int(0x10000000000000000)
+
+// The default type of 65.0 is float64,
+// which is not an integer type.
+string(65.0)
+// The default type of 66+0i is complex128,
+// which is not an integer type.
+string(66+0i)
+</code></pre>
+
+<div class="note">
+<p>
+From the above examples, we know that an untyped constant,
+(for example <code>-1e1000</code> and <code>0x10000000000000000</code>),
+may even not be able to represent as a value of its default type.
+</p>
+</div>
+
+<p>
+Please note,
+sometimes, the form of explicit conversions must
+be written as <code>(T)(v)</code> to avoid ambiguities.
+Such situations often happen in case of <code>T</code> is not an identifier.
+</p>
+
+<p>
+We will learn more explicit conversion rules later in other Go 101 articles.
+</p>
+
+</div>
+
+<a class="anchor" id="type-deduce"></a>
+<h3>Introduction of Type Deductions in Go</h3>
+
+<p>
+Go supports type deduction. In other words, in many circumstances, programmers
+don't need to explicitly specify the types of some values in code.
+Go compilers will deduce the types for these values by context.
+</p>
+
+<p>
+Type deduction is also often called type inference.
+</p>
+
+<p>
+In Go code, if a place needs a value of a certain type and an untyped value
+(often a constant) is representable as a value of the certain type,
+then the untyped value can be used in the place.
+Go compilers will view the untyped value as a typed value of the certain type.
+Such places include an operand in an operator operation, an argument in
+a function call, a destination value or a source value in an assignment, etc.
+</p>
+
+<p>
+Some circumstances have no requirements on the types of the used values.
+If an untyped value is used in such a circumstance, Go compilers will
+treat the untyped value as a typed value of its default type.
+</p>
+
+<p>
+The two type deduction cases can be viewed as implicit conversions.
+</p>
+
+<p>
+The below constant and variable declaration sections will show some type deduction cases.
+More type deduction rules and cases will be introduced in other articles.
+</p>
+
+<a class="anchor" id="constant"></a>
+<h3>Constant Declarations</h3>
+
+<div>
+
+Unnamed constants are all boolean, numeric and string values.
+Like unnamed constants, named constants can also be only
+boolean, numeric and string values.
+The keyword <code>const</code> is used to declare named constants.
+The following program contains some constant declarations.
+
+<pre class="line-numbers must-line-numbers"><code class="language-go">package main
+
+// Declare two individual constants. Yes,
+// non-ASCII letters can be used in identifiers.
+const π = 3.1416
+const Pi = π // <=> const Pi = 3.1416
+
+// Declare multiple constants in a group.
+const (
+	No         = !Yes
+	Yes        = true
+	MaxDegrees = 360
+	Unit       = "radian"
+)
+
+func main() {
+	// Declare multiple constants in one line.
+	const TwoPi, HalfPi, Unit2 = π * 2, π * 0.5, "degree"
+}
+</code></pre>
+
+<p></p>
+
+<p>
+Go specification calls each of the lines containing a <code>=</code> symbol in
+the above constant declaration group as a <b><i>constant specification</i></b>.
+</p>
+
+<p>
+In the above example,
+the <code>*</code> symbol is the multiplication operator
+and the <code>!</code> symbol is the boolean-not operator.
+Operators will be introduced in the next article,
+<a href="operators.html">common operators</a>.
+</p>
+
+<p>
+The <code>=</code> symbol means "bind" instead of "assign".
+We should interpret each constant specification
+as a declared identifier is bound to a corresponding basic value literal.
+Please read the last section in the current article for more explanations.
+</p>
+
+<p>
+In the above example, the name constants <code>π</code> and <code>Pi</code>
+are both bound to the literal <code>3.1416</code>.
+The two named constants may be used at many places in code.
+Without constant declarations, the literal <code>3.1416</code> would be
+populated at those places. If we want to change the literal
+to <code>3.14</code> later, many places need to be modified.
+With the help of constant declarations, the literal <code>3.1416</code>
+will only appear in one constant declaration,
+so only one place needs to be modified.
+This is the main purpose of constant declarations.
+</p>
+
+<p>
+Later, we use the terminology <b><i>non-constant</i></b> values
+to denote the values who are not constants.
+The to be introduced variables below,
+all belong to one kind of non-constant values.
+</p>
+
+<p>
+Please note that, constants can be declared both
+at package level (out of any function body) and in function bodies.
+The constants declared in function bodies are called local constants.
+The variables declared out of any function body
+are called package-level constants.
+We also often call package-level constants as global constants.
+</p>
+
+<p>
+The declaration orders of two package-level constants are not important.
+In the above example, the declaration orders of
+<code>No</code> and <code>Yes</code> can be exchanged.
+</p>
+
+<p>
+All constants declared in the last example are untyped.
+The default type of a named untyped constant is
+the same as the literal bound to it.
+</p>
+
+</div>
+
+<h4>Typed named constants</h4>
+
+<div>
+
+We can declare typed constants, typed constants are all named.
+In the following example, all the four declared constants are typed values.
+The types of <code>X</code> and <code>Y</code> are both <code>float32</code>
+and the types of <code>A</code> and <code>B</code> are both <code>int64</code>.
+
+<pre class="line-numbers"><code class="language-go">const X float32 = 3.14
+
+const (
+	A, B int64   = -3, 5
+	Y    float32 = 2.718
+)
+</code></pre>
+
+<p></p>
+
+<p>
+If multiple typed constants are declared in the same constant specification,
+then their types must be the same, just as the constants
+<code>A</code> and <code>B</code> in the above example.
+</p>
+
+We can also use explicit conversions to provide enough information
+for Go compilers to deduce the types of typed named constants.
+The above code snippet is equivalent to the following one,
+in which <code>X</code>, <code>Y</code>, <code>A</code> and <code>B</code>
+are all typed constants.
+
+<pre class="line-numbers"><code class="language-go">const X = float32(3.14)
+
+const (
+	A, B = int64(-3), int64(5)
+	Y    = float32(2.718)
+)
+</code></pre>
+
+<p></p>
+
+If a basic value literal is bound to a typed constant, the basic value
+literal must be representable as a value of the type of the constant.
+The following typed constant declarations are invalid.
+
+<pre class="line-numbers"><code class="language-go">// error: 256 overflows uint8
+const a uint8 = 256
+// error: 256 overflows uint8
+const b = uint8(255) + uint8(1)
+// error: 128 overflows int8
+const c = int8(-128) / int8(-1)
+// error: -1 overflows uint
+const MaxUint_a = uint(^0)
+// error: -1 overflows uint
+const MaxUint_b uint = ^0
+</code></pre>
+
+<p>
+In the above and following examples <code>^</code> is bitwise-not operator.
+</p>
+
+The following typed constant declaration is valid on 64-bit OSes,
+but invalid on 32-bit OSes.
+For each <code>uint</code> value has only 32 bits on 32-bit OSes.
+<code>(1 &lt;&lt; 64) - 1</code> is not representable as 32-bit values.
+(Here, <code>&lt;&lt;</code> is bitwise-left-shift operator.)
+
+<pre class="line-numbers"><code class="language-go">const MaxUint uint = (1 << 64) - 1
+</code></pre>
+
+<p></p>
+
+Then how to declare a typed <code>uint</code> constant and bind
+the largest <code>uint</code> value to it? Use the following way instead.
+
+<pre class="line-numbers"><code class="language-go">const MaxUint = ^uint(0)
+</code></pre>
+
+<p></p>
+
+Similarly, we can declare a typed <code>int</code> constant
+and bind the largest <code>int</code> value to it.
+(Here, <code>&gt;&gt;</code> is bitwise-right-shift operator.)
+
+<pre class="line-numbers"><code class="language-go">const MaxInt = int(^uint(0) >> 1)
+</code></pre>
+
+<p></p>
+
+A similar method can be used to get the number of bits of a native word,
+and check the current OS is 32-bit or 64-bit.
+
+<pre class="line-numbers"><code class="language-go">// NativeWordBits is 64 or 32.
+const NativeWordBits = 32 << (^uint(0) >> 63)
+const Is64bitOS = ^uint(0) >> 63 != 0
+const Is32bitOS = ^uint(0) >> 32 == 0
+</code></pre>
+
+<p>
+Here, <code>!=</code> and <code>==</code> are not-equal-to and equal-to operators.
+</p>
+</div>
+
+<h4>Autocomplete in constant declarations</h4>
+
+<div>
+
+In a group-style constant declaration, except the first constant specification,
+other constant specifications can be incomplete.
+An incomplete constant specification only contains an identifier list.
+Compilers will autocomplete the incomplete lines for us by
+copying the missing part from the first preceding complete constant specification.
+For example, at compile time, compilers will automatically
+complete the following code
+
+<pre class="line-numbers"><code class="language-go">const (
+	X float32 = 3.14
+	Y           // here must be one identifier
+	Z           // here must be one identifier
+
+	A, B = "Go", "language"
+	C, _
+	// In the above line, the blank identifier
+	// is required to be present.
+)
+</code></pre>
+
+as
+
+<pre class="line-numbers"><code class="language-go">const (
+	X float32 = 3.14
+	Y float32 = 3.14
+	Z float32 = 3.14
+
+	A, B = "Go", "language"
+	C, _ = "Go", "language"
+)
+</code></pre>
+
+<p>
+</p>
+
+</div>
+
+<h4><code>iota</code> in constant declarations</h4>
+
+<div>
+
+The autocomplete feature plus the <code>iota</code> constant generator
+feature brings much convenience to Go programming.
+<code>iota</code> is a predeclared constant
+which can only be used in other constant declarations.
+It is declared as
+
+<pre class="line-numbers"><code class="language-go">const iota = 0
+</code></pre>
+
+<p></p>
+
+<p>
+But the value of an <code>iota</code> in code may be not always <code>0</code>.
+When the predeclared <code>iota</code> constant is used in
+a custom constant declaration, at compile time,
+within the custom constant declaration,
+its value will be reset to <code>0</code> at the first constant specification of each group of constants
+and will increase <code>1</code> constant specification by constant specification.
+In other words, in the <b><i>n</i></b>th constant specification
+of a constant declaration, the value of <code>iota</code> is <b><i>n</i></b> (starting from zero).
+So <code>iota</code> is only useful in group-style constant declarations.
+</p>
+
+Here is an example using both the autocomplete
+and the <code>iota</code> constant generator features.
+Please read the comments to get what will happen at compile time.
+The <code>+</code> symbol in this example is the addition operator.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+func main() {
+	const (
+		k = 3 // now, iota == 0
+
+		m float32 = iota + .5 // m float32 = 1 + .5
+		n                     // n float32 = 2 + .5
+
+		p = 9             // now, iota == 3
+		q = iota * 2      // q = 4 * 2
+		_                 // _ = 5 * 2
+		r                 // r = 6 * 2
+		s, t = iota, iota // s, t = 7, 7
+		u, v              // u, v = 8, 8
+		_, w              // _, w = 9, 9
+	)
+
+	const x = iota // x = 0
+	const (
+		y = iota // y = 0
+		z        // z = 1
+	)
+
+	println(m)             // +1.500000e+000
+	println(n)             // +2.500000e+000
+	println(q, r)          // 8 12
+	println(s, t, u, v, w) // 7 7 8 8 9
+	println(x, y, z)       // 0 0 1
+}
+</code></pre>
+
+<p></p>
+
+<p>
+The above example is just to demo the rules of
+the <code>iota</code> constant generator feature.
+Surely, in practice, we should use it in more meaningful ways.
+For example,
+</p>
+
+<pre class="line-numbers"><code class="language-go">const (
+	Failed = iota - 1 // == -1
+	Unknown           // == 0
+	Succeeded         // == 1
+)
+
+const (
+	Readable = 1 << iota // == 1
+	Writable             // == 2
+	Executable           // == 4
+)
+</code></pre>
+
+<p>
+Here, the <code>-</code> symbol is the subtraction operator,
+and the <code>&lt;&lt;</code> symbol is the left-shift operator.
+Both of these operators will be introduced in the next article.
+</p>
+
+</div>
+
+<a class="anchor" id="variable"></a>
+<h3>Variables, Variable Declarations and Value Assignments</h3>
+
+<div>
+<p>
+Variables are named values.
+Variables are stored in memory at run time.
+The value represented by a variable can be modified at run time.
+</p>
+
+<p>
+All variables are typed values.
+When declaring a variable, there must be sufficient information provided
+for compilers to deduce the type of the variable.
+</p>
+
+<p>
+The variables declared within function bodies are called local variables.
+The variables declared out of any function body
+are called package-level variables.
+We also often call package-level variables as global variables.
+</p>
+
+<p>
+There are two basic variable declaration forms,
+the standard one and the short one.
+The short form can only be used to declare local variables.
+</p>
+
+<h4>Standard variable declaration forms</h4>
+
+<p>
+Each standard declaration starts with the <code>var</code> keyword,
+which is followed by the declared variable name.
+Variable names must be <a href="keywords-and-identifiers.html#identifier">identifiers</a>.
+</p>
+
+<p>
+The following are some full standard declaration forms.
+In these declarations,
+the types and initial values of the declared variables are all specified.</p>
+<pre class="line-numbers must-line-numbers"><code class="language-go">var lang, website string = "Go", "https://golang.org"
+var compiled, dynamic bool = true, false
+var announceYear int = 2009
+</code></pre>
+
+<p>
+As we have found, multiple variables can be declared together
+in one variable declaration.
+Please note, there can be just one type specified in a variable declaration.
+So the types of the multiple variables declared in the same declaration line must be identical.
+</p>
+
+<p>
+Full standard variable declaration forms are seldom used in practice, since they are verbose.
+In practice, the two standard variable declaration variant forms introduced
+below are used more often.
+In the two variants, either the types or the initial values of
+the declared variables are absent.
+</p>
+
+The following are some standard variable declarations without specifying variable types.
+Compilers will deduce the types of the declared variables as the types
+(or default types) of their respective initial values.
+The following declarations are equivalent to the above ones in fact.
+Please note, in the following declarations, the types of the multiple variables
+declared in the same declaration line can be different.
+
+<pre class="line-numbers"><code class="language-go">// The types of the lang and dynamic variables
+// will be deduced as built-in types "string"
+// and "bool" by compilers, respectively.
+var lang, dynamic = "Go", false
+
+// The types of the compiled and announceYear
+// variables will be deduced as built-in
+// types "bool" and "int", respectively.
+var compiled, announceYear = true, 2009
+
+// The types of the website variable will be
+// deduced as the built-in type "string".
+var website = "https://golang.org"
+</code></pre>
+
+<p>
+The type deductions in the above example can be viewed as implicit conversions.
+</p>
+
+The following are some standard declarations without specifying variable initial values.
+In these declarations, all declared variables are initialized
+as the zero values of their respective types.
+
+<pre class="line-numbers"><code class="language-go">// Both are initialized as blank strings.
+var lang, website string
+// Both are initialized as false.
+var interpreted, dynamic bool
+// n is initialized as 0.
+var n int
+</code></pre>
+
+<p></p>
+
+Multiple variables can be grouped into one standard form declaration
+by using <code>()</code>. For example:
+
+<pre class="line-numbers"><code class="language-go">var (
+	lang, bornYear, compiled     = "Go", 2007, true
+	announceAt, releaseAt    int = 2009, 2012
+	createdBy, website       string
+)
+</code></pre>
+
+<p>
+The above example is formatted by using the <code>go fmt</code> command
+provided in Go Toolchain.
+In the above example, each of the three lines are enclosed in <code>()</code>
+this is known as variable specification.
+</p>
+
+<p>
+Generally, declaring related variables together will
+make code more readable.
+</p>
+
+</div>
+
+<a class="anchor" id="assignment"></a>
+<h4>Pure value assignments</h4>
+
+<div>
+<p>
+In the above variable declarations, the sign <code>=</code> means assignment.
+Once a variable is declared, we can modify its value by using pure value assignments.
+Like variable declarations, multiple values can be assigned in a pure assignment.
+</p>
+
+<p>
+The expression items at the left of <code>=</code> symbol in a pure assignment
+are called destination or target values.
+They must be addressable values, map index expressions, or the blank identifier.
+Value addresses and maps will be introduced in later articles.
+</p>
+
+<p>
+Constants are immutable, so a constant can't show up at the left side of a pure assignment
+as a destination value, it can only appear at the right side as a source value.
+Variables can be used as both source values and destination values,
+so they can appear at both sides of pure value assignments.
+</p>
+
+<p>
+Blank identifiers can also appear at the left side of pure value assignments as
+destination values, in which case, it means we ignore the destination values.
+Blank identifiers can't be used as source values in assignments.
+</p>
+
+Example:
+<pre class="line-numbers"><code class="language-go">const N = 123
+var x int
+var y, z float32
+
+N = 9 // error: constant N is not modifiable
+y = N // ok: N is deduced as a float32 value
+x = y // error: type mismatch
+x = N // ok: N is deduced as an int value
+y = x // error: type mismatch
+z = y // ok
+_ = y // ok
+
+x, y = y, x // error: type mismatch
+x, y = int(y), float32(x) // ok
+z, y = y, z               // ok
+_, y = y, z               // ok
+z, _ = y, z               // ok
+_, _ = y, z               // ok
+x, y = 69, 1.23           // ok
+</code></pre>
+
+<p>
+The code at last line in the above example uses explicit conversions to
+make the corresponding destination and source values matched.
+The explicit conversion rules for non-constant numeric values
+are introduced below.
+</p>
+
+<p>Go doesn't support assignment chain. For example, the following code is illegal.</p>
+<pre class="line-numbers"><code class="language-go">var a, b int
+a = b = 123 // syntax error
+</code></pre>
+
+<p>
+</p>
+</div>
+
+<h4>Short variable declaration forms</h4>
+
+<div>
+We can also use short variable declaration forms to declare variables.
+Short variable declarations can only be used to declare local variables.
+Let's view an example which uses some short variable declarations.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+func main() {
+	// Both lang and year are newly declared.
+	lang, year := "Go language", 2007
+
+	// Only createdBy is a new declared variable.
+	// The year variable has already been
+	// declared before, so here its value is just
+	// modified, or we can say it is redeclared.
+	year, createdBy := 2009, "Google Research"
+
+	// This is a pure assignment.
+	lang, year = "Go", 2012
+
+	print(lang, " is created by ", createdBy)
+	println(", and released at year", year)
+}
+</code></pre>
+
+<p>Each short variable declaration must declare at least one new variable.</p>
+
+There are several differences between short and standard variable declarations.
+<ol>
+<li>
+	In the short declaration form, the <code>var</code> keyword and
+	variable types must be omitted.
+</li>
+<li>
+	The assignment sign must be <code>:=</code> instead of <code>=</code>.
+</li>
+<li>
+	In the short variable declaration, old variables and new
+	variables can mix at the left of <code>:=</code>. But there must be
+	at least one new variable at the left.
+</li>
+</ol>
+
+<div class="note">
+<p>
+Please note, comparing to pure assignments, there is a limit for short variable declarations.
+<b>In a short variable declaration, all items at the left of the
+<code>:=</code> sign must pure identifiers.</b>
+This means some other items which can be assigned to,
+which will be introduced in other articles,
+can't appear at the left of <code>:=</code>.
+These items include qualified identifiers, container elements,
+pointer dereferences and struct field selectors.
+Pure assignments have no such limit.
+</p>
+</div>
+
+</div>
+
+<h4>About the terminology "assignment"</h4>
+
+<p>
+Later, when the word "assignment" is mentioned,
+it may mean a pure assignment, a short variable declaration,
+or a variable specification with initial values in a standard variable declaration.
+In fact, a more general definition also includes <a href="function-declarations-and-calls.html#call">function argument passing</a> introduced in a follow-up article.
+</p>
+
+<p>
+We say <b><i><code>x</code> is assignable to <code>y</code></i></b>
+if <code>y = x</code> is a legal statement (compiles okay).
+Assume the type of <code>y</code> is <code>Ty</code>,
+sometimes, for description convenience, we can also say
+<b><i><code>x</code> is assignable to type <code>Ty</code></i></b>.
+</p>
+
+<p>
+Generally, if <code>x</code> is assignable to <code>y</code>,
+then <code>y</code> should be mutable, and the types of <code>x</code> and
+<code>y</code> are identical or <code>x</code> can be implicitly converted to
+the type of <code>y</code>.
+Surely, <code>y</code> can also be the blank identifier <code>_</code>.
+</p>
+
+<h4>Each local declared variable must be used at least once effectively</h4>
+
+<div>
+<p>
+Please note, the standard Go compiler and gccgo both don't allow local variables declared but not used.
+Package-level variables have no such limit.
+</p>
+
+<p>
+If a local variable is only ever used as destination values,
+it will also be viewed as unused.
+</p>
+
+<p>For example, in the following program, <code>r</code> is only used as destination.</p>
+
+<pre class="line-numbers"><code class="language-go">package main
+
+// Some package-level variables.
+var x, y, z = 123, true, "foo"
+
+func main() {
+	var q, r = 789, false
+	r, s := true, "bar"
+	r = y // r is unused.
+	x = q // q is used.
+}
+</code></pre>
+
+<p>Compiling the above program will result to the following compilation errors
+(assume the source file is name <code>example-unused.go</code>):</p>
+
+<pre class="output"><code>./example-unused.go:6:6: r declared and not used
+./example-unused.go:7:16: s declared and not used
+</code></pre>
+
+<p>
+The fix is easy, we can assign <code>r</code> and <code>s</code>
+to blank identifiers to avoid compilation errors.
+</p>
+
+<pre class="line-numbers"><code class="language-go">package main
+
+var x, y, z = 123, true, "foo"
+
+func main() {
+	var q, r = 789, false
+	r, s := true, "bar"
+	r = y
+	x = q
+
+	_, _ = r, s // make r and s used.
+}
+</code></pre>
+
+<p>
+Generally, the above fix is not recommended to be used in production code.
+It should be used in development/debug phase only.
+It is not a good habit to leave unused local variables in code,
+for unused local variables have negative effects on both code readability and program execution performance.
+</p>
+
+</div>
+
+<h4>Dependency relations of package-Level variables affect their initialization order</h4>
+
+<div>
+
+<p>For the following example,</p>
+
+<pre class="line-numbers"><code class="language-go">var x, y = a+1, 5         // 8 5
+var a, b, c = b+1, c+1, y // 7 6 5
+</code></pre>
+
+<p>
+the initialization order of the package-level variables are <code>y = 5</code>,
+<code>c = y</code>, <code>b = c+1</code>, <code>a = b+1</code>,
+and <code>x = a+1</code>.
+</p>
+
+<p>
+Here, the <code>+</code> symbol is the addition operator,
+which will be introduced in the next article.
+</p>
+
+<p>
+Package-level variables can't be depended circularly in their declaration.
+The following code fails to compile.
+</p>
+
+<pre class="line-numbers"><code class="language-go">var x, y = y, x
+</code></pre>
+
+</div>
+
+<h3>Value Addressability</h3>
+
+<p>
+In Go, some values are addressable (there is an address to find them).
+All variables are addressable and all constants are unaddressable.
+We can learn more about addresses and pointers from the article
+<a href="pointer.html">pointers in Go</a>
+and learn other addressable and unaddressable values from other articles later.
+</p>
+
+<h3>Explicit Conversions on Non-Constant Numeric Values</h3>
+
+<div>
+
+<p>
+In Go, two typed values of two different basic types can't be assigned to each other.
+In other words, the types of the destination and source values in an
+assignment must be identical if the two values are both basic values.
+If the type of the source basic value is not same as the type of
+the destination basic value, then the source value must be explicitly
+converted to the type of the destination value.
+</p>
+
+As mentioned above, non-constant integer values can be converted to strings.
+Here we introduce two more legal non-constant numeric values
+related conversion cases.
+
+<ul>
+<li>
+	Non-constant floating-point and integer values can be explicitly
+	converted to any other floating-point and integer types.
+</li>
+<li>
+	Non-constant complex values can be explicitly
+	converted to any other complex types.
+</li>
+</ul>
+
+<p>
+Unlike constant number conversions, overflows are allowed in non-constant number conversions.
+And when converting a non-constant floating-point value to an integer, rounding is also allowed.
+If a non-constant floating-point value doesn't overflow an integer type,
+the fraction part of the floating-point value will be discarded
+(towards zero) when it is converted to the integer type.
+</p>
+
+<p>
+In all non-constant conversions involving floating-point or complex values,
+if the result type cannot represent the value,
+then the conversion succeeds but the result value is implementation-dependent.
+</p>
+
+In the following example, the intended implicit conversions
+at line <i>7</i> and line <i>18</i> both don't work.
+The explicit conversions at line <i>5</i> and line <i>16</i> are also disallowed.
+
+<pre class="line-numbers must-line-numbers"><code class="language-go">const a = -1.23
+// The type of b is deduced as float64.
+var b = a
+// error: constant 1.23 truncated to integer.
+var x = int32(a)
+// error: cannot assign float64 to int32.
+var y int32 = b
+// okay: z == -1, and the type of z is int32.
+//       The fraction part of b is discarded.
+var z = int32(b)
+
+const k int16 = 255
+// The type of n is deduced as int16.
+var n = k
+// error: constant 256 overflows uint8.
+var f = uint8(k + 1)
+// error: cannot assign int16 to uint8.
+var g uint8 = n + 1
+// okay: h == 0, and the type of h is uint8.
+//       n+1 overflows uint8 and is truncated.
+var h = uint8(n + 1)
+
+</code></pre>
+
+<p>
+We can think that value <code>a</code> at line <i>3</i> is implicitly
+converted to its default type (<code>float64</code>), so that the type
+of <code>b</code> is deducted as <code>float64</code>.
+More implicit conversion rules will be introduced in other articles later.
+</p>
+
+</div>
+
+<h3>Scopes of Variables and Named Constants</h3>
+
+<div>
+
+<p>In Go, we can use a pair of <code>{</code> and <code>}</code> to form a code block.
+A code block can nest other code blocks.
+A variable or a named constant declared in an inner code block will shadow
+the variables and constants declared with the same name in outer code blocks.
+For examples, the following program declares three distinct variables,
+all of them are called <code>x</code>.
+An inner <code>x</code> shadows an outer one.</p>
+
+<pre class="line-numbers"><code class="language-go">package main
+
+const y = 789
+var x int = 123
+
+func main() {
+	// The x variable shadows the above declared
+	// package-level variable x.
+	var x = true
+
+	// A nested code block.
+	{
+		// Here, the left x and y are both
+		// new declared variable. The right
+		// ones are declared in outer blocks.
+		x, y := x, y
+
+		// In this code block, the just new
+		// declared x and y shadow the outer
+		// declared same-name identifiers.
+		x, z := !x, y/10 // only z is new declared
+		y /= 100
+		println(x, y, z) // false 7 78
+	}
+	println(x) // true
+	println(z) // error: z is undefined.
+}
+</code></pre>
+
+<p>
+</p>
+
+<p>
+The scope (visibility range in code) of a package-level variable
+(or a named constant) is the whole package of the variable
+(or the named constant) is declared in.
+The scope of a local variable (or a named constant) begins at the end of
+its declaration and ends at the end of its innermost containing code block.
+This is why the last line in the <code>main</code> function
+of the above example doesn't compile.
+</p>
+
+<p>
+Code blocks and identifier scopes will be explained in detail in
+<a href="blocks-and-scopes.html">blocks and scopes</a> later.
+</p>
+
+</div>
+
+<h3>More About Constant Declarations</h3>
+
+<h4>The value denoted by an untyped constant can overflow its default type</h4>
+
+<div>
+
+For example, the following code compiles okay.
+
+<pre class="line-numbers"><code class="language-go">// 3 untyped named constants. Their bound
+// values all overflow their respective
+// default types. This is allowed.
+const n = 1 << 64          // overflows int
+const r = 'a' + 0x7FFFFFFF // overflows rune
+const x = 2e+308           // overflows float64
+
+func main() {
+	_ = n >> 2
+	_ = r - 0x7FFFFFFF
+	_ = x / 2
+}
+</code></pre>
+
+<p>
+</p>
+
+But the following code does't compile, for the constants are all typed.
+
+<pre class="line-numbers"><code class="language-go">// 3 typed named constants. Their bound
+// values are not allowed to overflow their
+// respective default types. The 3 lines
+// all fail to compile.
+const n int = 1 << 64           // overflows int
+const r rune = 'a' + 0x7FFFFFFF // overflows rune
+const x float64 = 2e+308        // overflows float64
+</code></pre>
+
+<p>
+</p>
+
+</div>
+
+<h4>Each named constant identifier will be replaced with its bound literal value at compile time</h4>
+
+<p>
+Constant declarations can be viewed as enhanced <code>#define</code> macros in C.
+A constant declaration defines a named constant which represents a literal.
+All the occurrences of a named constant will be replaced with the literal
+it represents at compile time.
+</p>
+
+<p>
+If the two operands of an operator operation are both constants,
+then the operation will be evaluated at compile time.
+Please read the next article
+<a href="operators.html">common operators</a> for details.
+</p>
+
+<div>
+For example, at compile time, the following code
+
+<pre class="line-numbers"><code class="language-go">package main
+
+const X = 3
+const Y = X + X
+var a = X
+
+func main() {
+	b := Y
+	println(a, b, X, Y)
+}
+</code></pre>
+
+will be viewed as
+
+<pre class="line-numbers"><code class="language-go">package main
+
+var a = 3
+
+func main() {
+	b := 6
+	println(a, b, 3, 6)
+}
+</code></pre>
+
+<p></p>
+
+</div>
+<hr>
+
+<div class="text-center"><a href="#i-constants-and-variables.html">Index↡</a></div>
+
+
+
+<hr>
+
+<div id="contact" class="alert alert-success"><small>
+
+<p>
+The <b><i>Go 101</i></b> 프로젝트는 <a href="https://github.com/go101/go101">Github</a>
+에서 호스팅됩니다.
+오타, 문법 오류, 부정확한 표현, 설명 결함, 코드 버그, 끊어진 링크와 같은 모든
+종류의 실수에 대한 수정 사항을 제출하여 Go 101을 개선을 돕는 것은 언제나 환영합니다.
+</p>
+
+<p>
+주기적으로 Go에 대한 깊이 있는 정보를 얻고 싶다면 Go 101의 공식 트위터 계정인
+<a href="https://twitter.com/go100and1">@go100and1</a>을 팔로우하거나
+<a href="https://join.slack.com/t/go-101/shared_invite/zt-y2pvwg00-Oz7lDDJu44l~hZsFRUApiA">Go 101 슬랙 채널</a>에j가입해주세요.
+</p>
+
+</small></div>
+
+<div class="alert alert-warning"><small>
+
+
+<div id="ebooks">
+이 책의 디지털 버전은 아래와 같은 곳을 통해서 구매할 수 있습니다.
+<ul>
+<li>
+	<a href="https://leanpub.com/go101">Leanpub</a>,
+	<i>최소 19.99 달러</i>.
+</li>
+<li>
+	
+	아마존 킨들 스토어, <i>(현재는 사용 불가)</i>.
+</li>
+<li>
+	<a href="https://books.apple.com/book/id1459984231">애플 북 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://play.google.com/store/books/details?id=Dc1wEAAAQBAJ">구글 플레이 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://github.com/go101/go101/releases">무료 전자책</a>,
+	pdf, epub과 azw3 포맷을 지원
+</li>
+</ul>
+	</div>
+<div>
+
+Go 101의 저자인 Tapir는 2016년 7월부터 Go 101 시리즈 책들을 집필하고 go101.org 웹사이트를 유지 관리하고 있습니다.
+새로운 콘텐츠는 책과 웹사이트에 수시로 추가될 예정입니다.
+Tapir는 인디 게임 개발자이기도 합니다.
+<a href="https://www.tapirgames.com">Tapir의 게임</a>을 플레이하여 Go 101을 지원할 수도 있습니다.
+(안드로이드와 아이폰/아이패드용):
+<ul>
+<li>
+	<a href="https://www.tapirgames.com/App/Color-Infection">Color Infection</a> (★★★★★), 140개 이상의 단계로 이루어진 물리 기반의 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Rectangle-Pushers">Rectangle Pushers</a> (★★★★★), 2가지 모드와 104개 이상의 단계로 이루어진 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Let-Us-Play-With-Particles">Let's Play With Particles</a>, 세가지 미니 게임이 있는 캐주얼 액션 게임
+</li>
+</ul>
+</div>
+
+<a href="https://paypal.me/tapirliu">페이팔</a>을 통한 개인 기부도 환영합니다.</small></div>
+
+<hr>
+색인:
+
+
+<div id="book-index">
+
+<!-- kindle starts: 1 -->
+
+<ul class="index part">
+	<li><a class="index" href="101-about.html">Go 101에 대해</a> - 이 책이 쓰여진 이유</li>
+	<li><a class="index" href="acknowledgements.html">감사의 말</a></li>
+</ul>
+
+<ul class="index part">
+	<li><a class="index" href="introduction.html">Go 소개</a> - Go를 배우는 가치</li>
+	<li><a class="index" href="go-toolchain.html">Go 툴체인</a> - Go 프로그램을 컴파일하고 실행하는 방법</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 코드에 익숙해지기
+
+	<ul class="index chapters">
+	<li><a class="index" href="basic-code-elements-introduction.html">소스 코드 요소 소개</a></li>
+	<li><a class="index" href="keywords-and-identifiers.html">키워드와 식별자</a></li>
+	<li><a class="index" href="basic-types-and-value-literals.html">기본 자료형과 기본 값 리터럴</a></li>
+	<li><b class="index" id="i-constants-and-variables.html">상수와 변수</b> - 무형성(untyped) 값과 자료형 추론 소개를 포함</li>
+	<li><a class="index" href="operators.html">일반 연산자</a> - 더 많은 자료형 추론 규칙 소개를 포함</li>
+	<li><a class="index" href="function-declarations-and-calls.html">함수 선언과 호출</a></li>
+	<li><a class="index" href="packages-and-imports.html">코드 패키지와 패키지 들여오기</a></li>
+	<li><a class="index" href="expressions-and-statements.html">표현식, 구문과 단순 구문</a></li>
+	<li><a class="index" href="control-flows.html">기본 흐름 제어</a></li>
+	<li><a class="index" href="control-flows-more.html">고루틴, 지연된 함수 호출과 패닉/복구</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 자료형 체계
+
+	<ul class="index chapters">
+	<li><a class="index" href="type-system-overview.html">Go 자료형 체계 개요</a> - Go 프로그래밍 숙달을 위해 반드시 읽어봐야 하는</li>
+	<li><a class="index" href="pointer.html">포인터</a></li>
+	<li><a class="index" href="struct.html">구조체</a></li>
+	<li><a class="index" href="value-part.html">변수</a> - Go 변수에 대한 더 깊은 이해</li>
+	<li><a class="index" href="container.html">배열, 슬라이스와 맵</a> - 1급 객체 컨테이너 자료형</li>
+	<li><a class="index" href="string.html">문자열</a></li>
+	<li><a class="index" href="function.html">함수</a> - 함수 자료형과 값, 가변 인자 함수</li>
+	<li><a class="index" href="channel.html">채널</a> - Go에서 동시성 동기화를 하는 방법</li>
+	<li><a class="index" href="method.html">메서드</a></li>
+	<li><a class="index" href="interface.html">인터페이스</a> - 리플렉션과 다형성을 하는 값 상자</li>
+	<li><a class="index" href="type-embedding.html">자료형 임베딩</a> - 자료형을 확장하는 방법</li>
+	<li><a class="index" href="unsafe.html">자료형에 안전하지 않는 포인터</a></li>
+	<li><a class="index" href="generic.html">제네릭</a> - 합성 자료형의 사용과 읽는 법</li>
+	<li><a class="index" href="reflection.html">리플렉션</a> - <code>reflect</code> 표준 패키지</li>
+	</ul>
+</li>
+</ul>
+
+<!-- kindle ends: 1 -->
+
+<!-- kindle starts: 2 -->
+
+<ul class="index part">
+<li>
+특별 주제
+
+	<ul class="index chapters">
+	<li><a class="index" href="line-break-rules.html">개행 규칙</a></li>
+	<li><a class="index" href="defer-more.html">지연된 함수 호출 더 알아보기</a></li>
+	<li><a class="index" href="panic-and-recover-use-cases.html">패닉/복구 사용 사례</a></li>
+	<li><a class="index" href="panic-and-recover-more.html">패닉/복구 메커니즘에 대한 고찰</a> - 함수 호출 종료 단계를 포함</li>
+	<li><a class="index" href="blocks-and-scopes.html">코드 블록과 식별자 스코프</a></li>
+	<li><a class="index" href="evaluation-orders.html">표현식 평가 순서</a></li>
+	<li><a class="index" href="value-copy-cost.html">Go의 값 복사 비용</a></li>
+	<li><a class="index" href="bounds-check-elimination.html">경계 검사 제거(BCE)</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+동시성 프로그래밍
+
+	<ul class="index chapters">
+	<li><a class="index" href="concurrent-synchronization-overview.html">동시성 동기화 개요</a></li>
+	<li><a class="index" href="channel-use-cases.html">채널 사용 사례</a></li>
+	<li><a class="index" href="channel-closing.html">채널을 깔끔하게 닫는 방법</a></li>
+	<li><a class="index" href="concurrent-synchronization-more.html">기타 동시성 동기화 기술</a> - <code>sync</code> 표준 패키지</li>
+	<li><a class="index" href="concurrent-atomic-operation.html">원자적 연산</a> - <code>sync/atomic</code> 표준 패키지</li>
+	<li><a class="index" href="memory-model.html">Go의 메모리 순서 보장</a></li>
+	<li><a class="index" href="concurrent-common-mistakes.html">흔히들 저지르는 동시성 프로그래밍 실수들</a></li>
+	</ul>
+
+</li>
+</ul>
+
+
+<ul class="index part">
+<li>
+메모리 관련
+
+	<ul class="index chapters">
+	<li><a class="index" href="memory-block.html">메모리 블록</a></li>
+	<li><a class="index" href="memory-layout.html">메모리 레이아웃</a></li>
+	<li><a class="index" href="memory-leaking.html">메모리 누수 시나리오</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+일부 요약
+
+	<ul class="index chapters">
+	<li><a class="index" href="summaries.html">몇 가지 간단한 요약</a></li>
+	<li><a class="index" href="nil.html">Go의 <code>nil</code></a></li>
+	<li><a class="index" href="value-conversions-assignments-and-comparisons.html">값 변환, 할당과 비교 규칙</a></li>
+	<li><a class="index" href="exceptions.html">구문/의미 예외</a></li>
+	<!-- (to remove) for printing -->
+	<li><a class="index" href="details.html">Go Details 101</a></li>
+	<li><a class="index" href="unofficial-faq.html">Go FAQ 101</a></li>
+	<li><a class="index" href="tips.html">Go Tips 101</a></li>
+	<!-- (to remove) -->
+	</ul>
+
+</li>
+</ul>
+
+<!-- kindle ends: 2 -->
+
+<!-- kindle starts: 0 -->
+
+<ul class="index part">
+<li><a class="index" href="more.html">더 많은 토픽</a></li>
+</ul>
+
+<!-- kindle ends: 0 -->
+
+</div>
+
+
+
+
+
+
+
+
+		</div>
+	</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

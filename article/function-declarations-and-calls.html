@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Golang online books, articles, tools, etc.">
+		<meta name="author" content="">
+		<meta name="go-version" content="go1.20">
+		<link rel="icon" href="/static/go101/images/101-v1.ico">
+		<link rel="apple-touch-icon" sizes="152x152" href="/static/go101/images/iphone-v1.jpeg">
+	
+		<title>Function Declarations and Function Calls -Go 101</title><link id="css-bs" href="/static/bootstrap/v4.0.3-dark/css/bootstrap.min.css" rel="stylesheet">
+		<link id="css-go101" href="/static/go101/css/v991-dark.css" rel="stylesheet">
+		<link id="css-prism" href="/static/prism/2020-08-03-dark/prism.css" rel="stylesheet">
+		<script id="js-prism" src="/static/prism/2020-08-03-dark/prism.js"></script>
+
+
+		<script src="/static/jquery/jquery.min-v1.11.2.js"></script>
+		<script src="/static/go101/js/v5.js"></script>
+		
+		
+		<style>
+		div, p, ul, li, td, th {line-height: 1.55;}
+		</style>
+
+		<script>
+		var theme = ""
+		</script>
+	</head>
+
+	<body>
+		<div class="container">
+
+		<div class="row nav-bar-with-borders">
+	<div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/"><small>Home</small></a> <span class="new-text"><sup>new!</sup></span>
+	</div><div class="col-xs-6 col-sm-4 nav-item-active">
+		<a href="/article/101.html"><small>Go 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/generics/101.html"><small>Go Generics 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/details-and-tips/101.html"><small>Go Details &amp; Tips 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/optimizations/101.html"><small>Go Optimizations 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/quizzes/101.html"><small>Go Quizzes 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go HowTo 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Practices 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Agg 101</small></div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/blog/101.html"><small>Go 101 Blog</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/apps-and-libs/101.html"><small>Go 101 Apps &amp; Libs</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;" id="theme-switch"><small>테마: 다크/라이트</small></div>
+
+</div>
+
+<div class="alert alert-warning text-center"><small>
+현재 3권의 신간들인 <a href="/optimizations/101.html">Go Optimizations 101</a>,
+<a href="/details-and-tips/101.html">Go Details &amp; Tips 101</a>
+과 <a href="/generics/101.html">Go Generics 101</a>이 출간되어 있습니다.
+Leanpub 서점에서 <a href="https://leanpub.com/b/go-optimizations-details-generics">번들</a>을 모두 구입하시는 방법이 비용 대비 효율이 가장 좋습니다.
+<p></p>
+Go에 대한 많은 정보들과 Go 101 책들의 최신 소식을 얻으시려면 Go 101 트위터 계정인 <a href="https://twitter.com/go100and1">@Go100and1</a>을
+팔로잉 해주세요.
+</small></div>
+<p>
+</p>
+
+
+
+<h1>Function Declarations and Function Calls</h1>
+
+
+
+<p>
+Except the operator operations introduced in the last article,
+function operations are another kind of popular operations in programming.
+Function operations are often called function calls.
+This article will introduce how to declare functions and call functions.
+</p>
+
+<a class="anchor" id="declaration"></a>
+<h3>Function Declarations</h3>
+
+<div>
+Let's view a function declaration.
+<pre class="line-numbers"><code class="language-go">func SquaresOfSumAndDiff(a int64, b int64) (s int64, d int64) {
+	x, y := a + b, a - b
+	s = x * x
+	d = y * y
+	return // <=> return s, d
+}
+</code></pre>
+
+We can find that, a function declaration is composed of several portions.
+From left to right,
+
+<ol>
+<li>
+	the first portion is the <code>func</code> keyword.
+</li>
+<li>
+	the next portion is the function name, which must be an identifier.
+	Here the function name is <code>SquareOfSumAndDiff</code>.
+</li>
+<li>
+	the third portion is the input parameter declaration list,
+	which is enclosed in a pair of <code>()</code>.
+</li>
+<li>
+	the fourth portion is the output (or return) result declaration list.
+	Go functions can return multiple results.
+	For this specified example, the result declaration list is also enclosed in a pair of <code>()</code>.
+	However, if the list is blank or it is composed of only one anonymous result declaration,
+	then the pair of <code>()</code> in result declaration list is optional (see below for details).
+</li>
+<li>
+	the last portion is the function body,
+	which is enclosed in a pair of <code>{}</code>.
+	In a function body,
+	the <code>return</code> keyword is used to end the normal forward execution flow
+	and enter the exiting phase (see the section after next) of a call of the function.
+</li>
+</ol>
+
+
+<p>
+In the above example, each parameter and result declaration is composed of
+a name and a type (the type follows the name).
+We can view parameter and result declarations as standard variable declarations
+without the <code>var</code> keywords.
+The above declared function has two parameters, <code>a</code> and <code>b</code>,
+and has two results, <code>s</code> and <code>d</code>.
+All the types of the parameters and results are <code>int64</code>.
+Parameters and results are treated as local variables within
+their corresponding function bodies.
+</p>
+
+<p>
+The names in the result declaration list of a function declaration can/must be
+present or absent all together. Either case is used common in practice.
+If a result is defined with a name, then the result is called a named result,
+otherwise, it is called an anonymous result.
+</p>
+
+When all the results in a function declaration are anonymous,
+then, within the corresponding function body,
+the <code>return</code> keyword must be followed by a sequence of return values,
+each of them corresponds to a result declaration of the function declaration.
+For example, the following function declaration is equivalent to the above one.
+<pre class="line-numbers"><code class="language-go">func SquaresOfSumAndDiff(a int64, b int64) (int64, int64) {
+	return (a+b) * (a+b), (a-b) * (a-b)
+}
+</code></pre>
+
+<p>
+</p>
+
+<p>
+In fact, if all the parameters are never used within the corresponding function body,
+the names in the parameter declaration list of a function declaration
+can be also be omitted all together.
+However, anonymous parameters are rarely used in practice.
+</p>
+
+<p>
+Although it looks the parameter and result variables are declared
+outside of the body of a function declaration, they are viewed as
+general local variables within the function body.
+The difference is that local variables with non-blank names declared
+within a function body must be ever used in the function body.
+Non-blank names of top-level local variables, parameters and results
+in a function declaration can't be duplicated.
+</p>
+
+Go doesn't support default parameter values.
+The initial value of each result is the zero value of its type.
+For example, the following function will always print (and return) <code>0 false</code>.
+<pre class="line-numbers"><code class="language-go">func f() (x int, y bool) {
+	println(x, y) // 0 false
+	return
+}
+</code></pre>
+
+<p>
+</p>
+
+If the type portions of some successive parameters in a parameter declaration list are identical,
+then these parameters could share the same type portion in the parameter declaration list.
+The same is for result declaration lists.
+For example, the above two function declarations with the name <code>SquaresOfSumAndDiff</code> are equivalent to
+<pre class="line-numbers"><code class="language-go">func SquaresOfSumAndDiff(a, b int64) (s, d int64) {
+	return (a+b) * (a+b), (a-b) * (a-b)
+	// The above line is equivalent
+	// to the following line.
+	/*
+	s = (a+b) * (a+b); d = (a-b) * (a-b); return
+	*/
+}
+</code></pre>
+
+<p>
+Please note, even if both the two results are named,
+the <code>return</code> keyword can be followed with return values.
+</p>
+
+<p>
+If the result declaration list in a function declaration only contains one anonymous result declaration,
+then the result declaration list doesn't need to be enclosed in a <code>()</code>.
+If the function declaration has no return results,
+then the result declaration list portion can be omitted totally.
+The parameter declaration list portion can never be omitted,
+even if the number of parameters of the declared function is zero.
+</p>
+
+Here are more function declaration examples.
+<pre class="line-numbers"><code class="language-go">func CompareLower4bits(m, n uint32) (r bool) {
+	r = m&0xF > n&0xF
+	return
+	// The above two lines is equivalent to
+	// the following line.
+	/*
+	return m&0xF > n&0xF
+	*/
+}
+
+// This function has no parameters. The result
+// declaration list is composed of only one
+// anonymous result declaration, so it is not
+// required to be enclosed within ().
+func VersionString() string {
+	return "go1.0"
+}
+
+// This function has no results. And all of
+// its parameters are anonymous, for we don't
+// care about them. Its result declaration
+// list is blank (so omitted).
+func doNothing(string, int) {
+}
+</code></pre>
+
+<p>
+</p>
+
+<p>
+One fact we have learned from the earlier articles in Go 101 is that
+the <code>main</code> entry function in each Go program is declared
+without parameters and results.
+</p>
+
+<p>
+Please note that, functions must be directly declared at package level.
+In other words, a function can't be declared within the body of another function.
+In a later section, we will learn that we can define anonymous functions in bodies of other functions.
+But anonymous functions are not function declarations.
+</p>
+</div>
+
+<a class="anchor" id="call"></a>
+<h3>Function Calls</h3>
+
+<div>
+
+<p>
+A declared function can be called through its name plus an argument list.
+The argument list must be enclosed in a <code>()</code>.
+We often call this as argument passing (or parameter passing).
+Each single-value argument corresponds to (is passed to) a parameter.
+</p>
+
+<p>
+Note: argument passing is also value assignments.
+</p>
+
+<p>
+The type of an argument is not required to be identical with the corresponding parameter type.
+The only requirement for the argument is
+it must be <a href="constants-and-variables.html#assignment">assignable</a>
+(a.k.a., implicitly convertible) to the corresponding parameter type.
+</p>
+
+<p>
+If a function has return results, then each of its calls is viewed as an expression.
+If it returns multiple results, then each of its calls is viewed as a multi-value expression.
+A multi-value expression may be assigned to a list of destination values with the same count.
+</p>
+
+The following is a full example to show how to call some declared functions.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+func SquaresOfSumAndDiff(a int64, b int64) (int64, int64) {
+	return (a+b) * (a+b), (a-b) * (a-b)
+}
+
+func CompareLower4bits(m, n uint32) (r bool) {
+	r = m&0xF > n&0xF
+	return
+}
+
+// Initialize a package-level variable
+// with a function call.
+var v = VersionString()
+
+func main() {
+	println(v) // v1.0
+	x, y := SquaresOfSumAndDiff(3, 6)
+	println(x, y) // 81 9
+	b := CompareLower4bits(uint32(x), uint32(y))
+	println(b) // false
+	// "Go" is deduced as a string,
+	// and 1 is deduced as an int32.
+	doNothing("Go", 1)
+}
+
+func VersionString() string {
+	return "v1.0"
+}
+
+func doNothing(string, int32) {
+}
+</code></pre>
+
+<p>
+From the above example, we can learn that a function can be either declared
+before or after any of its calls.
+</p>
+</div>
+
+<p>
+Function calls can be deferred or invoked in new goroutines (green threads) in Go.
+Please read <a href="control-flows-more.html">a later article</a> for details.
+</p>
+
+<a class="anchor" id="exiting-phase"></a>
+<h3>Exiting (or Returning) Phase of a Function Call</h3>
+
+<p>
+In Go, besides the normal forward execution phase,
+a function call may undergo an exiting phase (also called returning phase).
+The exiting phase of a function call starts when the called function is returned.
+In other words, when a function call is returned, it is possible that it hasn't exited yet.
+</p>
+
+<p>
+More detailed explanations for exiting phases of function calls can be found in
+<a href="panic-and-recover-more.html#exiting-phase">this article</a>.
+</p>
+
+<h3>Anonymous Functions</h3>
+
+<div>
+<p>
+Go supports anonymous functions.
+The definition of an anonymous function is almost the same as a function
+declaration, except there is no function name portion in
+the anonymous function definition.
+</p>
+
+An anonymous function can be called right after it is defined.
+Example:
+<pre class="line-numbers"><code class="language-go">package main
+
+func main() {
+	// This anonymous function has no parameters
+	// but has two results.
+	x, y := func() (int, int) {
+		println("This function has no parameters.")
+		return 3, 4
+	}() // Call it. No arguments are needed.
+
+	// The following anonymous function have no results.
+
+	func(a, b int) {
+		// The following line prints: a*a + b*b = 25
+		println("a*a + b*b =", a*a + b*b)
+	}(x, y) // pass argument x and y to parameter a and b.
+
+	func(x int) {
+		// The parameter x shadows the outer x.
+		// The following line prints: x*x + y*y = 32
+		println("x*x + y*y =", x*x + y*y)
+	}(y) // pass argument y to parameter x.
+
+	func() {
+		// The following line prints: x*x + y*y = 25
+		println("x*x + y*y =", x*x + y*y)
+	}() // no arguments are needed.
+}
+</code></pre>
+
+<p>
+</p>
+
+<p>
+Please note that, the last anonymous function is in the scope of
+the <code>x</code> and <code>y</code> variables declared above,
+it can use the two variables directly.
+Such functions are called closures.
+In fact, all custom functions in Go can be viewed as closures.
+This is why Go functions are as flexible as many dynamic languages.
+</p>
+
+<p>
+Later, we will learn that an anonymous function can be assigned
+to a function value and can be called at any time later.
+</p>
+
+</div>
+
+<h3>Built-in Functions</h3>
+
+<div>
+<p>
+There are some built-in functions in Go,
+for example, the <code>println</code> and <code>print</code> functions.
+We can call these functions without importing any packages.
+</p>
+
+<p>
+We can use the built-in <code>real</code> and <code>imag</code> functions
+to get the real and imaginary parts of a complex value.
+We can use the built-in <code>complex</code> function to produce a complex value.
+Please note, if any of the arguments of a call to any of the two functions
+are all constants, then the call will be evaluated at compile time,
+and the result value of the call is also a constant.
+In particular, if any of the arguments is an untyped constant,
+then the result value is also an untyped constant.
+The call is viewed as a constant expression.
+</p>
+
+Example:
+<pre class="line-numbers"><code class="language-go">// c is a untyped complex constant.
+const c = complex(1.6, 3.3)
+
+// The results of real(c) and imag(c) are both
+// untyped floating-point values. They are both
+// deduced as values of type float32 below.
+var a, b float32 = real(c), imag(c)
+
+// d is deduced as a typed value of type complex64.
+// The results of real(d) and imag(d) are both
+// typed values of type float32.
+var d = complex(a, b)
+
+// e is deduced as a typed value of type complex128.
+// The results of real(e) and imag(e) are both
+// typed values of type float64.
+var e = c
+</code></pre>
+
+<p>
+More built-in functions will be introduced in other Go 101 articles later.
+</p>
+</div>
+
+<h3>More About Functions</h3>
+
+<p>
+There are more about function related concepts and details
+which are not touched in the current article.
+We can learn those concepts and details in the article
+<a href="function.html">function types and values</a> later.
+</p>
+
+
+<hr>
+
+<div class="text-center"><a href="#i-function-declarations-and-calls.html">Index↡</a></div>
+
+
+
+<hr>
+
+<div id="contact" class="alert alert-success"><small>
+
+<p>
+The <b><i>Go 101</i></b> 프로젝트는 <a href="https://github.com/go101/go101">Github</a>
+에서 호스팅됩니다.
+오타, 문법 오류, 부정확한 표현, 설명 결함, 코드 버그, 끊어진 링크와 같은 모든
+종류의 실수에 대한 수정 사항을 제출하여 Go 101을 개선을 돕는 것은 언제나 환영합니다.
+</p>
+
+<p>
+주기적으로 Go에 대한 깊이 있는 정보를 얻고 싶다면 Go 101의 공식 트위터 계정인
+<a href="https://twitter.com/go100and1">@go100and1</a>을 팔로우하거나
+<a href="https://join.slack.com/t/go-101/shared_invite/zt-y2pvwg00-Oz7lDDJu44l~hZsFRUApiA">Go 101 슬랙 채널</a>에j가입해주세요.
+</p>
+
+</small></div>
+
+<div class="alert alert-warning"><small>
+
+
+<div id="ebooks">
+이 책의 디지털 버전은 아래와 같은 곳을 통해서 구매할 수 있습니다.
+<ul>
+<li>
+	<a href="https://leanpub.com/go101">Leanpub</a>,
+	<i>최소 19.99 달러</i>.
+</li>
+<li>
+	
+	아마존 킨들 스토어, <i>(현재는 사용 불가)</i>.
+</li>
+<li>
+	<a href="https://books.apple.com/book/id1459984231">애플 북 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://play.google.com/store/books/details?id=Dc1wEAAAQBAJ">구글 플레이 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://github.com/go101/go101/releases">무료 전자책</a>,
+	pdf, epub과 azw3 포맷을 지원
+</li>
+</ul>
+	</div>
+<div>
+
+Go 101의 저자인 Tapir는 2016년 7월부터 Go 101 시리즈 책들을 집필하고 go101.org 웹사이트를 유지 관리하고 있습니다.
+새로운 콘텐츠는 책과 웹사이트에 수시로 추가될 예정입니다.
+Tapir는 인디 게임 개발자이기도 합니다.
+<a href="https://www.tapirgames.com">Tapir의 게임</a>을 플레이하여 Go 101을 지원할 수도 있습니다.
+(안드로이드와 아이폰/아이패드용):
+<ul>
+<li>
+	<a href="https://www.tapirgames.com/App/Color-Infection">Color Infection</a> (★★★★★), 140개 이상의 단계로 이루어진 물리 기반의 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Rectangle-Pushers">Rectangle Pushers</a> (★★★★★), 2가지 모드와 104개 이상의 단계로 이루어진 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Let-Us-Play-With-Particles">Let's Play With Particles</a>, 세가지 미니 게임이 있는 캐주얼 액션 게임
+</li>
+</ul>
+</div>
+
+<a href="https://paypal.me/tapirliu">페이팔</a>을 통한 개인 기부도 환영합니다.</small></div>
+
+<hr>
+색인:
+
+
+<div id="book-index">
+
+<!-- kindle starts: 1 -->
+
+<ul class="index part">
+	<li><a class="index" href="101-about.html">Go 101에 대해</a> - 이 책이 쓰여진 이유</li>
+	<li><a class="index" href="acknowledgements.html">감사의 말</a></li>
+</ul>
+
+<ul class="index part">
+	<li><a class="index" href="introduction.html">Go 소개</a> - Go를 배우는 가치</li>
+	<li><a class="index" href="go-toolchain.html">Go 툴체인</a> - Go 프로그램을 컴파일하고 실행하는 방법</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 코드에 익숙해지기
+
+	<ul class="index chapters">
+	<li><a class="index" href="basic-code-elements-introduction.html">소스 코드 요소 소개</a></li>
+	<li><a class="index" href="keywords-and-identifiers.html">키워드와 식별자</a></li>
+	<li><a class="index" href="basic-types-and-value-literals.html">기본 자료형과 기본 값 리터럴</a></li>
+	<li><a class="index" href="constants-and-variables.html">상수와 변수</a> - 무형성(untyped) 값과 자료형 추론 소개를 포함</li>
+	<li><a class="index" href="operators.html">일반 연산자</a> - 더 많은 자료형 추론 규칙 소개를 포함</li>
+	<li><b class="index" id="i-function-declarations-and-calls.html">함수 선언과 호출</b></li>
+	<li><a class="index" href="packages-and-imports.html">코드 패키지와 패키지 들여오기</a></li>
+	<li><a class="index" href="expressions-and-statements.html">표현식, 구문과 단순 구문</a></li>
+	<li><a class="index" href="control-flows.html">기본 흐름 제어</a></li>
+	<li><a class="index" href="control-flows-more.html">고루틴, 지연된 함수 호출과 패닉/복구</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 자료형 체계
+
+	<ul class="index chapters">
+	<li><a class="index" href="type-system-overview.html">Go 자료형 체계 개요</a> - Go 프로그래밍 숙달을 위해 반드시 읽어봐야 하는</li>
+	<li><a class="index" href="pointer.html">포인터</a></li>
+	<li><a class="index" href="struct.html">구조체</a></li>
+	<li><a class="index" href="value-part.html">변수</a> - Go 변수에 대한 더 깊은 이해</li>
+	<li><a class="index" href="container.html">배열, 슬라이스와 맵</a> - 1급 객체 컨테이너 자료형</li>
+	<li><a class="index" href="string.html">문자열</a></li>
+	<li><a class="index" href="function.html">함수</a> - 함수 자료형과 값, 가변 인자 함수</li>
+	<li><a class="index" href="channel.html">채널</a> - Go에서 동시성 동기화를 하는 방법</li>
+	<li><a class="index" href="method.html">메서드</a></li>
+	<li><a class="index" href="interface.html">인터페이스</a> - 리플렉션과 다형성을 하는 값 상자</li>
+	<li><a class="index" href="type-embedding.html">자료형 임베딩</a> - 자료형을 확장하는 방법</li>
+	<li><a class="index" href="unsafe.html">자료형에 안전하지 않는 포인터</a></li>
+	<li><a class="index" href="generic.html">제네릭</a> - 합성 자료형의 사용과 읽는 법</li>
+	<li><a class="index" href="reflection.html">리플렉션</a> - <code>reflect</code> 표준 패키지</li>
+	</ul>
+</li>
+</ul>
+
+<!-- kindle ends: 1 -->
+
+<!-- kindle starts: 2 -->
+
+<ul class="index part">
+<li>
+특별 주제
+
+	<ul class="index chapters">
+	<li><a class="index" href="line-break-rules.html">개행 규칙</a></li>
+	<li><a class="index" href="defer-more.html">지연된 함수 호출 더 알아보기</a></li>
+	<li><a class="index" href="panic-and-recover-use-cases.html">패닉/복구 사용 사례</a></li>
+	<li><a class="index" href="panic-and-recover-more.html">패닉/복구 메커니즘에 대한 고찰</a> - 함수 호출 종료 단계를 포함</li>
+	<li><a class="index" href="blocks-and-scopes.html">코드 블록과 식별자 스코프</a></li>
+	<li><a class="index" href="evaluation-orders.html">표현식 평가 순서</a></li>
+	<li><a class="index" href="value-copy-cost.html">Go의 값 복사 비용</a></li>
+	<li><a class="index" href="bounds-check-elimination.html">경계 검사 제거(BCE)</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+동시성 프로그래밍
+
+	<ul class="index chapters">
+	<li><a class="index" href="concurrent-synchronization-overview.html">동시성 동기화 개요</a></li>
+	<li><a class="index" href="channel-use-cases.html">채널 사용 사례</a></li>
+	<li><a class="index" href="channel-closing.html">채널을 깔끔하게 닫는 방법</a></li>
+	<li><a class="index" href="concurrent-synchronization-more.html">기타 동시성 동기화 기술</a> - <code>sync</code> 표준 패키지</li>
+	<li><a class="index" href="concurrent-atomic-operation.html">원자적 연산</a> - <code>sync/atomic</code> 표준 패키지</li>
+	<li><a class="index" href="memory-model.html">Go의 메모리 순서 보장</a></li>
+	<li><a class="index" href="concurrent-common-mistakes.html">흔히들 저지르는 동시성 프로그래밍 실수들</a></li>
+	</ul>
+
+</li>
+</ul>
+
+
+<ul class="index part">
+<li>
+메모리 관련
+
+	<ul class="index chapters">
+	<li><a class="index" href="memory-block.html">메모리 블록</a></li>
+	<li><a class="index" href="memory-layout.html">메모리 레이아웃</a></li>
+	<li><a class="index" href="memory-leaking.html">메모리 누수 시나리오</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+일부 요약
+
+	<ul class="index chapters">
+	<li><a class="index" href="summaries.html">몇 가지 간단한 요약</a></li>
+	<li><a class="index" href="nil.html">Go의 <code>nil</code></a></li>
+	<li><a class="index" href="value-conversions-assignments-and-comparisons.html">값 변환, 할당과 비교 규칙</a></li>
+	<li><a class="index" href="exceptions.html">구문/의미 예외</a></li>
+	<!-- (to remove) for printing -->
+	<li><a class="index" href="details.html">Go Details 101</a></li>
+	<li><a class="index" href="unofficial-faq.html">Go FAQ 101</a></li>
+	<li><a class="index" href="tips.html">Go Tips 101</a></li>
+	<!-- (to remove) -->
+	</ul>
+
+</li>
+</ul>
+
+<!-- kindle ends: 2 -->
+
+<!-- kindle starts: 0 -->
+
+<ul class="index part">
+<li><a class="index" href="more.html">더 많은 토픽</a></li>
+</ul>
+
+<!-- kindle ends: 0 -->
+
+</div>
+
+
+
+
+
+
+
+
+		</div>
+	</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Golang online books, articles, tools, etc.">
+		<meta name="author" content="">
+		<meta name="go-version" content="go1.20">
+		<link rel="icon" href="/static/go101/images/101-v1.ico">
+		<link rel="apple-touch-icon" sizes="152x152" href="/static/go101/images/iphone-v1.jpeg">
+	
+		<title>The Status Quo of Go Custom Generics -Go 101</title><link id="css-bs" href="/static/bootstrap/v4.0.3-dark/css/bootstrap.min.css" rel="stylesheet">
+		<link id="css-go101" href="/static/go101/css/v991-dark.css" rel="stylesheet">
+		<link id="css-prism" href="/static/prism/2020-08-03-dark/prism.css" rel="stylesheet">
+		<script id="js-prism" src="/static/prism/2020-08-03-dark/prism.js"></script>
+
+
+		<script src="/static/jquery/jquery.min-v1.11.2.js"></script>
+		<script src="/static/go101/js/v5.js"></script>
+		
+		
+		<style>
+		div, p, ul, li, td, th {line-height: 1.55;}
+		</style>
+
+		<script>
+		var theme = ""
+		</script>
+	</head>
+
+	<body>
+		<div class="container">
+
+		<div class="row nav-bar-with-borders">
+	<div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/"><small>Home</small></a> <span class="new-text"><sup>new!</sup></span>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/article/101.html"><small>Go 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-active">
+		<a href="/generics/101.html"><small>Go Generics 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/details-and-tips/101.html"><small>Go Details &amp; Tips 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/optimizations/101.html"><small>Go Optimizations 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/quizzes/101.html"><small>Go Quizzes 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go HowTo 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Practices 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Agg 101</small></div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/blog/101.html"><small>Go 101 Blog</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/apps-and-libs/101.html"><small>Go 101 Apps &amp; Libs</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;" id="theme-switch"><small>테마: 다크/라이트</small></div>
+
+</div>
+
+<div class="alert alert-warning text-center"><small>
+현재 3권의 신간들인 <a href="/optimizations/101.html">Go Optimizations 101</a>,
+<a href="/details-and-tips/101.html">Go Details &amp; Tips 101</a>
+과 <a href="/generics/101.html">Go Generics 101</a>이 출간되어 있습니다.
+Leanpub 서점에서 <a href="https://leanpub.com/b/go-optimizations-details-generics">번들</a>을 모두 구입하시는 방법이 비용 대비 효율이 가장 좋습니다.
+<p></p>
+Go에 대한 많은 정보들과 Go 101 책들의 최신 소식을 얻으시려면 Go 101 트위터 계정인 <a href="https://twitter.com/go100and1">@Go100and1</a>을
+팔로잉 해주세요.
+</small></div>
+<p>
+</p>
+
+
+
+<h1>The Status Quo of Go Custom Generics</h1>
+
+
+
+<p>The previous chapters explain the basic knowledge about Go custom generics.
+This chapter will list some missing features in the current design and
+implementation of Go custom generics.</p>
+
+<h2>Type declarations inside generic functions are not currently supported</h2>
+
+<p>Currently (Go 1.20), local type declarations are not allowed in generic functions.
+For example, in the following code, the ordinary function <code>f</code> compiles okay,
+but the generic function <code>g</code> doesn't.</p>
+
+<pre><code class="language-Go">func f() {
+	type _ int // okay
+}
+
+func g[T any]() {
+	type _ int // error
+}
+
+type T[_ any] struct{}
+
+func (T[_]) m() {
+	type _ int // error
+}
+</code></pre>
+
+<p>This restriction will <a href="https://github.com/golang/go/issues/47631">be removed from Go 1.20</a>.</p>
+
+<h2>Generic type aliases are not supported currently</h2>
+
+<p>Currently (Go 1.20), a declared type alias may not have type parameters.
+For example, in the following code, only the alias declaration for <code>A</code> is legal,
+the other alias declarations are all illegal.</p>
+
+<p>The alias <code>A</code> is actually an alias to an ordinary type <code>func(int) string</code>.</p>
+
+<pre><code class="language-Go">type T[X, Y any] func(X) Y
+
+type A = T[int, string] // okay
+
+// generic type cannot be alias
+type B[X any] = T[X, string]   // error
+type C[X, Y, Z any] = T[X, Y]  // error
+type D[X any] = T[int, string] // error
+</code></pre>
+
+<p>Generic type aliases <a href="https://github.com/golang/go/issues/46477">might be supported in future Go versions</a>.</p>
+
+<h2 id="embed-type-parameter">Embedding type parameters is not allowed now</h2>
+
+<p>Due to design and implementation complexities, currently (Go 1.20), type parameters are
+disallowed to be embedded in either interface types or struct types.</p>
+
+<p>For example, the following type declaration is illegal.</p>
+
+<pre><code class="language-Go">type Derived[Base any] struct {
+	Base // error
+	
+	x bool
+}
+</code></pre>
+
+<p>Please view <a href="https://github.com/golang/go/issues/43621">this issue</a> for reasons.</p>
+
+<h2>The method set of a constraint is not calculated completely for some cases</h2>
+
+<p>The Go specification states:</p>
+
+<blockquote>
+<p>The method set of an interface type is the intersection of the method sets of each type in the interface's type set.</p>
+</blockquote>
+
+<p>However, currently (Go toolchain 1.20), only the methods explicitly specified in interface types are calculated into method sets.
+For example, in the following code, the method set of the constraint should contain both <code>Foo</code> and <code>Bar</code>,
+and the code should compile okay, but it doesn't (as of Go toolchain 1.20).</p>
+
+<pre><code class="language-Go">package main
+
+type S struct{}
+
+func (S) Bar() {}
+
+type C interface {
+	S
+	Foo()
+}
+
+func foobar[T C](v T) {
+	v.Foo() // okay
+	v.Bar() // v.Bar undefined
+}
+
+func main() {}
+</code></pre>
+
+<p>This restriction is planed <a href="https://github.com/golang/go/issues/51183">to be removed in future Go toochain versions</a>.</p>
+
+<h2>No ways to specific a field set for a constraint</h2>
+
+<p>We know that an interface type may specify a method set.
+But up to now (Go 1.20), it could not specify a (struct) field set.</p>
+
+<p>There is a proposal for this: <a href="https://github.com/golang/go/issues/51259">https://github.com/golang/go/issues/51259</a>.</p>
+
+<p>The restriction might be lifted from future Go versions.</p>
+
+<h2>No ways to use common fields for a constraint if the constraint has not a core (struct) type</h2>
+
+<p>Currently (Go 1.20), even if all types in the type set of a constraint
+are structs and they share some common fields, the common fields still
+could not be used if the structs don't share the identical underlying type.</p>
+
+<p>For example, the generic functions in the following example all fail to compile.</p>
+
+<pre><code class="language-Go">package main
+
+type S1 struct {
+	X int
+}
+
+type S2 struct {
+	X int `json:X`
+}
+
+type S3 struct {
+	X int
+	Z bool
+}
+
+type S4 struct {
+	S1
+}
+
+func F12[T S1 | S2](v T) {
+	_ = v.X // error: v.x undefined
+}
+
+func F13[T S1 | S3](v T) {
+	_ = v.X // error: v.x undefined
+}
+
+func F14[T S1 | S4](v T) {
+	_ = v.X // error: v.x undefined
+}
+
+func main() {}
+</code></pre>
+
+<p>There is <a href="https://github.com/golang/go/issues/48522">a proposal</a> to remove this limit.
+A temporary (quite verbose) workaround is to specify/declare some getter and setter methods
+for involved constraints and concrete types.</p>
+
+<h2>Fields of values of type parameters are not accessible</h2>
+
+<p>Currently (Go 1.20), even if a type parameter has a core struct type,
+the fields of the core struct type still may not be accessed through
+values of the type parameter.
+For example, the following code doesn't compile.</p>
+
+<pre><code class="language-Go">type S struct{x, y, z int}
+
+func mod[T S](v *T) {
+	v.x = 1 // error: v.x undefined
+}
+</code></pre>
+
+<p>The restriction mentioned in the last section is actually a special case
+of the one described in the current section.</p>
+
+<p>The restriction (described in the current section) was <a href="https://github.com/golang/go/issues/51576">added just before
+Go 1.18 is released</a>.
+It might be removed since a future Go version.</p>
+
+<h2>Type switches on values of type parameters are not supported now</h2>
+
+<p>It has been mentioned that <a href="555-type-constraints-and-parameters.html#type-parameters-are-interfaces">a type parameter is an interface type from semantic view</a>.
+On the other hand, a type parameter has wave-particle duality.
+For some situations, it acts as the types in its type set.</p>
+
+<p>Up to now (Go 1.20), values of type parameters may not be asserted.
+The following two functions both fail to compile.</p>
+
+<pre><code class="language-Go">func tab[T any](x T) {
+	if n, ok := x.(int); ok { // error
+		_ = n
+	}
+}
+
+func kol[T any]() {
+	var x T
+	switch x.(type) { // error
+	case int:
+	case []bool:
+	default:
+	}
+}
+</code></pre>
+
+<p>The following modified versions of the above two functions compile okay:</p>
+
+<pre><code class="language-Go">func tab2[T any](x T) {
+	if n, ok := any(x).(int); ok { // error
+		_ = n
+	}
+}
+
+func kol2[T any]() {
+	var x T
+	switch any(x).(type) { // error
+	case int:
+	case []bool:
+	default:
+	}
+}
+</code></pre>
+
+<p>There is a proposal to use type switches directly on type parameters, like:</p>
+
+<pre><code class="language-Go">func kol3[T any]() {
+	switch T {
+	case int:
+	case []bool:
+	default:
+	}
+}
+</code></pre>
+
+<p>Please subscribe <a href="https://github.com/golang/go/issues/45380">this issue</a> to
+follow the progress of this problem.</p>
+
+<h2>Generic methods are not supported</h2>
+
+<p>Currently (Go 1.20), for design and implementation difficulties,
+generic methods (not methods of generic types) are
+<a href="https://go.googlesource.com/proposal/+/refs/heads/master/design/43651-type-parameters.md#methods-may-not-take-additional-type-arguments">not supported</a>.</p>
+
+<p>For example, the following code are illegal.</p>
+
+<pre><code class="language-Go">import &quot;sync&quot;
+
+type Lock struct {
+	mu sync.Mutex
+}
+
+func (l *Lock) Inc[T ~uint32 | ~uint64](x *T) {
+	l.Lock()
+	defer l.Unlock()
+	*x++
+}
+</code></pre>
+
+<p>How many concrete methods do the <code>Lock</code> type have?
+Infinite! Because there are infinite uint32 and uint64 types.
+This brings much difficulties to make the <code>reflect</code> standard package keep backwards compatibility.</p>
+
+<p>There is <a href="https://github.com/golang/go/issues/49085">an issue</a> for this.</p>
+
+<h2>There are no ways to construct a constraint which allows assignments involving types of unspecific underlying types</h2>
+
+<p>And there are not such predeclared constraints like the following supposed <code>assignableTo</code> and <code>assignableFrom</code> constraints.</p>
+
+<pre><code class="language-Go">// This function doesn't compile.
+func yex[Tx assignableTo[Ty], Ty assignableFrom[Tx]](x Tx, y Ty) {
+	y = x
+}
+</code></pre>
+
+<h2>There are no ways to construct a constraint which allows conversion involving types of unspecific underlying types</h2>
+
+<p>And there are <a href="https://go.googlesource.com/proposal/+/refs/heads/master/design/43651-type-parameters.md#no-way-to-express-convertibility">not such predeclared constraints</a> like the following supposed <code>convertibleTo</code> and <code>convertibleFrom</code> constraints.</p>
+
+<pre><code class="language-Go">// This function doesn't compile.
+func x2y[Tx convertibleTo[Ty], Ty convertibleFrom[Tx],
+		// The second value argument is
+		// for type inference purpose.
+		](xs []Tx, _ Ty) []Ty {
+	if xs == nil {
+		return nil
+	}
+	ys := make([]Ty, len(xs))
+	for i := range xs {
+		ys[i] = Ty(xs[i])
+	}
+	return ys
+}
+
+var bs = []byte{61, 62, 63, 64, 65, 66}
+var ss = x2y(bs, &quot;&quot;)
+var is = x2y(bs, 0)
+var fs = x2y(bs, .0)
+</code></pre>
+
+<p>Currently, there is an ungraceful workaround implementation:</p>
+
+<pre><code class="language-Go">func x2y[Tx any, Ty any](xs []Tx, f func(Tx) Ty) []Ty {
+	if xs == nil {
+		return nil
+	}
+	ys := make([]Ty, len(xs))
+	for i := range xs {
+		ys[i] = f(xs[i])
+	}
+	return ys
+}
+
+var bs = []byte{61, 62, 63, 64, 65, 66}
+var ss = x2y(bs, func(x byte) string {
+	return string(x)
+})
+var is = x2y(bs, func(x byte) int {
+	return int(x)
+})
+var fs = x2y(bs, func(x byte) float64 {
+	return float64(x)
+})
+</code></pre>
+
+<p>The workaround needs a callback function, which
+makes the code verbose and much less efficient,
+though I do admit it has more usage scenarios.</p>
+<hr>
+
+<div class="text-center"><a href="#i-888-the-status-quo-of-go-custom-generics.html">Index↡</a></div>
+
+
+
+<hr>
+
+<div id="contact" class="alert alert-success"><small>
+
+<p>
+The <b><i>Go 101</i></b> 프로젝트는 <a href="https://github.com/go101/go101">Github</a>
+에서 호스팅됩니다.
+오타, 문법 오류, 부정확한 표현, 설명 결함, 코드 버그, 끊어진 링크와 같은 모든
+종류의 실수에 대한 수정 사항을 제출하여 Go 101을 개선을 돕는 것은 언제나 환영합니다.
+</p>
+
+<p>
+주기적으로 Go에 대한 깊이 있는 정보를 얻고 싶다면 Go 101의 공식 트위터 계정인
+<a href="https://twitter.com/go100and1">@go100and1</a>을 팔로우하거나
+<a href="https://join.slack.com/t/go-101/shared_invite/zt-y2pvwg00-Oz7lDDJu44l~hZsFRUApiA">Go 101 슬랙 채널</a>에j가입해주세요.
+</p>
+
+</small></div>
+
+<div class="alert alert-warning"><small>
+
+
+<div id="ebooks">
+이 책의 디지털 버전은 아래와 같은 곳을 통해서 구매할 수 있습니다.
+<ul>
+<li>
+	<a href="https://leanpub.com/go-generics-101">Leanpub store</a>,
+	<i>최소 7.99 달러</i> (7.99 달러는 Leanpub에서 판매하는 최소 판매가입니다. <a href="https://leanpub.com/b/go-optimizations-details">이곳</a>이나 <a href="https://leanpub.com/b/go-optimizations-details-generics#bundle-page-go-details-and-tips-101">이곳</a>에서 번들로 구매하는 것이 더 비용 대비 효율이 좋습니다).
+</li>
+<li>
+	<a href="https://www.amazon.com/dp/B09XBQNNF2">Amazon Kindle store</a>,
+	<i>5.99 달러</i>.
+</li>
+<li>
+	<a href="https://books.apple.com/book/id1618059315">Apple Books store</a>,
+	<i>5.99 달러</i>.
+</li>
+<li>
+	<a href="https://play.google.com/store/books/details?id=D81wEAAAQBAJ">Google Play store</a>,
+	<i>5.99 달러</i>.
+</li>
+</ul>
+	</div>
+<div>
+
+Go 101의 저자인 Tapir는 2016년 7월부터 Go 101 시리즈 책들을 집필하고 go101.org 웹사이트를 유지 관리하고 있습니다.
+새로운 콘텐츠는 책과 웹사이트에 수시로 추가될 예정입니다.
+Tapir는 인디 게임 개발자이기도 합니다.
+<a href="https://www.tapirgames.com">Tapir의 게임</a>을 플레이하여 Go 101을 지원할 수도 있습니다.
+(안드로이드와 아이폰/아이패드용):
+<ul>
+<li>
+	<a href="https://www.tapirgames.com/App/Color-Infection">Color Infection</a> (★★★★★), 140개 이상의 단계로 이루어진 물리 기반의 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Rectangle-Pushers">Rectangle Pushers</a> (★★★★★), 2가지 모드와 104개 이상의 단계로 이루어진 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Let-Us-Play-With-Particles">Let's Play With Particles</a>, 세가지 미니 게임이 있는 캐주얼 액션 게임
+</li>
+</ul>
+</div>
+
+<a href="https://paypal.me/tapirliu">페이팔</a>을 통한 개인 기부도 환영합니다.</small></div>
+
+<hr>
+색인:
+
+
+<div id="book-index">
+	
+<ul class="index part">
+	<li><a class="index" href="111-acknowledgements.html">Acknowledgements</a></li>
+	<li><a class="index" href="222-about-this-book.html">About Go Generics 101</a></li>
+	<li><a class="index" href="333-about-go-generics.html">About Go Custom Generics</a></li>
+	<li><a class="index" href="444-first-look-of-custom-generics.html">First Look of Custom Generics</a></li>
+	<li><a class="index" href="555-type-constraints-and-parameters.html">Constraints and Type Parameters</a></li>
+	<li><a class="index" href="666-generic-instantiations-and-type-argument-inferences.html">Generic Instantiations and Type Argument Inferences</a></li>
+	<li><a class="index" href="777-operations-on-values-of-type-parameter-types.html">Operations on Values of Type Parameter Types</a></li>
+	<li><b class="index" id="i-888-the-status-quo-of-go-custom-generics.html">The Status Quo of Go Custom Generics</b></li>
+	<li>Some Examples Using Go Custom Generics <i>(to do)</i></li>
+</ul>
+
+</div>
+
+
+
+
+
+
+
+
+		</div>
+	</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

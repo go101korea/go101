@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Golang online books, articles, tools, etc.">
+		<meta name="author" content="">
+		<meta name="go-version" content="go1.20">
+		<link rel="icon" href="/static/go101/images/101-v1.ico">
+		<link rel="apple-touch-icon" sizes="152x152" href="/static/go101/images/iphone-v1.jpeg">
+	
+		<title>Go Built-in Slice Manipulations Are Incomplete -Go 101</title><link id="css-bs" href="/static/bootstrap/v4.0.3-dark/css/bootstrap.min.css" rel="stylesheet">
+		<link id="css-go101" href="/static/go101/css/v991-dark.css" rel="stylesheet">
+		<link id="css-prism" href="/static/prism/2020-08-03-dark/prism.css" rel="stylesheet">
+		<script id="js-prism" src="/static/prism/2020-08-03-dark/prism.js"></script>
+
+
+		<script src="/static/jquery/jquery.min-v1.11.2.js"></script>
+		<script src="/static/go101/js/v5.js"></script>
+		
+		
+		<style>
+		div, p, ul, li, td, th {line-height: 1.55;}
+		</style>
+
+		<script>
+		var theme = ""
+		</script>
+	</head>
+
+	<body>
+		<div class="container">
+
+		<div class="row nav-bar-with-borders">
+	<div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/"><small>Home</small></a> <span class="new-text"><sup>new!</sup></span>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/article/101.html"><small>Go 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/generics/101.html"><small>Go Generics 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/details-and-tips/101.html"><small>Go Details &amp; Tips 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/optimizations/101.html"><small>Go Optimizations 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/quizzes/101.html"><small>Go Quizzes 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go HowTo 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Practices 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Agg 101</small></div><div class="col-xs-6 col-sm-4 nav-item-active">
+		<a href="/blog/101.html"><small>Go 101 Blog</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/apps-and-libs/101.html"><small>Go 101 Apps &amp; Libs</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;" id="theme-switch"><small>테마: 다크/라이트</small></div>
+
+</div>
+
+<div class="alert alert-warning text-center"><small>
+현재 3권의 신간들인 <a href="/optimizations/101.html">Go Optimizations 101</a>,
+<a href="/details-and-tips/101.html">Go Details &amp; Tips 101</a>
+과 <a href="/generics/101.html">Go Generics 101</a>이 출간되어 있습니다.
+Leanpub 서점에서 <a href="https://leanpub.com/b/go-optimizations-details-generics">번들</a>을 모두 구입하시는 방법이 비용 대비 효율이 가장 좋습니다.
+<p></p>
+Go에 대한 많은 정보들과 Go 101 책들의 최신 소식을 얻으시려면 Go 101 트위터 계정인 <a href="https://twitter.com/go100and1">@Go100and1</a>을
+팔로잉 해주세요.
+</small></div>
+<p>
+</p>
+
+
+
+<h1>Go Built-in Slice Manipulations Are Incomplete</h1>
+
+
+
+<h2>Lack of a performant way to merge 3+ slices</h2>
+
+<p>In Go, there are three built-in functions to manipulate slices:</p>
+
+<ol>
+<li>the <code>make</code> function is used to create a slice with specified length and capacity. All the elements are set to zero values.</li>
+<li>the <code>copy</code> function is used to copy some elements from one slice to another if the two slices have identical element types.</li>
+<li>the <code>append</code> function is used to append some elements to a base slice and result in a new slice.
+The base slice might share all of its elements with the new slice or not,
+depending on whether or not the capacity of the base slice is large enough to hold all the appended elements.</li>
+</ol>
+
+<p>When the capacity of the base slice if an <code>append</code> function call is not larger enough.
+the call can be viewed as a way to merge two slices.
+As the way is built-in, it is performant.</p>
+
+<p>However, there is not a performant way to merge 3+ slices.
+The following implementation might be the most performant way to do the task:</p>
+
+<pre><code class="language-Go">func merge[S ~[]E, E any](ss ...S) S {
+	var n, allNils, k = 0, true, -1
+	for i := range ss {
+		if m := len(ss[i]); n != 0 {
+			n += m
+			if n &lt; 0 {
+				panic(&quot;sum of lengths is too large&quot;)
+			}
+		} else if m &gt; 0 {
+			n = m
+			allNils = false
+			k = i
+		} else {
+			allNils = allNils &amp;&amp; ss[i] == nil
+		}
+	}
+	if allNils {
+		return nil
+	}
+	if n == 0 {
+		return S{}
+	}
+	
+	// Make use of this optimization:
+	// https://github.com/golang/go/commit/6ed4661807b219781d1aa452b7f210e21ad1974b
+	s := ss[k]
+	r := make(S, n)
+	copy(r, s)
+	r = r[:len(s)]
+	ss = ss[k+1:]
+
+	for _, s := range ss {
+		r = append(r, s...)
+	}
+	return r
+}
+</code></pre>
+
+<p>Generally, a <code>make</code> call will zero the elements allocated during its execution, which is unnecessarily for this particular use case.
+The implementation does its best to zero as few as possible elements within the <code>make</code> call,
+by using the mentioned optimization, it doesn't zero the elements in <code>r[:len(ss[0])]</code>,
+but it still fails to do so for the remaining elements (the ones in <code>r[len(ss[0]):]</code>).</p>
+
+<p>If the <code>merge</code> function is built-in, then it is able to avoid all the unnecessary element zeroing operations.</p>
+
+<h2>Lack of a clean way to clip slices</h2>
+
+<p>As mentioned above, an <code>append</code> function call will reuse the backing array
+of the first slice argument (call it <code>base</code> here) for the result slice if the capacity of <code>base</code>
+is large enough to hold all the appended elements.
+For some scenarios, we want to prevent an <code>append</code> call from modifying the elements in <code>base[len(base):]</code>
+and we achieve this by clipping the capacity of <code>base</code> to its length:</p>
+
+<pre><code class="language-Go">var x, y, z T
+
+	... = append(base[:len(base):len(base)], x, y, z)
+</code></pre>
+
+<p>Nothing to complain about, except that it is some verbose,
+in particular when the <code>base</code> expression is verbose, such as</p>
+
+<pre><code class="language-Go">	... = append(aValue.Field.Slice[:len(aValue.Field.Slice):len(aValue.Field.Slice)], x, y, z)
+</code></pre>
+
+<p>If the <code>base</code> expression is a function call, then we must store the result of a call in a temporary intermediate variable:</p>
+
+<pre><code class="language-Go">	base := aFunctionCall()
+	... = append(base[:len(base):len(base)], x, y, z)
+</code></pre>
+
+<p>We can use the <code>Clip</code> function in the <code>golang.org/x/exp/slices</code> package, but this way is still not clean enough.</p>
+
+<pre><code class="language-Go">import &quot;golang.org/x/exp/slices&quot;
+
+	... = append(slices.Clip((base), x, y, z)
+	
+	... = append(slices.Clip(aValue.Field.Slice), x, y, z)
+	
+	... = append(slices.Clip(aFunctionCall()), x, y, z)
+</code></pre>
+
+<p>I do perfer <a href="https://github.com/golang/go/issues/25638">this proposal</a>, but it has been rejected:</p>
+
+<pre><code class="language-Go">aSlice[ : n : ]  // &lt;=&gt; aSlice[ : n : n]
+aSlice[m : n : ] // &lt;=&gt; aSlice[m : n : n]
+sSlice[ : : ]    // &lt;=&gt; aSlice[ : len(s) : len(s)]
+aSlice[m : : ]   // &lt;=&gt; aSlice[m : len(s) : len(s)]
+</code></pre>
+
+<p>If the proposal is adopted, then we may just write the code as</p>
+
+<pre><code class="language-Go">	... = append(base[::], x, y, z)
+	
+	... = append(aValue.Field.Slice[::], x, y, z)
+	
+	... = append(aFunctionCall()[::], x, y, z)
+</code></pre>
+
+<p>which is much cleaner.</p>
+<hr>
+
+<div class="text-center"><a href="#i-2022-12-30-go-builtin-slice-manipulations-are-incomplete.html">Index↡</a></div>
+
+
+
+<hr>
+
+<div id="contact" class="alert alert-success"><small>
+
+<p>
+The <b><i>Go 101</i></b> 프로젝트는 <a href="https://github.com/go101/go101">Github</a>
+에서 호스팅됩니다.
+오타, 문법 오류, 부정확한 표현, 설명 결함, 코드 버그, 끊어진 링크와 같은 모든
+종류의 실수에 대한 수정 사항을 제출하여 Go 101을 개선을 돕는 것은 언제나 환영합니다.
+</p>
+
+<p>
+주기적으로 Go에 대한 깊이 있는 정보를 얻고 싶다면 Go 101의 공식 트위터 계정인
+<a href="https://twitter.com/go100and1">@go100and1</a>을 팔로우하거나
+<a href="https://join.slack.com/t/go-101/shared_invite/zt-y2pvwg00-Oz7lDDJu44l~hZsFRUApiA">Go 101 슬랙 채널</a>에j가입해주세요.
+</p>
+
+</small></div>
+
+<div class="alert alert-warning"><small>
+
+
+<div id="ebooks"></div>
+<div>
+
+Go 101의 저자인 Tapir는 2016년 7월부터 Go 101 시리즈 책들을 집필하고 go101.org 웹사이트를 유지 관리하고 있습니다.
+새로운 콘텐츠는 책과 웹사이트에 수시로 추가될 예정입니다.
+Tapir는 인디 게임 개발자이기도 합니다.
+<a href="https://www.tapirgames.com">Tapir의 게임</a>을 플레이하여 Go 101을 지원할 수도 있습니다.
+(안드로이드와 아이폰/아이패드용):
+<ul>
+<li>
+	<a href="https://www.tapirgames.com/App/Color-Infection">Color Infection</a> (★★★★★), 140개 이상의 단계로 이루어진 물리 기반의 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Rectangle-Pushers">Rectangle Pushers</a> (★★★★★), 2가지 모드와 104개 이상의 단계로 이루어진 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Let-Us-Play-With-Particles">Let's Play With Particles</a>, 세가지 미니 게임이 있는 캐주얼 액션 게임
+</li>
+</ul>
+</div>
+
+<a href="https://paypal.me/tapirliu">페이팔</a>을 통한 개인 기부도 환영합니다.</small></div>
+
+<hr>
+색인:
+
+
+<ul>
+
+
+<li>
+	<b class="index" id="i-2022-12-30-go-builtin-slice-manipulations-are-incomplete.html" data-tag="slices, merge, clip" data-date="2022-12-30">Go built-in slice manipulations are incomplete</b>
+</li>
+<li>
+	<a class="index" href="2022-11-18-constant-string-elements-are-not-constants.html" data-tag="string, generic" data-date="2022-11-18">It is a pity that byte elements of Go constant strings are not constants. And it is a luck.</a>
+</li>
+<li>
+	<a class="index" href="2022-10-01-three-way-string-comparison.html" data-tag="optimization, string, compare" data-date="2022-10-24">No safe efficient ways to do three-way string comparisons in Go</a>
+</li>
+<li>
+	<a class="index" href="2022-08-22-some-undocumented-changes-in-go-1.18-and-1.19.html" data-tag="update" data-date="2022-08-31">Some undocumented changes in Go 1.18 and 1.19</a>
+</li>
+<li>
+	<a class="index" href="2022-02-22-history.html" data-tag="update" data-date="2022-02-22">Update Histories of Go 101 Books</a>
+</li>
+</ul>
+
+
+
+
+
+
+
+
+		</div>
+	</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

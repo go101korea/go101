@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Golang online books, articles, tools, etc.">
+		<meta name="author" content="">
+		<meta name="go-version" content="go1.20">
+		<link rel="icon" href="/static/go101/images/101-v1.ico">
+		<link rel="apple-touch-icon" sizes="152x152" href="/static/go101/images/iphone-v1.jpeg">
+	
+		<title>slice 3 -Go 101</title><link id="css-bs" href="/static/bootstrap/v4.0.3-dark/css/bootstrap.min.css" rel="stylesheet">
+		<link id="css-go101" href="/static/go101/css/v991-dark.css" rel="stylesheet">
+		<link id="css-prism" href="/static/prism/2020-08-03-dark/prism.css" rel="stylesheet">
+		<script id="js-prism" src="/static/prism/2020-08-03-dark/prism.js"></script>
+
+
+		<script src="/static/jquery/jquery.min-v1.11.2.js"></script>
+		<script src="/static/go101/js/v5.js"></script>
+		
+		
+		<style>
+		div, p, ul, li, td, th {line-height: 1.55;}
+		</style>
+
+		<script>
+		var theme = ""
+		</script>
+	</head>
+
+	<body>
+		<div class="container">
+
+		<div class="row nav-bar-with-borders">
+	<div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/"><small>Home</small></a> <span class="new-text"><sup>new!</sup></span>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/article/101.html"><small>Go 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/generics/101.html"><small>Go Generics 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/details-and-tips/101.html"><small>Go Details &amp; Tips 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/optimizations/101.html"><small>Go Optimizations 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-active">
+		<a href="/quizzes/101.html"><small>Go Quizzes 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go HowTo 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Practices 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Agg 101</small></div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/blog/101.html"><small>Go 101 Blog</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/apps-and-libs/101.html"><small>Go 101 Apps &amp; Libs</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;" id="theme-switch"><small>테마: 다크/라이트</small></div>
+
+</div>
+
+<div class="alert alert-warning text-center"><small>
+현재 3권의 신간들인 <a href="/optimizations/101.html">Go Optimizations 101</a>,
+<a href="/details-and-tips/101.html">Go Details &amp; Tips 101</a>
+과 <a href="/generics/101.html">Go Generics 101</a>이 출간되어 있습니다.
+Leanpub 서점에서 <a href="https://leanpub.com/b/go-optimizations-details-generics">번들</a>을 모두 구입하시는 방법이 비용 대비 효율이 가장 좋습니다.
+<p></p>
+Go에 대한 많은 정보들과 Go 101 책들의 최신 소식을 얻으시려면 Go 101 트위터 계정인 <a href="https://twitter.com/go100and1">@Go100and1</a>을
+팔로잉 해주세요.
+</small></div>
+<p>
+</p>
+
+
+
+<h1>slice 3</h1>
+
+
+
+<div id="question">
+
+What does the following program print?
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+var x = []int{2: 5, 6, 0: 7}
+
+func main() {
+	fmt.Println(x)
+}
+</code></pre>
+</div>
+
+
+<input type="radio" id="choiceA" name="choice">
+<input type="radio" id="choiceB" name="choice">
+
+<div id="choices">
+<p>Choices:</p>
+
+<ul style="list-style-type:none;">
+<li><label for="choiceA">
+	[7 0 5 6]
+</label></li>
+<li><label for="choiceB">
+	[7 6 5]
+</label></li>
+</ul>
+
+</div>
+
+<div id="answer">
+<p>Answer: [7 0 5 6]</p>
+
+<p>Run it on <a href="https://go.dev/play/p/Sap3OfyWD7u" target="_blank">Go play</a>.</p>
+
+<p>Key points:</p>
+<ul>
+<li>
+	keyed elements (here they are <code>2: 5</code> and <code>0: 7</code>) and un-keyed elements (here it is <code>6</code>) may be mixed up in array and slice composite literals.
+</li>
+<li>
+	the index of an un-keyed element is determined by the index of the last keyed element.
+	If all previous elements are un-keyed, then its index is its order number (zero based).
+	So the index of the element <code>6</code> is 3.
+</li>
+<li>
+	the length of an array or slice composite literal is the largest element index plus one.
+</li>
+<li>
+	unspecified elements are viewed as the zero value of the element type.
+</li>
+</ul>
+
+<p>
+The following is another example, which prints <code>7 88</code>.
+</p>
+
+<pre class="line-numbers"><code class="language-go">package main
+
+func main() {
+	var x = []int{4:44, 55, 66, 1:77, 88}
+	println(len(x), x[2])
+}
+</code></pre>
+
+
+</div>
+
+
+<hr>
+
+<div class="text-center"><a href="#i-slice-3.html">Index↡</a></div>
+
+
+
+<hr>
+
+<div id="contact" class="alert alert-success"><small>
+
+<p>
+The <b><i>Go 101</i></b> 프로젝트는 <a href="https://github.com/go101/go101">Github</a>
+에서 호스팅됩니다.
+오타, 문법 오류, 부정확한 표현, 설명 결함, 코드 버그, 끊어진 링크와 같은 모든
+종류의 실수에 대한 수정 사항을 제출하여 Go 101을 개선을 돕는 것은 언제나 환영합니다.
+</p>
+
+<p>
+주기적으로 Go에 대한 깊이 있는 정보를 얻고 싶다면 Go 101의 공식 트위터 계정인
+<a href="https://twitter.com/go100and1">@go100and1</a>을 팔로우하거나
+<a href="https://join.slack.com/t/go-101/shared_invite/zt-y2pvwg00-Oz7lDDJu44l~hZsFRUApiA">Go 101 슬랙 채널</a>에j가입해주세요.
+</p>
+
+</small></div>
+
+<div class="alert alert-warning"><small>
+
+
+<div id="ebooks"></div>
+<div>
+
+Go 101의 저자인 Tapir는 2016년 7월부터 Go 101 시리즈 책들을 집필하고 go101.org 웹사이트를 유지 관리하고 있습니다.
+새로운 콘텐츠는 책과 웹사이트에 수시로 추가될 예정입니다.
+Tapir는 인디 게임 개발자이기도 합니다.
+<a href="https://www.tapirgames.com">Tapir의 게임</a>을 플레이하여 Go 101을 지원할 수도 있습니다.
+(안드로이드와 아이폰/아이패드용):
+<ul>
+<li>
+	<a href="https://www.tapirgames.com/App/Color-Infection">Color Infection</a> (★★★★★), 140개 이상의 단계로 이루어진 물리 기반의 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Rectangle-Pushers">Rectangle Pushers</a> (★★★★★), 2가지 모드와 104개 이상의 단계로 이루어진 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Let-Us-Play-With-Particles">Let's Play With Particles</a>, 세가지 미니 게임이 있는 캐주얼 액션 게임
+</li>
+</ul>
+</div>
+
+<a href="https://paypal.me/tapirliu">페이팔</a>을 통한 개인 기부도 환영합니다.</small></div>
+
+<hr>
+색인:
+
+
+<div id="book-index">
+	
+<ul class="index part">
+	<li>slice:
+		<a class="index" href="slice-1.html" data-topics="slice" data-date="2021-12-22">1</a>,
+		<a class="index" href="slice-2.html" data-topics="slice" data-date="2021-12-31">2</a>,
+		<b class="index" id="i-slice-3.html" data-topics="slice" data-date="2022-07-11">3</b>
+	</li>
+	<li>map:
+		<a class="index" href="map-1.html" data-topics="map, make" data-date="2022-09-06">1</a>
+	</li>
+	<li>channel:
+		<a class="index" href="channel-1.html" data-topics="channel" data-date="2021-12-22">1</a>
+	</li>
+	<li>loop:
+		<a class="index" href="loop-1.html" data-topics="loop" data-date="2021-12-22">1</a>,
+		<a class="index" href="loop-2.html" data-topics="loop" data-date="2021-12-22">2</a>,
+		<a class="index" href="loop-3.html" data-topics="loop" data-date="2021-12-22">3</a>,
+		<a class="index" href="loop-4.html" data-topics="loop" data-date="2021-12-22">4</a>
+	</li>
+	<li>switch:
+		<a class="index" href="switch-1.html" data-topics="switch" data-date="2021-12-22">1</a>
+	</li>
+	<li>defer:
+		<a class="index" href="defer-1.html" data-topics="defer" data-date="2021-12-22">1</a>,
+		<a class="index" href="defer-2.html" data-topics="defer" data-date="2021-12-22">2</a>
+	</li>
+	<li>panic/recover:
+		<a class="index" href="panic-recover-1.html" data-topics="panic-recover" data-date="2021-12-22">1</a>,
+		<a class="index" href="panic-recover-2.html" data-topics="panic-recover" data-date="2021-12-22">2</a>
+	</li>
+	<li>reflect:
+		<a class="index" href="reflect-1.html" data-topics="reflect" data-date="2021-12-31">1</a>,
+		<a class="index" href="reflect-2.html" data-topics="reflect" data-date="2022-08-08">2</a>
+	</li>
+	<li>const:
+		<a class="index" href="const-1.html" data-topics="const, iota" data-date="2022-07-09">1</a>,
+		<a class="index" href="const-2.html" data-topics="const" data-date="2022-07-09">2</a>,
+		<a class="index" href="const-3.html" data-topics="const, untyped, type-inference" data-date="2022-07-11">3</a>
+	</li>
+	<li>operator:
+		<a class="index" href="operator-1.html" data-topics="operator, iota" data-date="2022-07-11">1</a>,
+		<a class="index" href="operator-2.html" data-topics="operator, overflow" data-date="2022-08-08">2</a>,
+		<a class="index" href="operator-3.html" data-topics="operator, shift" data-date="2022-11-18">3</a>
+	</li>
+	<li>function call:
+		<a class="index" href="call-1.html" data-topics="call, variadic" data-date="2022-07-11">1</a>
+	</li>
+	<li>scope:
+		<a class="index" href="scope-1.html" data-topics="scope, redeclare" data-date="2022-07-19">1</a>, 
+		<a class="index" href="scope-2.html" data-topics="scope" data-date="2022-08-08">2</a>
+	</li>
+	<li>nil:
+		<a class="index" href="nil-1.html" data-topics="nil, new" data-date="2022-07-19">1</a>
+	</li>
+	<li>embedding:
+		<a class="index" href="embedding-1.html" data-topics="embedding" data-date="2022-08-08">1</a>
+	</li>
+</ul>
+
+<p>
+(more are coming ...)
+</p>
+
+
+</div>
+
+
+
+
+
+
+
+
+		</div>
+	</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

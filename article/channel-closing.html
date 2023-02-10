@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Golang online books, articles, tools, etc.">
+		<meta name="author" content="">
+		<meta name="go-version" content="go1.20">
+		<link rel="icon" href="/static/go101/images/101-v1.ico">
+		<link rel="apple-touch-icon" sizes="152x152" href="/static/go101/images/iphone-v1.jpeg">
+	
+		<title>How to Gracefully Close Channels -Go 101</title><link id="css-bs" href="/static/bootstrap/v4.0.3-dark/css/bootstrap.min.css" rel="stylesheet">
+		<link id="css-go101" href="/static/go101/css/v991-dark.css" rel="stylesheet">
+		<link id="css-prism" href="/static/prism/2020-08-03-dark/prism.css" rel="stylesheet">
+		<script id="js-prism" src="/static/prism/2020-08-03-dark/prism.js"></script>
+
+
+		<script src="/static/jquery/jquery.min-v1.11.2.js"></script>
+		<script src="/static/go101/js/v5.js"></script>
+		
+		
+		<style>
+		div, p, ul, li, td, th {line-height: 1.55;}
+		</style>
+
+		<script>
+		var theme = ""
+		</script>
+	</head>
+
+	<body>
+		<div class="container">
+
+		<div class="row nav-bar-with-borders">
+	<div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/"><small>Home</small></a> <span class="new-text"><sup>new!</sup></span>
+	</div><div class="col-xs-6 col-sm-4 nav-item-active">
+		<a href="/article/101.html"><small>Go 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/generics/101.html"><small>Go Generics 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/details-and-tips/101.html"><small>Go Details &amp; Tips 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/optimizations/101.html"><small>Go Optimizations 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/quizzes/101.html"><small>Go Quizzes 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go HowTo 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Practices 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Agg 101</small></div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/blog/101.html"><small>Go 101 Blog</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/apps-and-libs/101.html"><small>Go 101 Apps &amp; Libs</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;" id="theme-switch"><small>테마: 다크/라이트</small></div>
+
+</div>
+
+<div class="alert alert-warning text-center"><small>
+현재 3권의 신간들인 <a href="/optimizations/101.html">Go Optimizations 101</a>,
+<a href="/details-and-tips/101.html">Go Details &amp; Tips 101</a>
+과 <a href="/generics/101.html">Go Generics 101</a>이 출간되어 있습니다.
+Leanpub 서점에서 <a href="https://leanpub.com/b/go-optimizations-details-generics">번들</a>을 모두 구입하시는 방법이 비용 대비 효율이 가장 좋습니다.
+<p></p>
+Go에 대한 많은 정보들과 Go 101 책들의 최신 소식을 얻으시려면 Go 101 트위터 계정인 <a href="https://twitter.com/go100and1">@Go100and1</a>을
+팔로잉 해주세요.
+</small></div>
+<p>
+</p>
+
+
+
+<h1>How to Gracefully Close Channels</h1>
+
+
+
+<div>
+<p>
+Several days ago, I wrote an article which explains
+<a href="channel.html">the channel rules in Go</a>.
+That article got many votes
+on <a href="https://www.reddit.com/r/golang/comments/5k489v/the_full_list_of_channel_rules_in_golang/">reddit</a>
+and <a href="https://news.ycombinator.com/item?id=13252416">HN</a>,
+but there are also some criticisms on Go channel design details.
+</p>
+
+I collected some criticisms on the following designs and rules of Go channels:
+<ol>
+<li>
+no easy and universal ways to check whether or not a channel is closed without modifying the status of the channel.
+</li>
+<li>
+closing a closed channel will panic, so it is dangerous to close a channel if the closers don't know whether or not the channel is closed.
+</li>
+<li>
+sending values to a closed channel will panic, so it is dangerous to send values to a channel if the senders don't know whether or not the channel is closed.
+</li>
+</ol>
+<p>
+</p>
+</div>
+
+<p>
+The criticisms look reasonable (in fact not).
+Yes, there is really not a built-in function to check whether or not a channel has been closed.
+</p>
+
+<div>
+There is indeed a simple method to check whether or not a channel is closed
+if you can make sure no values were (and will be) ever sent to the channel.
+The method has been shown in <a href="channel-use-cases.html#check-closed-status">the last article</a>.
+Here, for a better coherence, the method is listed in the following example again.
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+type T int
+
+func IsClosed(ch <-chan T) bool {
+	select {
+	case <-ch:
+		return true
+	default:
+	}
+
+	return false
+}
+
+func main() {
+	c := make(chan T)
+	fmt.Println(IsClosed(c)) // false
+	close(c)
+	fmt.Println(IsClosed(c)) // true
+}
+</code></pre>
+<p>
+As above mentioned, this is not a universal way to check whether a channel is closed.
+</p>
+</div>
+
+<p>
+In fact, even if there is a simple built-in <code>closed</code> function
+to check whether or not a channel has been closed,
+its usefulness would be very limited, just like the built-in <code>len</code>
+function for checking the current number of values stored in the value buffer of a channel.
+The reason is the status of the checked channel may have changed
+just after a call to such functions returns,
+so that the returned value has already not been able to
+reflect the latest status of the just checked channel.
+Although it is okay to stop sending values to a channel <code>ch</code> if the
+call <code>closed(ch)</code> returns <code>true</code>,
+it is not safe to close the channel or continue sending values to the channel if the
+call <code>closed(ch)</code> returns <code>false</code>.
+</p>
+
+<h3>The Channel Closing Principle</h3>
+
+<p>
+One general principle of using Go channels is
+<b>don't close a channel from the receiver side
+and don't close a channel if the channel has multiple concurrent senders</b>.
+In other words, we should only close a channel in a sender goroutine
+if the sender is the only sender of the channel.
+</p>
+
+<p>
+<i>(Below, we will call the above principle as <b>channel closing principle</b>.)</i>
+</p>
+
+<p>
+Surely, this is not a universal principle to close channels.
+The universal principle is <b>don't close (or send values to) closed channels</b>.
+If we can guarantee that no goroutines will close
+and send values to a non-closed non-nil channel any more,
+then a goroutine can close the channel safely.
+However, making such guarantees by a receiver or by one of many senders of a channel
+usually needs much effort, and often makes code complicated.
+On the contrary, it is much easy to hold the <b>channel closing principle</b> mentioned above.
+</p>
+
+<h3>Solutions Which Close Channels Rudely</h3>
+
+<div>
+If you would close a channel from the receiver side or in one of the multiple senders
+of the channel anyway, then you can use <a href="control-flows-more.html#panic-recover">the recover mechanism</a>
+to prevent the possible panic from crashing your program.
+Here is an example (assume the channel element type is <code>T</code>).
+<pre class="line-numbers"><code class="language-go">func SafeClose(ch chan T) (justClosed bool) {
+	defer func() {
+		if recover() != nil {
+			// The return result can be altered
+			// in a defer function call.
+			justClosed = false
+		}
+	}()
+
+	// assume ch != nil here.
+	close(ch)   // panic if ch is closed
+	return true // <=> justClosed = true; return
+}
+</code></pre>
+
+<p>
+This solution obviously breaks the <b>channel closing principle</b>.
+</p>
+
+The same idea can be used for sending values to a potential closed channel.
+<pre class="line-numbers"><code class="language-go">func SafeSend(ch chan T, value T) (closed bool) {
+	defer func() {
+		if recover() != nil {
+			closed = true
+		}
+	}()
+
+	ch <- value  // panic if ch is closed
+	return false // <=> closed = false; return
+}
+</code></pre>
+<p></p>
+
+<p>
+Not only does the rude solution break the <b>channel closing principle</b>,
+and data races might happen in the process.
+</p>
+</div>
+
+<h3>Solutions Which Close Channels Politely</h3>
+
+<div>
+Many people prefer using <code>sync.Once</code> to close channels:
+<pre class="line-numbers"><code class="language-go">type MyChannel struct {
+	C    chan T
+	once sync.Once
+}
+
+func NewMyChannel() *MyChannel {
+	return &MyChannel{C: make(chan T)}
+}
+
+func (mc *MyChannel) SafeClose() {
+	mc.once.Do(func() {
+		close(mc.C)
+	})
+}
+</code></pre>
+<p></p>
+
+Surely, we can also use <code>sync.Mutex</code> to avoid closing a channel multiple times:
+<pre class="line-numbers"><code class="language-go">type MyChannel struct {
+	C      chan T
+	closed bool
+	mutex  sync.Mutex
+}
+
+func NewMyChannel() *MyChannel {
+	return &MyChannel{C: make(chan T)}
+}
+
+func (mc *MyChannel) SafeClose() {
+	mc.mutex.Lock()
+	defer mc.mutex.Unlock()
+	if !mc.closed {
+		close(mc.C)
+		mc.closed = true
+	}
+}
+
+func (mc *MyChannel) IsClosed() bool {
+	mc.mutex.Lock()
+	defer mc.mutex.Unlock()
+	return mc.closed
+}
+</code></pre>
+<p></p>
+
+<p>
+These ways may be polite, but they may not avoid data races.
+Currently, Go specification doesn't guarantee that there are no data races happening
+when a channel close and a channel send operations are executed concurrently.
+If a <code>SafeClose</code> function is called concurrently with a channel send operation to the same channel,
+data races might happen (though such data races generally don't do any harm).
+</p>
+</div>
+
+<h3>Solutions Which Close Channels Gracefully</h3>
+
+<p>
+One drawback of the above <code>SafeSend</code> function is that its calls can't be used as
+send operations which follow the <code>case</code> keyword in <code>select</code> blocks.
+The other drawback of the above <code>SafeSend</code> and  <code>SafeClose</code> functions
+is that many people, including me, would think the above solutions
+by using <code>panic</code>/<code>recover</code> and <code>sync</code> package are not graceful.
+Following, some pure-channel solutions without using <code>panic</code>/<code>recover</code>
+and <code>sync</code> package will be introduced, for all kinds of situations.
+</p>
+
+<p><i>
+(In the following examples, <code>sync.WaitGroup</code> is used to make the examples complete.
+It may be not always essential to use it in real practice.)
+</i></p>
+
+<h4>1. M receivers, one sender, the sender says "no more sends" by closing the data channel</h4>
+
+<div>
+This is the simplest situation, just let the sender close the data channel
+when it doesn't want to send more.
+<pre class="line-numbers"><code class="language-go">package main
+
+import (
+	"time"
+	"math/rand"
+	"sync"
+	"log"
+)
+
+func main() {
+	rand.Seed(time.Now().UnixNano()) // needed before Go 1.20
+	log.SetFlags(0)
+
+	// ...
+	const Max = 100000
+	const NumReceivers = 100
+
+	wgReceivers := sync.WaitGroup{}
+	wgReceivers.Add(NumReceivers)
+
+	// ...
+	dataCh := make(chan int)
+
+	// the sender
+	go func() {
+		for {
+			if value := rand.Intn(Max); value == 0 {
+				// The only sender can close the
+				// channel at any time safely.
+				close(dataCh)
+				return
+			} else {
+				dataCh <- value
+			}
+		}
+	}()
+
+	// receivers
+	for i := 0; i < NumReceivers; i++ {
+		go func() {
+			defer wgReceivers.Done()
+
+			// Receive values until dataCh is
+			// closed and the value buffer queue
+			// of dataCh becomes empty.
+			for value := range dataCh {
+				log.Println(value)
+			}
+		}()
+	}
+
+	wgReceivers.Wait()
+}
+</code></pre>
+<p></p>
+</div>
+
+<h4>2. One receiver, N senders, the only receiver says "please stop sending more" by closing an additional signal channel</h4>
+
+<div>
+This is a situation a little more complicated than the above one.
+We can't let the receiver close the data channel to stop data transferring,
+for doing this will break the <b>channel closing principle</b>.
+But we can let the receiver close an additional signal channel to
+notify senders to stop sending values.
+<pre class="line-numbers"><code class="language-go">package main
+
+import (
+	"time"
+	"math/rand"
+	"sync"
+	"log"
+)
+
+func main() {
+	rand.Seed(time.Now().UnixNano()) // needed before Go 1.20
+	log.SetFlags(0)
+
+	// ...
+	const Max = 100000
+	const NumSenders = 1000
+
+	wgReceivers := sync.WaitGroup{}
+	wgReceivers.Add(1)
+
+	// ...
+	dataCh := make(chan int)
+	stopCh := make(chan struct{})
+		// stopCh is an additional signal channel.
+		// Its sender is the receiver of channel
+		// dataCh, and its receivers are the
+		// senders of channel dataCh.
+
+	// senders
+	for i := 0; i < NumSenders; i++ {
+		go func() {
+			for {
+				// The try-receive operation is to try
+				// to exit the goroutine as early as
+				// possible. For this specified example,
+				// it is not essential.
+				select {
+				case <- stopCh:
+					return
+				default:
+				}
+
+				// Even if stopCh is closed, the first
+				// branch in the second select may be
+				// still not selected for some loops if
+				// the send to dataCh is also unblocked.
+				// But this is acceptable for this
+				// example, so the first select block
+				// above can be omitted.
+				select {
+				case <- stopCh:
+					return
+				case dataCh <- rand.Intn(Max):
+				}
+			}
+		}()
+	}
+
+	// the receiver
+	go func() {
+		defer wgReceivers.Done()
+
+		for value := range dataCh {
+			if value == Max-1 {
+				// The receiver of channel dataCh is
+				// also the sender of stopCh. It is
+				// safe to close the stop channel here.
+				close(stopCh)
+				return
+			}
+
+			log.Println(value)
+		}
+	}()
+
+	// ...
+	wgReceivers.Wait()
+}
+</code></pre>
+<p>
+As mentioned in the comments, for the additional signal channel,
+its sender is the receiver of the data channel.
+The additional signal channel is closed by its only sender,
+which holds the <b>channel closing principle</b>.
+</p>
+
+<p>
+In this example, the channel <code>dataCh</code> is never closed.
+Yes, channels don't have to be closed.
+A channel will be eventually garbage collected if no goroutines reference it any more,
+whether it is closed or not.
+So the gracefulness of closing a channel here is not to close the channel.
+</p>
+</div>
+
+<h4>3. M receivers, N senders, any one of them says "let's end the game" by notifying a moderator to close an additional signal channel</h4>
+
+<div>
+This is a the most complicated situation.
+We can't let any of the receivers and the senders close the data channel.
+And we can't let any of the receivers close an additional signal channel to
+notify all senders and receivers to exit the game.
+Doing either will break the <b>channel closing principle</b>.
+However, we can introduce a moderator role to close the additional signal channel.
+One trick in the following example is how to use a try-send operation to
+notify the moderator to close the additional signal channel.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import (
+	"time"
+	"math/rand"
+	"sync"
+	"log"
+	"strconv"
+)
+
+func main() {
+	rand.Seed(time.Now().UnixNano()) // needed before Go 1.20
+	log.SetFlags(0)
+
+	// ...
+	const Max = 100000
+	const NumReceivers = 10
+	const NumSenders = 1000
+
+	wgReceivers := sync.WaitGroup{}
+	wgReceivers.Add(NumReceivers)
+
+	// ...
+	dataCh := make(chan int)
+	stopCh := make(chan struct{})
+		// stopCh is an additional signal channel.
+		// Its sender is the moderator goroutine shown
+		// below, and its receivers are all senders
+		// and receivers of dataCh.
+	toStop := make(chan string, 1)
+		// The channel toStop is used to notify the
+		// moderator to close the additional signal
+		// channel (stopCh). Its senders are any senders
+		// and receivers of dataCh, and its receiver is
+		// the moderator goroutine shown below.
+		// It must be a buffered channel.
+
+	var stoppedBy string
+
+	// moderator
+	go func() {
+		stoppedBy = <-toStop
+		close(stopCh)
+	}()
+
+	// senders
+	for i := 0; i < NumSenders; i++ {
+		go func(id string) {
+			for {
+				value := rand.Intn(Max)
+				if value == 0 {
+					// Here, the try-send operation is
+					// to notify the moderator to close
+					// the additional signal channel.
+					select {
+					case toStop <- "sender#" + id:
+					default:
+					}
+					return
+				}
+
+				// The try-receive operation here is to
+				// try to exit the sender goroutine as
+				// early as possible. Try-receive and
+				// try-send select blocks are specially
+				// optimized by the standard Go
+				// compiler, so they are very efficient.
+				select {
+				case <- stopCh:
+					return
+				default:
+				}
+
+				// Even if stopCh is closed, the first
+				// branch in this select block might be
+				// still not selected for some loops
+				// (and for ever in theory) if the send
+				// to dataCh is also non-blocking. If
+				// this is unacceptable, then the above
+				// try-receive operation is essential.
+				select {
+				case <- stopCh:
+					return
+				case dataCh <- value:
+				}
+			}
+		}(strconv.Itoa(i))
+	}
+
+	// receivers
+	for i := 0; i < NumReceivers; i++ {
+		go func(id string) {
+			defer wgReceivers.Done()
+
+			for {
+				// Same as the sender goroutine, the
+				// try-receive operation here is to
+				// try to exit the receiver goroutine
+				// as early as possible.
+				select {
+				case <- stopCh:
+					return
+				default:
+				}
+
+				// Even if stopCh is closed, the first
+				// branch in this select block might be
+				// still not selected for some loops
+				// (and forever in theory) if the receive
+				// from dataCh is also non-blocking. If
+				// this is not acceptable, then the above
+				// try-receive operation is essential.
+				select {
+				case <- stopCh:
+					return
+				case value := <-dataCh:
+					if value == Max-1 {
+						// Here, the same trick is
+						// used to notify the moderator
+						// to close the additional
+						// signal channel.
+						select {
+						case toStop <- "receiver#" + id:
+						default:
+						}
+						return
+					}
+
+					log.Println(value)
+				}
+			}
+		}(strconv.Itoa(i))
+	}
+
+	// ...
+	wgReceivers.Wait()
+	log.Println("stopped by", stoppedBy)
+}
+</code></pre>
+
+<p>
+In this example, the <b>channel closing principle</b> is still held.
+</p>
+
+<p>
+Please note that the buffer size (capacity) of channel <code>toStop</code> is one.
+This is to avoid the first notification is missed
+when it is sent before the moderator goroutine gets ready to receive notification
+from <code>toStop</code>.
+</p>
+
+We can also set the capacity of the <code>toStop</code> channel
+as the sum number of senders and receivers,
+then we don't need a try-send <code>select</code> block to notify the moderator.
+<pre class="line-numbers"><code class="language-go">...
+toStop := make(chan string, NumReceivers + NumSenders)
+...
+			value := rand.Intn(Max)
+			if value == 0 {
+				toStop <- "sender#" + id
+				return
+			}
+...
+				if value == Max-1 {
+					toStop <- "receiver#" + id
+					return
+				}
+...
+</code></pre>
+</div>
+
+<h4>4. A variant of the "M receivers, one sender" situation: the close request is made by a third-party goroutine</h4>
+
+<div>
+Sometimes, it is needed that the close signal must be made by a third-party goroutine.
+For such cases, we can use an extra signal channel to notify the sender
+to close the data channel. For example,
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import (
+	"time"
+	"math/rand"
+	"sync"
+	"log"
+)
+
+func main() {
+	rand.Seed(time.Now().UnixNano()) // needed before Go 1.20
+	log.SetFlags(0)
+
+	// ...
+	const Max = 100000
+	const NumReceivers = 100
+	const NumThirdParties = 15
+
+	wgReceivers := sync.WaitGroup{}
+	wgReceivers.Add(NumReceivers)
+
+	// ...
+	dataCh := make(chan int)
+	closing := make(chan struct{}) // signal channel
+	closed := make(chan struct{})
+	
+	// The stop function can be called
+	// multiple times safely.
+	stop := func() {
+		select {
+		case closing<-struct{}{}:
+			<-closed
+		case <-closed:
+		}
+	}
+	
+	// some third-party goroutines
+	for i := 0; i < NumThirdParties; i++ {
+		go func() {
+			r := 1 + rand.Intn(3)
+			time.Sleep(time.Duration(r) * time.Second)
+			stop()
+		}()
+	}
+
+	// the sender
+	go func() {
+		defer func() {
+			close(closed)
+			close(dataCh)
+		}()
+
+		for {
+			select{
+			case <-closing: return
+			default:
+			}
+
+			select{
+			case <-closing: return
+			case dataCh <- rand.Intn(Max):
+			}
+		}
+	}()
+
+	// receivers
+	for i := 0; i < NumReceivers; i++ {
+		go func() {
+			defer wgReceivers.Done()
+
+			for value := range dataCh {
+				log.Println(value)
+			}
+		}()
+	}
+
+	wgReceivers.Wait()
+}
+</code></pre>
+
+<p>
+The idea used in the <code>stop</code> function is learned from
+<a href="https://groups.google.com/forum/#!msg/golang-nuts/lEKehHH7kZY/SRmCtXDZAAAJ">a comment</a> made by Roger Peppe.
+</p>
+</div>
+
+<h4>5. A variant of the "N sender" situation: the data channel must be closed to tell receivers that data sending is over</h4>
+
+<div>
+In the solutions for the above N-sender situations, to hold the <b>channel closing principle</b>,
+we avoid closing the data channels. However, sometimes, it is required that the data channels must be closed in the end
+to let receivers know data sending is over.
+For such cases, we can translate a N-sender situation to a one-sender situation by using a middle channel.
+The middle channel has only one sender, so that we can close it instead of closing the original data channel.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+import (
+	"time"
+	"math/rand"
+	"sync"
+	"log"
+	"strconv"
+)
+
+func main() {
+	rand.Seed(time.Now().UnixNano()) // needed before Go 1.20
+	log.SetFlags(0)
+
+	// ...
+	const Max = 1000000
+	const NumReceivers = 10
+	const NumSenders = 1000
+	const NumThirdParties = 15
+
+	wgReceivers := sync.WaitGroup{}
+	wgReceivers.Add(NumReceivers)
+
+	// ...
+	dataCh := make(chan int)     // will be closed
+	middleCh := make(chan int)   // will never be closed
+	closing := make(chan string) // signal channel
+	closed := make(chan struct{})
+
+	var stoppedBy string
+
+	// The stop function can be called
+	// multiple times safely.
+	stop := func(by string) {
+		select {
+		case closing <- by:
+			<-closed
+		case <-closed:
+		}
+	}
+	
+	// the middle layer
+	go func() {
+		exit := func(v int, needSend bool) {
+			close(closed)
+			if needSend {
+				dataCh <- v
+			}
+			close(dataCh)
+		}
+
+		for {
+			select {
+			case stoppedBy = <-closing:
+				exit(0, false)
+				return
+			case v := <- middleCh:
+				select {
+				case stoppedBy = <-closing:
+					exit(v, true)
+					return
+				case dataCh <- v:
+				}
+			}
+		}
+	}()
+	
+	// some third-party goroutines
+	for i := 0; i < NumThirdParties; i++ {
+		go func(id string) {
+			r := 1 + rand.Intn(3)
+			time.Sleep(time.Duration(r) * time.Second)
+			stop("3rd-party#" + id)
+		}(strconv.Itoa(i))
+	}
+
+	// senders
+	for i := 0; i < NumSenders; i++ {
+		go func(id string) {
+			for {
+				value := rand.Intn(Max)
+				if value == 0 {
+					stop("sender#" + id)
+					return
+				}
+
+				select {
+				case <- closed:
+					return
+				default:
+				}
+
+				select {
+				case <- closed:
+					return
+				case middleCh <- value:
+				}
+			}
+		}(strconv.Itoa(i))
+	}
+
+	// receivers
+	for range [NumReceivers]struct{}{} {
+		go func() {
+			defer wgReceivers.Done()
+
+			for value := range dataCh {
+				log.Println(value)
+			}
+		}()
+	}
+
+	// ...
+	wgReceivers.Wait()
+	log.Println("stopped by", stoppedBy)
+}
+</code></pre>
+
+<p></p>
+
+</div>
+
+<h4>More situations?</h4>
+
+<p>
+There should be more situation variants, but the above shown ones are the most common and basic ones.
+By using channels (and other concurrent programming techniques) cleverly,
+I believe a solution holding the <b>channel closing principle</b> for each situation variant can always be found.
+</p>
+
+<h3>Conclusion</h3>
+
+<p>
+There are no situations which will force you to break the <b>channel closing principle</b>.
+If you encounter such a situation, please rethink your design and rewrite you code.
+</p>
+
+<p>
+Programming with Go channels is like making art.
+</p>
+<hr>
+
+<div class="text-center"><a href="#i-channel-closing.html">Index↡</a></div>
+
+
+
+<hr>
+
+<div id="contact" class="alert alert-success"><small>
+
+<p>
+The <b><i>Go 101</i></b> 프로젝트는 <a href="https://github.com/go101/go101">Github</a>
+에서 호스팅됩니다.
+오타, 문법 오류, 부정확한 표현, 설명 결함, 코드 버그, 끊어진 링크와 같은 모든
+종류의 실수에 대한 수정 사항을 제출하여 Go 101을 개선을 돕는 것은 언제나 환영합니다.
+</p>
+
+<p>
+주기적으로 Go에 대한 깊이 있는 정보를 얻고 싶다면 Go 101의 공식 트위터 계정인
+<a href="https://twitter.com/go100and1">@go100and1</a>을 팔로우하거나
+<a href="https://join.slack.com/t/go-101/shared_invite/zt-y2pvwg00-Oz7lDDJu44l~hZsFRUApiA">Go 101 슬랙 채널</a>에j가입해주세요.
+</p>
+
+</small></div>
+
+<div class="alert alert-warning"><small>
+
+
+<div id="ebooks">
+이 책의 디지털 버전은 아래와 같은 곳을 통해서 구매할 수 있습니다.
+<ul>
+<li>
+	<a href="https://leanpub.com/go101">Leanpub</a>,
+	<i>최소 19.99 달러</i>.
+</li>
+<li>
+	
+	아마존 킨들 스토어, <i>(현재는 사용 불가)</i>.
+</li>
+<li>
+	<a href="https://books.apple.com/book/id1459984231">애플 북 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://play.google.com/store/books/details?id=Dc1wEAAAQBAJ">구글 플레이 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://github.com/go101/go101/releases">무료 전자책</a>,
+	pdf, epub과 azw3 포맷을 지원
+</li>
+</ul>
+	</div>
+<div>
+
+Go 101의 저자인 Tapir는 2016년 7월부터 Go 101 시리즈 책들을 집필하고 go101.org 웹사이트를 유지 관리하고 있습니다.
+새로운 콘텐츠는 책과 웹사이트에 수시로 추가될 예정입니다.
+Tapir는 인디 게임 개발자이기도 합니다.
+<a href="https://www.tapirgames.com">Tapir의 게임</a>을 플레이하여 Go 101을 지원할 수도 있습니다.
+(안드로이드와 아이폰/아이패드용):
+<ul>
+<li>
+	<a href="https://www.tapirgames.com/App/Color-Infection">Color Infection</a> (★★★★★), 140개 이상의 단계로 이루어진 물리 기반의 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Rectangle-Pushers">Rectangle Pushers</a> (★★★★★), 2가지 모드와 104개 이상의 단계로 이루어진 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Let-Us-Play-With-Particles">Let's Play With Particles</a>, 세가지 미니 게임이 있는 캐주얼 액션 게임
+</li>
+</ul>
+</div>
+
+<a href="https://paypal.me/tapirliu">페이팔</a>을 통한 개인 기부도 환영합니다.</small></div>
+
+<hr>
+색인:
+
+
+<div id="book-index">
+
+<!-- kindle starts: 1 -->
+
+<ul class="index part">
+	<li><a class="index" href="101-about.html">Go 101에 대해</a> - 이 책이 쓰여진 이유</li>
+	<li><a class="index" href="acknowledgements.html">감사의 말</a></li>
+</ul>
+
+<ul class="index part">
+	<li><a class="index" href="introduction.html">Go 소개</a> - Go를 배우는 가치</li>
+	<li><a class="index" href="go-toolchain.html">Go 툴체인</a> - Go 프로그램을 컴파일하고 실행하는 방법</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 코드에 익숙해지기
+
+	<ul class="index chapters">
+	<li><a class="index" href="basic-code-elements-introduction.html">소스 코드 요소 소개</a></li>
+	<li><a class="index" href="keywords-and-identifiers.html">키워드와 식별자</a></li>
+	<li><a class="index" href="basic-types-and-value-literals.html">기본 자료형과 기본 값 리터럴</a></li>
+	<li><a class="index" href="constants-and-variables.html">상수와 변수</a> - 무형성(untyped) 값과 자료형 추론 소개를 포함</li>
+	<li><a class="index" href="operators.html">일반 연산자</a> - 더 많은 자료형 추론 규칙 소개를 포함</li>
+	<li><a class="index" href="function-declarations-and-calls.html">함수 선언과 호출</a></li>
+	<li><a class="index" href="packages-and-imports.html">코드 패키지와 패키지 들여오기</a></li>
+	<li><a class="index" href="expressions-and-statements.html">표현식, 구문과 단순 구문</a></li>
+	<li><a class="index" href="control-flows.html">기본 흐름 제어</a></li>
+	<li><a class="index" href="control-flows-more.html">고루틴, 지연된 함수 호출과 패닉/복구</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 자료형 체계
+
+	<ul class="index chapters">
+	<li><a class="index" href="type-system-overview.html">Go 자료형 체계 개요</a> - Go 프로그래밍 숙달을 위해 반드시 읽어봐야 하는</li>
+	<li><a class="index" href="pointer.html">포인터</a></li>
+	<li><a class="index" href="struct.html">구조체</a></li>
+	<li><a class="index" href="value-part.html">변수</a> - Go 변수에 대한 더 깊은 이해</li>
+	<li><a class="index" href="container.html">배열, 슬라이스와 맵</a> - 1급 객체 컨테이너 자료형</li>
+	<li><a class="index" href="string.html">문자열</a></li>
+	<li><a class="index" href="function.html">함수</a> - 함수 자료형과 값, 가변 인자 함수</li>
+	<li><a class="index" href="channel.html">채널</a> - Go에서 동시성 동기화를 하는 방법</li>
+	<li><a class="index" href="method.html">메서드</a></li>
+	<li><a class="index" href="interface.html">인터페이스</a> - 리플렉션과 다형성을 하는 값 상자</li>
+	<li><a class="index" href="type-embedding.html">자료형 임베딩</a> - 자료형을 확장하는 방법</li>
+	<li><a class="index" href="unsafe.html">자료형에 안전하지 않는 포인터</a></li>
+	<li><a class="index" href="generic.html">제네릭</a> - 합성 자료형의 사용과 읽는 법</li>
+	<li><a class="index" href="reflection.html">리플렉션</a> - <code>reflect</code> 표준 패키지</li>
+	</ul>
+</li>
+</ul>
+
+<!-- kindle ends: 1 -->
+
+<!-- kindle starts: 2 -->
+
+<ul class="index part">
+<li>
+특별 주제
+
+	<ul class="index chapters">
+	<li><a class="index" href="line-break-rules.html">개행 규칙</a></li>
+	<li><a class="index" href="defer-more.html">지연된 함수 호출 더 알아보기</a></li>
+	<li><a class="index" href="panic-and-recover-use-cases.html">패닉/복구 사용 사례</a></li>
+	<li><a class="index" href="panic-and-recover-more.html">패닉/복구 메커니즘에 대한 고찰</a> - 함수 호출 종료 단계를 포함</li>
+	<li><a class="index" href="blocks-and-scopes.html">코드 블록과 식별자 스코프</a></li>
+	<li><a class="index" href="evaluation-orders.html">표현식 평가 순서</a></li>
+	<li><a class="index" href="value-copy-cost.html">Go의 값 복사 비용</a></li>
+	<li><a class="index" href="bounds-check-elimination.html">경계 검사 제거(BCE)</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+동시성 프로그래밍
+
+	<ul class="index chapters">
+	<li><a class="index" href="concurrent-synchronization-overview.html">동시성 동기화 개요</a></li>
+	<li><a class="index" href="channel-use-cases.html">채널 사용 사례</a></li>
+	<li><b class="index" id="i-channel-closing.html">채널을 깔끔하게 닫는 방법</b></li>
+	<li><a class="index" href="concurrent-synchronization-more.html">기타 동시성 동기화 기술</a> - <code>sync</code> 표준 패키지</li>
+	<li><a class="index" href="concurrent-atomic-operation.html">원자적 연산</a> - <code>sync/atomic</code> 표준 패키지</li>
+	<li><a class="index" href="memory-model.html">Go의 메모리 순서 보장</a></li>
+	<li><a class="index" href="concurrent-common-mistakes.html">흔히들 저지르는 동시성 프로그래밍 실수들</a></li>
+	</ul>
+
+</li>
+</ul>
+
+
+<ul class="index part">
+<li>
+메모리 관련
+
+	<ul class="index chapters">
+	<li><a class="index" href="memory-block.html">메모리 블록</a></li>
+	<li><a class="index" href="memory-layout.html">메모리 레이아웃</a></li>
+	<li><a class="index" href="memory-leaking.html">메모리 누수 시나리오</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+일부 요약
+
+	<ul class="index chapters">
+	<li><a class="index" href="summaries.html">몇 가지 간단한 요약</a></li>
+	<li><a class="index" href="nil.html">Go의 <code>nil</code></a></li>
+	<li><a class="index" href="value-conversions-assignments-and-comparisons.html">값 변환, 할당과 비교 규칙</a></li>
+	<li><a class="index" href="exceptions.html">구문/의미 예외</a></li>
+	<!-- (to remove) for printing -->
+	<li><a class="index" href="details.html">Go Details 101</a></li>
+	<li><a class="index" href="unofficial-faq.html">Go FAQ 101</a></li>
+	<li><a class="index" href="tips.html">Go Tips 101</a></li>
+	<!-- (to remove) -->
+	</ul>
+
+</li>
+</ul>
+
+<!-- kindle ends: 2 -->
+
+<!-- kindle starts: 0 -->
+
+<ul class="index part">
+<li><a class="index" href="more.html">더 많은 토픽</a></li>
+</ul>
+
+<!-- kindle ends: 0 -->
+
+</div>
+
+
+
+
+
+
+
+
+		</div>
+	</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

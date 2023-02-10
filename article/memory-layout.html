@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Golang online books, articles, tools, etc.">
+		<meta name="author" content="">
+		<meta name="go-version" content="go1.20">
+		<link rel="icon" href="/static/go101/images/101-v1.ico">
+		<link rel="apple-touch-icon" sizes="152x152" href="/static/go101/images/iphone-v1.jpeg">
+	
+		<title>Memory Layouts -Go 101</title><link id="css-bs" href="/static/bootstrap/v4.0.3-dark/css/bootstrap.min.css" rel="stylesheet">
+		<link id="css-go101" href="/static/go101/css/v991-dark.css" rel="stylesheet">
+		<link id="css-prism" href="/static/prism/2020-08-03-dark/prism.css" rel="stylesheet">
+		<script id="js-prism" src="/static/prism/2020-08-03-dark/prism.js"></script>
+
+
+		<script src="/static/jquery/jquery.min-v1.11.2.js"></script>
+		<script src="/static/go101/js/v5.js"></script>
+		
+		
+		<style>
+		div, p, ul, li, td, th {line-height: 1.55;}
+		</style>
+
+		<script>
+		var theme = ""
+		</script>
+	</head>
+
+	<body>
+		<div class="container">
+
+		<div class="row nav-bar-with-borders">
+	<div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/"><small>Home</small></a> <span class="new-text"><sup>new!</sup></span>
+	</div><div class="col-xs-6 col-sm-4 nav-item-active">
+		<a href="/article/101.html"><small>Go 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/generics/101.html"><small>Go Generics 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/details-and-tips/101.html"><small>Go Details &amp; Tips 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/optimizations/101.html"><small>Go Optimizations 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/quizzes/101.html"><small>Go Quizzes 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go HowTo 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Practices 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Agg 101</small></div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/blog/101.html"><small>Go 101 Blog</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/apps-and-libs/101.html"><small>Go 101 Apps &amp; Libs</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;" id="theme-switch"><small>테마: 다크/라이트</small></div>
+
+</div>
+
+<div class="alert alert-warning text-center"><small>
+현재 3권의 신간들인 <a href="/optimizations/101.html">Go Optimizations 101</a>,
+<a href="/details-and-tips/101.html">Go Details &amp; Tips 101</a>
+과 <a href="/generics/101.html">Go Generics 101</a>이 출간되어 있습니다.
+Leanpub 서점에서 <a href="https://leanpub.com/b/go-optimizations-details-generics">번들</a>을 모두 구입하시는 방법이 비용 대비 효율이 가장 좋습니다.
+<p></p>
+Go에 대한 많은 정보들과 Go 101 책들의 최신 소식을 얻으시려면 Go 101 트위터 계정인 <a href="https://twitter.com/go100and1">@Go100and1</a>을
+팔로잉 해주세요.
+</small></div>
+<p>
+</p>
+
+
+
+<h1>Memory Layouts</h1>
+
+
+
+<!--
+https://groups.google.com/forum/#!topic/golang-nuts/XDfQUn4U_g8
+https://groups.google.com/forum/#!topic/golang-nuts/YSxEBt9kzuc
+https://groups.google.com/forum/#!topic/golang-nuts/HaxJMtSngOo
+-->
+
+<p>
+This articles will introduce type alignment and size guarantees in Go.
+It is essential to know the guarantees to estimate the sizes of struct types
+and properly use the 64-bit functions in <code>sync/atomic</code> standard package.
+</p>
+
+<p>
+Go is a C family language, so many concepts talked in this article are shared with C language.
+</p>
+
+<a class="anchor" id="alignment-guarantee"></a>
+<h3>Type Alignment Guarantees in Go</h3>
+
+<div>
+<p>
+To fully utilize CPU directives and get the best performance,
+the (starting) addresses of the memory blocks allocated for values
+of a specified type must be aligned as multiples of an integer N,
+then N is called the value address alignment guarantee of the type, or simply the alignment guarantee of the type.
+We can also say the addresses of addressable values of the type are guaranteed to be N-byte aligned.
+</p>
+
+<p>
+In fact, each type has two alignment guarantees, one is for when it is used as field types of other (struct) types,
+the other is for other cases (when it is used for a variable declaration, array element type, etc).
+We call the former one the field alignment guarantee of that type,
+and call the latter one the general alignment guarantee of that type.
+</p>
+
+<p>
+For a type <code>T</code>, we can call <code>unsafe.Alignof(t)</code> to
+get its general alignment guarantee, where <code>t</code> is a non-field value of type <code>T</code>,
+and call <code>unsafe.Alignof(x.t)</code> to
+get its field alignment guarantee, where <code>x</code> is a struct value
+and <code>t</code> is a field value of type <code>T</code>.
+</p>
+
+<p>
+Calls to the functions in the <code>unsafe</code> standard code packages are always evaluated at compile time.
+</p>
+
+<p>
+At run time, for a value <code>t</code> of type <code>T</code>,
+we can call <code>reflect.TypeOf(t).Align()</code> to get the general alignment guarantee
+of type <code>T</code>, and call <code>reflect.TypeOf(t).FieldAlign()</code> to get
+the field alignment guarantee of type <code>T</code>.
+</p>
+
+<p>
+For the current standard Go compiler (version 1.20), the field alignment guarantee and the general alignment guarantee
+of a type are always equal. For gccgo compiler, the statement is false.
+</p>
+
+Go specification only mentions <a href="https://golang.org/ref/spec#Size_and_alignment_guarantees">a little
+on type alignment guarantees</a>:
+<blockquote>
+<small>
+The following minimal alignment properties are guaranteed:<br/>
+1. For a variable <code>x</code> of any type: <code>unsafe.Alignof(x)</code> is at least <code>1</code>.<br/>
+2. For a variable <code>x</code> of struct type: <code>unsafe.Alignof(x)</code> is the largest of all the values <code>unsafe.Alignof(x.f)</code> for each field <code>f</code> of <code>x</code>, but at least <code>1</code>.<br/>
+3. For a variable <code>x</code> of array type: <code>unsafe.Alignof(x)</code> is the same as the alignment of a variable of the array's element type.
+</small>
+</blockquote>
+
+<p>
+So Go specification doesn't specify the exact alignment guarantees for any types.
+It just specifies some minimal requirements.
+</p>
+
+For the same compiler, the exact type alignment guarantees may be different
+between different architectures and between different compiler versions.
+For the current version (1.20) of the standard Go compiler,
+the alignment guarantees are listed here.
+
+<pre class="fixed-width"><code class="language-go">type                      alignment guarantee
+------                    ------
+bool, uint8, int8         1
+uint16, int16             2
+uint32, int32             4
+float32, complex64        4
+arrays                    depend on element types
+structs                   depend on field types
+other types               size of a native word
+</code></pre>
+<p>
+Here, the size of a native word (or machine word) is 4-byte
+on 32-bit architectures and 8-byte on 64-bit architectures.
+</p>
+
+<!--
+todo: above assertion may be not correct for some architectures?
+-->
+
+<p>
+This means, for the current version of the standard Go compiler,
+the alignment guarantees of other types may be either <code>4</code> or <code>8</code>,
+depends on different build target architectures.
+This is also true for gccgo.
+</p>
+
+<p>
+Generally, we don't need to care about the value address alignments in Go programming,
+except that we want to optimizing memory consumption, or write portable programs which
+using the 64-bit functions from <code>sync/atomic</code> package.
+Please read the following two sections for details.
+</p>
+</div>
+
+<a class="anchor" id="size-and-padding"></a>
+<h3>Type Sizes and Structure Padding</h3>
+
+<div>
+Go specification only makes following <a href="https://golang.org/ref/spec#Size_and_alignment_guarantees">type size guarantees</a>:
+<pre class="fixed-width"><code class="language-go">type                    size in bytes
+------                  ------
+uint8, int8             1
+uint16, int16           2
+uint32, int32, float32  4
+uint64, int64           8
+float64, complex64      8
+complex128              16
+uint, int               implementation-specific,
+                        generally 4 on 32-bit
+                        architectures, and 8 on
+                        64-bit architectures.
+uintptr                 implementation-specific,
+                        large enough to store
+                        the uninterpreted bits
+                        of a pointer value.
+</code></pre>
+<p>
+Go specification doesn't make value size guarantees for other kinds of types.
+The full list of sizes of different types settled
+by the standard Go compiler are listed in
+<a href="value-copy-cost.html#value-sizes">value copy costs</a>.
+</p>
+
+<p>
+The standard Go compiler (and gccgo) will ensure the size of values of a type
+is a multiple of the alignment guarantee of the type.
+</p>
+
+<p>
+To satisfy type alignment guarantee rules mentioned previously,
+Go compilers may pad some bytes between fields of struct values.
+This makes the value size of a struct type may be not a simple
+sum of the sizes of all fields of the type.
+</p>
+
+The following is an example showing how bytes are padded between struct fields.
+We have already learned that
+<ul>
+<li>
+	the alignment guarantee and size of the built-in type <code>int8</code> are both one byte.
+</li>
+<li>
+	the alignment guarantee and size of the built-in type <code>int16</code> are both two bytes.
+</li>
+<li>
+	the size of the built-in type <code>int64</code> is 8 bytes, the alignment guarantee
+	of type <code>int64</code> is 4 bytes on 32-bit architectures and 8 bytes on 64-bit architectures.
+</li>
+<li>
+	the alignment guarantees of the types <code>T1</code> and <code>T2</code>
+	are their respective largest field alignment guarantees, a.k.a., the alignment guarantee of the <code>int64</code> field.
+	So their alignment guarantees are both 4 bytes on 32-bit architectures and 8 bytes on 64-bit architectures.
+</li>
+<li>
+	the sizes of the types <code>T1</code> and <code>T2</code> must be multiples of their respective alignment guarantees,
+	a.k.a., 4N bytes on 32-bit architectures and 8N bytes on 64-bit architectures.
+</li>
+</ul>
+
+<pre class="line-numbers"><code class="language-go">type T1 struct {
+	a int8
+
+	// On 64-bit architectures, to make field b
+	// 8-byte aligned, 7 bytes need to be padded
+	// here. On 32-bit architectures, to make
+	// field b 4-byte aligned, 3 bytes need to be
+	// padded here.
+
+	b int64
+	c int16
+
+	// To make the size of type T1 be a multiple
+	// of the alignment guarantee of T1, on 64-bit
+	// architectures, 6 bytes need to be padded
+	// here, and on 32-bit architectures, 2 bytes
+	// need to be padded here.
+}
+// The size of T1 is 24 (= 1 + 7 + 8 + 2 + 6)
+// bytes on 64-bit architectures and is 16
+// (= 1 + 3 + 8 + 2 + 2) on 32-bit architectures.
+
+type T2 struct {
+	a int8
+
+	// To make field c 2-byte aligned, one byte
+	// needs to be padded here on both 64-bit
+	// and 32-bit architectures.
+
+	c int16
+
+	// On 64-bit architectures, to make field b
+	// 8-byte aligned, 4 bytes need to be padded
+	// here. On 32-bit architectures, field b is
+	// already 4-byte aligned, so no bytes need
+	// to be padded here.
+
+	b int64
+}
+// The size of T2 is 16 (= 1 + 1 + 2 + 4 + 8)
+// bytes on 64-bit architectures, and is 12
+// (= 1 + 1 + 2 + 8) on 32-bit architectures.
+</code></pre>
+
+<p>
+Although <code>T1</code> and <code>T2</code> have the same field set, their sizes are different.
+</p>
+
+<p>
+One interesting fact for the standard Go compiler is that sometimes zero sized fields may affect structure padding.
+Please read <a href="unofficial-faq.html#final-zero-size-field">this question in the unofficial Go FAQ</a> for details.
+</p>
+</div>
+
+<a class="anchor" id="64bit-atomic-operation"></a>
+<h3>The Alignment Requirement for 64-bit Word Atomic Operations</h3>
+
+<div>
+<p>
+<b><i>64-bit words</i></b> mean values of types whose underlying types are <code>int64</code> or <code>uint64</code>.
+</p>
+
+<p>
+The article <a href="concurrent-atomic-operation.html">atomic operations</a> mentions a fact that
+64-bit atomic operations on a 64-bit word require the address of the 64-bit word must be 8-byte aligned.
+This is not a problem for the current 64-bit architectures supported by the standard Go compiler,
+because 64-bit words on these 64-bit architectures are always 8-byte aligned.
+
+</p>
+
+<p>
+However, on 32-bit architectures, the alignment guarantee made by the standard Go compiler for 64-bit words is only 4 bytes.
+64-bit atomic operations on a 64-bit word which is not 8-byte aligned will panic at runtime.
+Worse, on very old CPU architectures, 64-bit atomic functions are not supported.
+</p>
+
+At the end of the <a href="https://golang.org/pkg/sync/atomic/#pkg-note-BUG"><code>sync/atomic</code> documentation</a>,
+it mentions:
+
+<blockquote>
+<small>
+On x86-32, the 64-bit functions use instructions unavailable before the Pentium MMX.
+<br/><br/>
+On non-Linux ARM, the 64-bit functions use instructions unavailable before the ARMv6k core.
+<br/><br/>
+On both ARM and x86-32, it is the caller's responsibility to
+arrange for 64-bit alignment of 64-bit words accessed atomically.
+The first word in a variable or in an allocated struct,
+array, or slice can be relied upon to be 64-bit aligned.
+</small>
+</blockquote>
+
+<!--
+<p><i>
+(Note, although the above quoted texts shown in the bug zone of that documentation,
+what they describe are not bugs.)
+</i></p>
+-->
+
+So, things are not very bad for two reasons.
+<ol>
+<li>
+	The very old CPU architectures are not mainstream architectures nowadays.
+	If a program needs to do synchronization for 64-bit words on these architectures,
+	there are <a href="concurrent-synchronization-more.html">other synchronization techniques</a> to rescue.
+</li>
+<li>
+	On other not-very-old 32-bit architectures,
+	there are some ways to ensure some 64-bit words are relied upon to be 64-bit aligned.
+</li>
+</ol>
+
+<p>
+The ways are described as
+<b>the first (64-bit) word in a variable or in an allocated struct,
+array, or slice can be relied upon to be 64-bit aligned</b>.
+What does the word <b><i>allocated</i></b> mean?
+We can think an <b><i>allocated value</i></b> as a <b><i>declared</i></b> variable,
+a value returned by the built-in <code>make</code> function,
+or the value referenced by a value returned by the built-in <code>new</code> function.
+If a slice value derives from an allocated array and
+the first element of the slice is the first element of the array,
+then the slice value can also be viewed as an allocated value.
+</p>
+
+<p>
+The description of which 64-bit words can be relied upon to be 64-bit aligned
+on 32-bit architectures is some conservative.
+There are more 64-bit words which can be relied upon to be 8-byte aligned.
+In fact, if the first element of an array or slice which element type
+is a 64-bit word type can be relied upon to be 64-bit aligned,
+then all elements in the array/slice can also be accessed atomically.
+It is just some subtle and verbose to make a simple clear description to include
+all the 64-bit words can be relied upon to be 64-bit aligned on 32-bit architectures,
+so the official documentation just makes a conservative description.
+</p>
+
+<!--p>
+And <b><i>be relied upon to be 8-byte aligned</i></b> doesn't mean the address of
+the first 64-bit word in a global variable or in an allocated struct or array
+is always 8-byte aligned on 32-bit architectures.
+It just means if the first 64-bit word in such a value is ever accessed atomically,
+then compilers must guarantee the memory address of that value is 8-byte aligned at run time.
+If it is never accessed atomically, its address is not guaranteed to be 8-byte aligned.
+</p>
+
+<p>
+There are more other 64-bit words which can also be accessed atomically.
+It is just some subtle and verbose to make a simple clear definition in wording,
+so official documentation just makes conservative guarantees.
+</p-->
+
+Here is an example which lists some 64-bit words which are safe or unsafe
+to be accessed atomically on both 64-bit and 32-bit architectures.
+
+<pre class="line-numbers"><code class="language-go">type (
+	T1 struct {
+		v uint64
+	}
+
+	T2 struct {
+		_ int16
+		x T1
+		y *T1
+	}
+
+	T3 struct {
+		_ int16
+		x [6]int64
+		y *[6]int64
+	}
+)
+
+var a int64    // a is safe
+var b T1       // b.v is safe
+var c [6]int64 // c[0] is safe
+
+var d T2 // d.x.v is unsafe
+var e T3 // e.x[0] is unsafe
+
+func f() {
+	var f int64           // f is safe
+	var g = []int64{5: 0} // g[0] is safe
+
+	var h = e.x[:] // h[0] is unsafe
+
+	// Here, d.y.v and e.y[0] are both safe,
+	// for *d.y and *e.y are both allocated.
+	d.y = new(T1)
+	e.y = &[6]int64{}
+
+	_, _, _ = f, g, h
+}
+
+// In fact, all elements in c, g and e.y.v are
+// safe to be accessed atomically, though Go
+// official documentation never makes the guarantees.
+</code></pre>
+
+<p>
+If a 64-bit word field (generally the first one) of a struct type
+will be accessed atomically in code, we should always use allocated values of the struct type
+to guarantee the atomically accessed fields always can
+be relied upon to be 8-byte aligned on 32-bit architectures.
+When this struct type is used as the type of a field of another struct type,
+we should arrange the field as the first field of the other struct type,
+and always use allocated values of the other struct type.
+</p>
+
+Sometimes, if we can't make sure whether or not a 64-bit word can be accessed atomically,
+we can use a value of type <code>[15]byte</code> to determine
+the address for the 64-bit word at run time. For example,
+
+<pre class="line-numbers"><code class="language-go">package mylib
+
+import (
+	"unsafe"
+	"sync/atomic"
+)
+
+type Counter struct {
+	x [15]byte // instead of "x uint64"
+}
+
+func (c *Counter) xAddr() *uint64 {
+	// The return must be 8-byte aligned.
+	return (*uint64)(unsafe.Pointer(
+		(uintptr(unsafe.Pointer(&c.x)) + 7)/8*8))
+}
+
+func (c *Counter) Add(delta uint64) {
+	p := c.xAddr()
+	atomic.AddUint64(p, delta)
+}
+
+func (c *Counter) Value() uint64 {
+	return atomic.LoadUint64(c.xAddr())
+}
+</code></pre>
+
+<p>
+By using this solution, the <code>Counter</code> type can be embedded in other user types freely and safely,
+even on 32-bit architectures.
+The drawback of this solution is there are seven bytes being wasted for every value of <code>Counter</code> type
+and it uses unsafe pointers.
+<!--
+The <code>sync</code> standard package uses
+<a href="https://github.com/golang/go/blob/master/src/sync/waitgroup.go#L23">a <code>[3]uint32</code> value to do this trick instead</a>.
+This trick assumes that the alignment guarantee of the <code>uint32</code> type is a multiple of 4 bytes.
+The assumption is true for both the standard Go compiler and gccgo compiler.
+However, it might <a href="https://github.com/golang/go/issues/27577">be false for another third-party Go compiler</a>.
+-->
+</p>
+
+<!--
+<p>
+Russ Cox <a href="https://github.com/golang/go/issues/599">has proposed that the addresses of 64-bit words
+should always be 8-byte aligned</a>, on either 64-bit or 32-bit architectures, to make Go programming simpler.
+Currently (Go 1.20), this proposal hasn't been adopted yet.
+</p>
+-->
+
+Go 1.19 introduced a more elegant way to guarantee 8-byte alignments for some values.
+Go 1.19 added <a href="concurrent-atomic-operation.html#overview-1.19">several atomic types</a>
+in the <code>sync/atomic</code> standard package.
+The types include <code>atomic.Int64</code> and <code>atomic.Uint64</code>,
+which values are guaranteed to be 8-byte aligned, even on 32-bit architectures.
+We may make use of this fact to make some 64-bit words always 8-byte aligned on 32-bit architectures.
+For example, in the following code, the <code>x</code> field of any value of the type <code>T</code>
+is always 8-byte aligned, in any situations, either on 64-bit or 32-bit architectures.
+
+<pre class="line-numbers"><code class="language-go">type T struct {
+	_ [0]atomic.Int64
+	x int64
+}
+</code></pre>
+
+</div>
+<hr>
+
+<div class="text-center"><a href="#i-memory-layout.html">Index↡</a></div>
+
+
+
+<hr>
+
+<div id="contact" class="alert alert-success"><small>
+
+<p>
+The <b><i>Go 101</i></b> 프로젝트는 <a href="https://github.com/go101/go101">Github</a>
+에서 호스팅됩니다.
+오타, 문법 오류, 부정확한 표현, 설명 결함, 코드 버그, 끊어진 링크와 같은 모든
+종류의 실수에 대한 수정 사항을 제출하여 Go 101을 개선을 돕는 것은 언제나 환영합니다.
+</p>
+
+<p>
+주기적으로 Go에 대한 깊이 있는 정보를 얻고 싶다면 Go 101의 공식 트위터 계정인
+<a href="https://twitter.com/go100and1">@go100and1</a>을 팔로우하거나
+<a href="https://join.slack.com/t/go-101/shared_invite/zt-y2pvwg00-Oz7lDDJu44l~hZsFRUApiA">Go 101 슬랙 채널</a>에j가입해주세요.
+</p>
+
+</small></div>
+
+<div class="alert alert-warning"><small>
+
+
+<div id="ebooks">
+이 책의 디지털 버전은 아래와 같은 곳을 통해서 구매할 수 있습니다.
+<ul>
+<li>
+	<a href="https://leanpub.com/go101">Leanpub</a>,
+	<i>최소 19.99 달러</i>.
+</li>
+<li>
+	
+	아마존 킨들 스토어, <i>(현재는 사용 불가)</i>.
+</li>
+<li>
+	<a href="https://books.apple.com/book/id1459984231">애플 북 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://play.google.com/store/books/details?id=Dc1wEAAAQBAJ">구글 플레이 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://github.com/go101/go101/releases">무료 전자책</a>,
+	pdf, epub과 azw3 포맷을 지원
+</li>
+</ul>
+	</div>
+<div>
+
+Go 101의 저자인 Tapir는 2016년 7월부터 Go 101 시리즈 책들을 집필하고 go101.org 웹사이트를 유지 관리하고 있습니다.
+새로운 콘텐츠는 책과 웹사이트에 수시로 추가될 예정입니다.
+Tapir는 인디 게임 개발자이기도 합니다.
+<a href="https://www.tapirgames.com">Tapir의 게임</a>을 플레이하여 Go 101을 지원할 수도 있습니다.
+(안드로이드와 아이폰/아이패드용):
+<ul>
+<li>
+	<a href="https://www.tapirgames.com/App/Color-Infection">Color Infection</a> (★★★★★), 140개 이상의 단계로 이루어진 물리 기반의 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Rectangle-Pushers">Rectangle Pushers</a> (★★★★★), 2가지 모드와 104개 이상의 단계로 이루어진 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Let-Us-Play-With-Particles">Let's Play With Particles</a>, 세가지 미니 게임이 있는 캐주얼 액션 게임
+</li>
+</ul>
+</div>
+
+<a href="https://paypal.me/tapirliu">페이팔</a>을 통한 개인 기부도 환영합니다.</small></div>
+
+<hr>
+색인:
+
+
+<div id="book-index">
+
+<!-- kindle starts: 1 -->
+
+<ul class="index part">
+	<li><a class="index" href="101-about.html">Go 101에 대해</a> - 이 책이 쓰여진 이유</li>
+	<li><a class="index" href="acknowledgements.html">감사의 말</a></li>
+</ul>
+
+<ul class="index part">
+	<li><a class="index" href="introduction.html">Go 소개</a> - Go를 배우는 가치</li>
+	<li><a class="index" href="go-toolchain.html">Go 툴체인</a> - Go 프로그램을 컴파일하고 실행하는 방법</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 코드에 익숙해지기
+
+	<ul class="index chapters">
+	<li><a class="index" href="basic-code-elements-introduction.html">소스 코드 요소 소개</a></li>
+	<li><a class="index" href="keywords-and-identifiers.html">키워드와 식별자</a></li>
+	<li><a class="index" href="basic-types-and-value-literals.html">기본 자료형과 기본 값 리터럴</a></li>
+	<li><a class="index" href="constants-and-variables.html">상수와 변수</a> - 무형성(untyped) 값과 자료형 추론 소개를 포함</li>
+	<li><a class="index" href="operators.html">일반 연산자</a> - 더 많은 자료형 추론 규칙 소개를 포함</li>
+	<li><a class="index" href="function-declarations-and-calls.html">함수 선언과 호출</a></li>
+	<li><a class="index" href="packages-and-imports.html">코드 패키지와 패키지 들여오기</a></li>
+	<li><a class="index" href="expressions-and-statements.html">표현식, 구문과 단순 구문</a></li>
+	<li><a class="index" href="control-flows.html">기본 흐름 제어</a></li>
+	<li><a class="index" href="control-flows-more.html">고루틴, 지연된 함수 호출과 패닉/복구</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 자료형 체계
+
+	<ul class="index chapters">
+	<li><a class="index" href="type-system-overview.html">Go 자료형 체계 개요</a> - Go 프로그래밍 숙달을 위해 반드시 읽어봐야 하는</li>
+	<li><a class="index" href="pointer.html">포인터</a></li>
+	<li><a class="index" href="struct.html">구조체</a></li>
+	<li><a class="index" href="value-part.html">변수</a> - Go 변수에 대한 더 깊은 이해</li>
+	<li><a class="index" href="container.html">배열, 슬라이스와 맵</a> - 1급 객체 컨테이너 자료형</li>
+	<li><a class="index" href="string.html">문자열</a></li>
+	<li><a class="index" href="function.html">함수</a> - 함수 자료형과 값, 가변 인자 함수</li>
+	<li><a class="index" href="channel.html">채널</a> - Go에서 동시성 동기화를 하는 방법</li>
+	<li><a class="index" href="method.html">메서드</a></li>
+	<li><a class="index" href="interface.html">인터페이스</a> - 리플렉션과 다형성을 하는 값 상자</li>
+	<li><a class="index" href="type-embedding.html">자료형 임베딩</a> - 자료형을 확장하는 방법</li>
+	<li><a class="index" href="unsafe.html">자료형에 안전하지 않는 포인터</a></li>
+	<li><a class="index" href="generic.html">제네릭</a> - 합성 자료형의 사용과 읽는 법</li>
+	<li><a class="index" href="reflection.html">리플렉션</a> - <code>reflect</code> 표준 패키지</li>
+	</ul>
+</li>
+</ul>
+
+<!-- kindle ends: 1 -->
+
+<!-- kindle starts: 2 -->
+
+<ul class="index part">
+<li>
+특별 주제
+
+	<ul class="index chapters">
+	<li><a class="index" href="line-break-rules.html">개행 규칙</a></li>
+	<li><a class="index" href="defer-more.html">지연된 함수 호출 더 알아보기</a></li>
+	<li><a class="index" href="panic-and-recover-use-cases.html">패닉/복구 사용 사례</a></li>
+	<li><a class="index" href="panic-and-recover-more.html">패닉/복구 메커니즘에 대한 고찰</a> - 함수 호출 종료 단계를 포함</li>
+	<li><a class="index" href="blocks-and-scopes.html">코드 블록과 식별자 스코프</a></li>
+	<li><a class="index" href="evaluation-orders.html">표현식 평가 순서</a></li>
+	<li><a class="index" href="value-copy-cost.html">Go의 값 복사 비용</a></li>
+	<li><a class="index" href="bounds-check-elimination.html">경계 검사 제거(BCE)</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+동시성 프로그래밍
+
+	<ul class="index chapters">
+	<li><a class="index" href="concurrent-synchronization-overview.html">동시성 동기화 개요</a></li>
+	<li><a class="index" href="channel-use-cases.html">채널 사용 사례</a></li>
+	<li><a class="index" href="channel-closing.html">채널을 깔끔하게 닫는 방법</a></li>
+	<li><a class="index" href="concurrent-synchronization-more.html">기타 동시성 동기화 기술</a> - <code>sync</code> 표준 패키지</li>
+	<li><a class="index" href="concurrent-atomic-operation.html">원자적 연산</a> - <code>sync/atomic</code> 표준 패키지</li>
+	<li><a class="index" href="memory-model.html">Go의 메모리 순서 보장</a></li>
+	<li><a class="index" href="concurrent-common-mistakes.html">흔히들 저지르는 동시성 프로그래밍 실수들</a></li>
+	</ul>
+
+</li>
+</ul>
+
+
+<ul class="index part">
+<li>
+메모리 관련
+
+	<ul class="index chapters">
+	<li><a class="index" href="memory-block.html">메모리 블록</a></li>
+	<li><b class="index" id="i-memory-layout.html">메모리 레이아웃</b></li>
+	<li><a class="index" href="memory-leaking.html">메모리 누수 시나리오</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+일부 요약
+
+	<ul class="index chapters">
+	<li><a class="index" href="summaries.html">몇 가지 간단한 요약</a></li>
+	<li><a class="index" href="nil.html">Go의 <code>nil</code></a></li>
+	<li><a class="index" href="value-conversions-assignments-and-comparisons.html">값 변환, 할당과 비교 규칙</a></li>
+	<li><a class="index" href="exceptions.html">구문/의미 예외</a></li>
+	<!-- (to remove) for printing -->
+	<li><a class="index" href="details.html">Go Details 101</a></li>
+	<li><a class="index" href="unofficial-faq.html">Go FAQ 101</a></li>
+	<li><a class="index" href="tips.html">Go Tips 101</a></li>
+	<!-- (to remove) -->
+	</ul>
+
+</li>
+</ul>
+
+<!-- kindle ends: 2 -->
+
+<!-- kindle starts: 0 -->
+
+<ul class="index part">
+<li><a class="index" href="more.html">더 많은 토픽</a></li>
+</ul>
+
+<!-- kindle ends: 0 -->
+
+</div>
+
+
+
+
+
+
+
+
+		</div>
+	</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Golang online books, articles, tools, etc.">
+		<meta name="author" content="">
+		<meta name="go-version" content="go1.20">
+		<link rel="icon" href="/static/go101/images/101-v1.ico">
+		<link rel="apple-touch-icon" sizes="152x152" href="/static/go101/images/iphone-v1.jpeg">
+	
+		<title>Go Type System Overview -Go 101</title><link id="css-bs" href="/static/bootstrap/v4.0.3-dark/css/bootstrap.min.css" rel="stylesheet">
+		<link id="css-go101" href="/static/go101/css/v991-dark.css" rel="stylesheet">
+		<link id="css-prism" href="/static/prism/2020-08-03-dark/prism.css" rel="stylesheet">
+		<script id="js-prism" src="/static/prism/2020-08-03-dark/prism.js"></script>
+
+
+		<script src="/static/jquery/jquery.min-v1.11.2.js"></script>
+		<script src="/static/go101/js/v5.js"></script>
+		
+		
+		<style>
+		div, p, ul, li, td, th {line-height: 1.55;}
+		</style>
+
+		<script>
+		var theme = ""
+		</script>
+	</head>
+
+	<body>
+		<div class="container">
+
+		<div class="row nav-bar-with-borders">
+	<div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/"><small>Home</small></a> <span class="new-text"><sup>new!</sup></span>
+	</div><div class="col-xs-6 col-sm-4 nav-item-active">
+		<a href="/article/101.html"><small>Go 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/generics/101.html"><small>Go Generics 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/details-and-tips/101.html"><small>Go Details &amp; Tips 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/optimizations/101.html"><small>Go Optimizations 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/quizzes/101.html"><small>Go Quizzes 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go HowTo 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Practices 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Agg 101</small></div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/blog/101.html"><small>Go 101 Blog</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/apps-and-libs/101.html"><small>Go 101 Apps &amp; Libs</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;" id="theme-switch"><small>테마: 다크/라이트</small></div>
+
+</div>
+
+<div class="alert alert-warning text-center"><small>
+현재 3권의 신간들인 <a href="/optimizations/101.html">Go Optimizations 101</a>,
+<a href="/details-and-tips/101.html">Go Details &amp; Tips 101</a>
+과 <a href="/generics/101.html">Go Generics 101</a>이 출간되어 있습니다.
+Leanpub 서점에서 <a href="https://leanpub.com/b/go-optimizations-details-generics">번들</a>을 모두 구입하시는 방법이 비용 대비 효율이 가장 좋습니다.
+<p></p>
+Go에 대한 많은 정보들과 Go 101 책들의 최신 소식을 얻으시려면 Go 101 트위터 계정인 <a href="https://twitter.com/go100and1">@Go100and1</a>을
+팔로잉 해주세요.
+</small></div>
+<p>
+</p>
+
+
+
+<h1>Go Type System Overview</h1>
+
+
+
+<p>
+This article will introduce all kinds of types in Go and the concepts regarding
+Go type system. Without knowing these fundamental concepts, it is hard to have
+a thorough understanding of Go.
+</p>
+
+<h3>Concept: Basic Types</h3>
+
+<div>
+Built-in basic types in Go have been also introduced in
+<a href="basic-types-and-value-literals.html">built-in basic types
+and basic value literals</a>.
+For completeness of the current article, these built-in basic types
+are re-listed here.
+<ul>
+<li>Built-in string type: <code>string</code>.</li>
+<li>Built-in boolean type: <code>bool</code>.</li>
+<li>Built-in numeric types:
+	<ul>
+	<li><code>int8</code>, <code>uint8</code> (<code>byte</code>), <code>int16</code>, <code>uint16</code>, <code>int32</code> (<code>rune</code>), <code>uint32</code>, <code>int64</code>, <code>uint64</code>, <code>int</code>, <code>uint</code>, <code>uintptr</code>.</li>
+	<li><code>float32</code>, <code>float64</code>.</li>
+	<li><code>complex64</code>, <code>complex128</code>.</li>
+	</ul>
+</li>
+</ul>
+
+<p>
+Note, <code>byte</code> is a built-in alias of <code>uint8</code>,
+and <code>rune</code> is a built-in alias of <code>int32</code>.
+We can also declare custom type aliases (see below).
+</p>
+
+<p>
+Except <a href="string.html">string types</a>,
+Go 101 article series will not try to explain more on other basic types.
+</p>
+
+<p>
+The 17 built-in basic types are predeclared types.
+</p>
+</div>
+
+<h3>Concept: Composite Types</h3>
+
+<div>
+Go supports the following composite types:
+<ul>
+<li><a href="pointer.html">pointer types</a> - C pointer alike.</li>
+<li><a href="struct.html">struct types</a> - C struct alike.</li>
+<li><a href="function.html">function types</a> - functions are first-class types in Go.</li>
+<li><a href="container.html">container types</a>:
+	<ul>
+	<li>array types - fixed-length container types.</li>
+	<li>slice type - dynamic-length and dynamic-capacity container types.</li>
+	<li>map types - maps are associative arrays (or dictionaries). The standard Go compiler implements maps as hashtables.</li>
+	</ul>
+</li>
+<li><a href="channel.html">channel types</a> - channels are used to synchronize data among goroutines (the green threads in Go).</li>
+<li><a href="interface.html">interface types</a> - interfaces play a key role in reflection and polymorphism.</li>
+</ul>
+</div>
+
+<div>
+Unnamed composite types may be denoted by their respective type literals.
+Following are some literal representation examples of all kinds of unnamed composite types
+(name and unnamed types will be explained below).
+<pre class="line-numbers"><code class="language-go">// Assume T is an arbitrary type and Tkey is
+// a type supporting comparison (== and !=).
+
+*T         // a pointer type
+[5]T       // an array type
+[]T        // a slice type
+map[Tkey]T // a map type
+
+// a struct type
+struct {
+	name string
+	age  int
+}
+
+// a function type
+func(int) (bool, string)
+
+// an interface type
+interface {
+	Method0(string) int
+	Method1() (int, bool)
+}
+
+// some channel types
+chan T
+chan<- T
+<-chan T
+</code></pre>
+
+<p>
+</p>
+
+<p>
+<a href="#types-not-support-comparison">Comparable and incomparable types</a> will be explained below.
+</p>
+</div>
+
+<a class="anchor" id="type-kinds"></a>
+<h3>Fact: Kinds of Types</h3>
+
+<p>
+Each of the above mentioned basic and composite types corresponds to one kind of types.
+Besides these kinds, the unsafe pointer types introduced in the
+<a href="https://golang.org/pkg/unsafe"><code>unsafe</code> standard package</a>
+also belong to one kind of types in Go.
+So, up to now (Go 1.20), Go has 26 kinds of types.
+</p>
+
+<a class="anchor" id="type-definition"></a>
+<h3>Syntax: Type Definitions</h3>
+
+<p><i>
+(<b>Type definition</b>, or type definition declaration,
+initially called <b>type declaration</b>, was the only type declaration way before Go 1.9.
+Since Go 1.9, type definition has become one of two forms of type declarations.
+The new form is called <b>type alias declaration</b>,
+which will be introduced in a section below.)
+</i></p>
+
+<div>
+In Go, we can define new types by using the following form.
+In the syntax, <code>type</code> is a keyword.
+<pre class="line-numbers"><code class="language-go">// Define a solo new type.
+type NewTypeName SourceType
+
+// Define multiple new types together.
+type (
+	NewTypeName1 SourceType1
+	NewTypeName2 SourceType2
+)
+</code></pre>
+
+<p>
+New type names must be identifiers.
+But please note that, type names declared at package level can't be <a href="packages-and-imports.html#init"><code>init</code></a>.
+This is the same for the following introduced type alias names.
+</p>
+
+<p>
+The second type declaration in the above example includes two type specifications.
+If a type declaration contains more than one type specification,
+the type specifications must be enclosed within a pair of <code>()</code>.
+</p>
+
+<div>
+Note,
+<ul>
+<li>
+	a new defined type and its respective source type in type definitions
+	are two distinct types.
+</li>
+<li>
+	two types defined in two type definitions are always two distinct types.
+</li>
+<li>
+	the new defined type and the source type will share the same
+	underlying type (see below for the definition of underlying types),
+	and their values can be converted to each other.
+</li>
+<li>
+	types can be defined within function bodies.
+</li>
+</ul>
+</div>
+
+Some type definition examples:
+<pre class="line-numbers"><code class="language-go">// The following new defined and source types are all
+// basic types. The source types are all predeclared.
+type (
+	MyInt int
+	Age   int
+	Text  string
+)
+
+// The following new defined and source types are all
+// composite types. The source types are all unnamed.
+type IntPtr *int
+type Book struct{author, title string; pages int}
+type Convert func(in0 int, in1 bool)(out0 int, out1 string)
+type StringArray [5]string
+type StringSlice []string
+
+func f() {
+	// The names of the three defined types
+	// can be only used within the function.
+	type PersonAge map[string]int
+	type MessageQueue chan string
+	type Reader interface{Read([]byte) int}
+}
+</code></pre>
+
+<p>
+Please note that,
+from Go 1.9 to Go 1.17, the Go specification ever thought predeclared
+built-in types are defined types.
+But since Go 1.18, the Go specificaiton clarifies that
+predeclared built-in types are not defined types.
+</p>
+</div>
+
+<a class="anchor" id="generic-type"></a>
+<h3>Concept: Custom Generic Types and Instantiated Types</h3>
+
+<div>
+<p>
+Since Go 1.18, Go has supported custom generic types (and functions).
+A generic type must be instantiated to be used as value types.
+</p>
+
+<p>
+A generic type is a defined type and its instantiated types are named types
+(named types are explained in the next section).
+</p>
+
+<p>
+The other two important concepts in custom generics are constraints and type parameters.
+</p>
+
+<p>
+This book doesn't talk about custom generics in detail.
+Please read the <a href="https://go101.org/generics/101.html">Go Generics 101</a> book
+on how to declare and use generic types and functions.
+</p>
+
+</div>
+
+<a class="anchor" id="named-type"></a>
+<h3>Concept: Named Types vs. Unnamed Types</h3>
+
+<div>
+
+<p>
+Before Go 1.9, the terminology <b>named type</b> is defined accurately in Go specification.
+A named type was defined as a type that is represented by an identifier.
+Along with the custom type alias feature introduced in Go 1.9 (see the next section),
+the <b>named type</b> terminology was ever removed from Go specification
+and it was replaced by the <b>defined type</b> terminology.
+Since Go 1.18, along with the introduction of custom generics,
+the <b>named type</b> terminology has been added back to Go specification.
+</p>
+
+A named type may be
+
+<ul>
+<li>
+	a predeclared type;
+</li>
+<li>
+	a defined (non-custom-generic) type;
+</li>
+<li>
+	an instantiated type (of a generic type);
+</li>
+<li>
+	a type parameter type (used in custom generics).
+</li>
+</ul>
+
+<p>
+Other value types are called unnamed types.
+An unnamed type must be a composite type (not vice versa).
+</p>
+
+</div>
+
+<a class="anchor" id="type-alias"></a>
+<h3>Syntax: Type Alias Declarations</h3>
+
+<div>
+Since Go 1.9, we can declare custom type aliases by using the following syntax.
+The syntax of alias declaration is much like type definition,
+but please note there is a <code>=</code> in each type alias specification.
+<pre class="line-numbers"><code class="language-go">type (
+	Name = string
+	Age  = int
+)
+
+type table = map[string]int
+type Table = map[Name]Age
+</code></pre>
+
+<p>
+Type alias names must be identifiers.
+Like type definitions, type aliases can also be declared within function bodies.
+</p>
+
+<div>
+A type name (or literal) and its aliases all denote an identical type.
+By the above declarations, <code>Name</code> is an alias of <code>string</code>,
+so both denote the same type.
+The same applies to the other three pairs of type notations (either names or literals):
+<ul>
+<li>
+	<code>Age</code> and <code>int</code>
+</li>
+<li>
+	<code>table</code> and <code>map[string]int</code>
+</li>
+<li>
+	<code>Table</code> and <code>map[Name]Age</code>
+</li>
+</ul>
+</div>
+
+<p>
+In fact, the literals <code>map[string]int</code>
+and <code>map[Name]Age</code> also both denote the same type.
+So, similarly, aliases <code>table</code> and <code>Table</code> also denote the same type.
+</p>
+
+<p>
+Note, although a type alias always has a name, it might denote an unnamed type.
+For example, the <code>table</code> and <code>Table</code> aliases both
+denote the same unnamed type <code>map[string]int</code>. 
+</p>
+
+</div>
+
+<a class="anchor" id="underlying-type"></a>
+<h3>Concept: Underlying Types</h3>
+
+<div>
+In Go, each type has an underlying type. Rules:
+<ul>
+<li>for built-in types, the respective underlying types are themselves.</li>
+<li>for the <code>Pointer</code> type defined in the <code>unsafe</code> standard code package,
+	its underlying type is itself (at least we can think so. In fact, the underlying type
+	of the <code>unsafe.Pointer</code> type is not well documented. We can also think
+	the underlying type is <code>*T</code>, where <code>T</code> represents an arbitrary type).
+	<code>unsafe.Pointer</code> is also viewed as a built-in type.</li>
+<li>the underlying type of an unnamed type, which must be a composite type, is itself.</li>
+<li>in a type declaration, the newly declared type and the source type have the same underlying type.</li>
+</ul>
+
+Examples:
+<pre class="line-numbers"><code class="language-go">// The underlying types of the following ones are both int.
+type (
+	MyInt int
+	Age   MyInt
+)
+
+// The following new types have different underlying types.
+type (
+	IntSlice   []int   // underlying type is []int
+	MyIntSlice []MyInt // underlying type is []MyInt
+	AgeSlice   []Age   // underlying type is []Age
+)
+
+// The underlying types of []Age, Ages, and AgeSlice
+// are all the unnamed type []Age.
+type Ages AgeSlice
+</code></pre>
+
+<p>
+</p>
+
+<p>
+How can an underlying type be traced given a user declared type?
+The rule is, when a built-in basic type or an unnamed type is met, the tracing should be stopped.
+Take the type declarations shown above as examples, let's trace their underlying types.
+</p>
+
+<pre>
+MyInt → int
+Age → MyInt → int
+IntSlice → []int
+MyIntSlice → []MyInt <span style="color:#aaa">→ <span style="text-decoration:line-through;">[]int</span></span>
+AgeSlice → []Age <span style="color:#aaa">→ <span style="text-decoration:line-through;">[]MyInt</span></span> <span style="color:#aaa">→ <span style="text-decoration:line-through;">[]int</span></span>
+Ages → AgeSlice → []Age <span style="color:#aaa">→ <span style="text-decoration:line-through;">[]MyInt</span></span> <span style="color:#aaa">→ <span style="text-decoration:line-through;">[]int</span></span>
+</pre>
+
+<p>
+
+</p>
+
+In Go,
+<ul>
+<li>types whose underlying types are <code>bool</code> are called <b>boolean types</b>;</li>
+<li>types whose underlying types are any of the built-in integer types are called <b>integer types</b>;</li>
+<li>types whose underlying types are either <code>float32</code> or <code>float64</code> are called <b>floating-point types</b>;</li>
+<li>types whose underlying types are either <code>complex64</code> or <code>complex128</code> are called <b>complex types</b>;</li>
+<li>integer, floating-point and complex types are also called <b>numeric types</b>;</li>
+<li>types whose underlying types are <code>string</code> are called <b>string types</b>.</li>
+</ul>
+</div>
+
+<p>
+The concept of underlying type plays an important role in
+<a href="value-conversions-assignments-and-comparisons.html">value conversions, assignments and comparisons in Go</a>.
+</p>
+
+<h3>Concept: Values</h3>
+
+<p>
+An instance of a type is called a 'value' of the type.
+Values of the same type share some common properties.
+A type may have many values. One of them is the zero value of the type.
+</p>
+
+<p>
+Each type has a zero value, which can be viewed as the default value of the type.
+The predeclared <code>nil</code> identifier can used to represent
+zero values of slices, maps, functions, channels,
+pointers (including type-unsafe pointers) and interfaces.
+For more information on <code>nil</code>, please read <a href="nil.html">nil in Go</a>.
+</p>
+
+<p>
+There are several kinds of value representation forms in code, including
+<a href="basic-types-and-value-literals.html">literals</a>,
+<a href="constants-and-variables.html#constant">named constants</a>,
+<a href="constants-and-variables.html#variable">variables</a> and
+<a href="expressions-and-statements.html">expressions</a>,
+though the former three can be viewed as special cases of the latter one.
+</p>
+
+<p>
+A value can be <a href="constants-and-variables.html#untyped-value">typed or untyped</a>.
+</p>
+
+<p>
+All kinds of basic value literals have been introduced in the article
+<a href="basic-types-and-value-literals.html">basic types and basic value literals</a>.
+There are two more kinds of literals in Go, composite literals and function literals.
+</p>
+
+<p>
+Function literals, as the name implies, are used to represent function values.
+A <a href="function-declarations-and-calls.html#declaration">function declaration
+</a> is composed of a function literal and an identifier (the function name).
+</p>
+
+<p>
+Composite literals are used to represent values of struct types
+and container types (arrays, slices and maps),
+Please read <a href="struct.html">structs in Go</a>
+and <a href="container.html">containers in Go</a> for more details.
+</p>
+
+<p>
+There are no literals to represent values of pointers, channels and interfaces.
+</p>
+
+<a class="anchor" id="value-part"></a>
+<h3>Concept: Value Parts</h3>
+
+<p>
+At run time, many values are stored somewhere in memory.
+In Go, each of such values has a direct part.
+However, some of them have one or more indirect parts.
+Each value part occupies a continuous memory segment.
+The indirect underlying parts of a value are referenced
+by its direct part through (<a href="pointer.html">safe</a>
+or <a href="unsafe.html">unsafe</a>) pointers.
+</p>
+
+<p>
+The terminology <a href="value-part.html"><b>value part</b></a> is not defined in Go specification.
+It is just used in Go 101 to make some explanations simpler
+and help Go programmers understand Go types and values better.
+</p>
+
+<a class="anchor" id="value-size"></a>
+<h3>Concept: Value Sizes</h3>
+
+<p>
+When a value is stored in memory, the number of bytes occupied
+by the direct part of the value is called the size of the value.
+As all values of the same type have the same value size,
+we often simply call this the size of the type.
+</p>
+
+<p>
+We can use the <code>Sizeof</code> function in the <code>unsafe</code>
+standard package to get the size of any value.
+</p>
+
+<p>
+Go specification doesn't specify value size requirements for non-numeric types.
+The requirements for value sizes of all kinds of basic numeric types
+are listed in the article
+<a href="basic-types-and-value-literals.html">basic types and basic value
+literals</a>.
+</p>
+
+<a class="anchor" id="pointer-base-type"></a>
+<h3>Concept: Base Type of a Pointer Type</h3>
+
+<p>
+For a pointer type, assume its underlying type can be denoted as <code>*T</code>
+in literal, then <code>T</code> is called the base type of the pointer type.
+</p>
+
+<p>
+More information on pointer types and values can be found in the article
+<a href="pointer.html">pointers in Go</a>.
+</p>
+
+<h3>Concept: Fields of a Struct Type</h3>
+
+<div>
+A struct type consists a collection of member variable declarations.
+Each of the member variable declarations is called a "field" of the struct type.
+For example, the following struct type <code>Book</code> has
+three fields, <code>author</code>, <code>title</code> and <code>pages</code>.
+<pre class="line-numbers"><code class="language-go">struct {
+	author string
+	title  string
+	pages  int
+}
+</code></pre>
+</div>
+
+<p>
+More information on struct types and values can be found in the article
+<a href="struct.html">structs in Go</a>.
+</p>
+
+<h3>Concept: Signature of Function Types</h3>
+
+<p>
+The signature of a function type is composed of
+the input parameter definition list and
+the output result definition list of the function.
+</p>
+
+<p>
+The function name and body are not parts of a function signature.
+Parameter and result types are important for a function signature,
+but parameter and result names are not important.
+</p>
+
+<p>
+Please read <a href="function.html">functions in Go</a> for more details
+on function types and function values.
+</p>
+
+<h3>Concept: Methods and Method Set of a Type</h3>
+
+<p>
+In Go, some types can have <a href="method.html">methods</a>.
+Methods can also be called member functions.
+The method set of a type is composed of all the methods of the type.
+</p>
+
+<h3>Concept: Dynamic Type and Dynamic Value of an Interface Value</h3>
+
+<p>
+Interface values are values whose types are interface types.
+</p>
+
+<p>
+Each interface value can box a non-interface value in it.
+The value boxed in an interface value is called the dynamic value of the interface value.
+The type of the dynamic value is called the dynamic type of the interface value.
+An interface value boxing nothing is a zero interface value.
+A zero interface value has neither a dynamic value nor a dynamic type.
+</p>
+
+<p>
+An interface type can specify zero or several methods, which form the method set of the interface type.
+</p>
+
+<p>
+If the method set of a type, which is either an interface type or a non-interface type,
+is the super set of the method set of an interface type, we say the type
+<a href="interface.html#implementation">implements</a> the interface type.
+</p>
+
+<p>
+For more about interface types and values,
+please read <a href="interface.html">interfaces in Go</a>.
+</p>
+
+<a class="anchor" id="concrete-type"></a>
+<h3>Concept: Concrete Value and Concrete Type of a Value</h3>
+
+<p>
+For a (typed) non-interface value, its concrete value is itself and its concrete type is the type of the value.
+</p>
+
+<p>
+A zero interface value has neither concrete type nor concrete value.
+For a non-zero interface value, its concrete value is its dynamic value and its concrete type is its dynamic type.
+</p>
+
+<h3>Concept: Container Types</h3>
+
+<p>
+Arrays, slices and maps can be viewed as formal container types.
+</p>
+
+<p>
+Sometimes, string and channel types can also be viewed as container types informally.
+</p>
+
+<p>
+Each value of a formal or informal container type has a length.
+</p>
+
+<p>
+More information on formal container types and values can be found in the
+article <a href="container.html">containers in Go</a>.
+</p>
+
+<h3>Concept: Key Type of a Map Type</h3>
+
+<p>
+If the underlying type of a map type can be denoted as <code>map[Tkey]T</code>,
+then <code>Tkey</code> is called the key type of the map type.
+<code>Tkey</code> must be a comparable type (see below).
+</p>
+
+<h3>Concept: Element Type of a Container Type</h3>
+
+<div>
+The types of the elements stored in values of a container type must be identical.
+The identical type of the elements is called the element type of the container type.
+<ul>
+<li>For an array type, if its underlying type is <code>[N]T</code>, then its element type is <code>T</code>.</li>
+<li>For a slice type, if its underlying type is <code>[]T</code>, then its element type is <code>T</code>.</li>
+<li>For a map type, if its underlying type is <code>map[Tkey]T</code>, then its element type is <code>T</code>.</li>
+<li>For a channel type, if its underlying type is <code>chan T</code>, <code>chan&lt;- T</code> or <code>&lt;-chan T</code>, then its element type is <code>T</code>.</li>
+<li>The element type of any string type is always <code>byte</code> (a.k.a. <code>uint8</code>).</li>
+</ul>
+</div>
+
+<h3>Concept: Directions of Channel Types</h3>
+
+<div>
+Channel values can be viewed as synchronized first-in-first-out (FIFO) queues.
+Channel types and values have directions.
+<ul>
+<li>
+	A channel value which is both sendable and receivable is called
+	a bidirectional channel. Its type is called a bidirectional channel type.
+	The underlying types of bidirectional channel types are denoted by the <code>chan T</code> literal.
+</li>
+<li>
+	A channel value which is only sendable is called
+	a send-only channel. Its type is called a send-only channel type.
+	Send-only channel types are denoted by the <code>chan&lt;- T</code> literal.
+</li>
+<li>
+	A channel value which is only receivable is called
+	a receive-only channel. Its type is called a receive-only channel type.
+	Receive-only channel types are denoted by the <code>&lt;-chan T</code> literal.
+</li>
+</ul>
+</div>
+
+<p>
+More information on channel types and values can be found in the article
+<a href="channel.html">channels in Go</a>.
+</p>
+
+<a class="anchor" id="types-not-support-comparison"></a>
+<h3>Fact: Types Which Support or Don't Support Comparisons</h3>
+
+<div>
+Currently (Go 1.20), Go doesn't support comparisons
+(with the <code>==</code> and <code>!=</code> operators)
+for values of the following types:
+<ul>
+<li>slice types</li>
+<li>map types</li>
+<li>function types</li>
+<li>
+any struct type with a field whose type is incomparable
+and any array type which element type is incomparable.
+</li>
+</ul>
+
+<p>
+Above listed types are called incomparable types.
+All other types are called comparable types.
+Compilers forbid comparing two values of incomparable types.
+</p>
+
+<p>
+Note, incomparable types are also called uncomparable types in many articles.
+</p>
+
+<p>
+The key type of any map type must be a comparable type.
+</p>
+
+<p>
+We can learn more about the detailed rules of comparisons from the article
+<a href="value-conversions-assignments-and-comparisons.html#comparison-rules">value conversions,
+assignments and comparisons in Go</a>.
+</p>
+</div>
+
+<h3>Fact: Object-Oriented Programming in Go</h3>
+
+<div>
+Go is not a full-featured object-oriented programming language,
+but Go really supports some object-oriented programming elements.
+Please read the following listed articles for details:
+<ul>
+<li>
+	<a href="method.html">methods in Go</a>.
+</li>
+<li>
+	<a href="interface.html#implementation">implementations in Go</a>.
+</li>
+<li>
+	<a href="type-embedding.html">type embedding in Go</a>.
+</li>
+</ul>
+</div>
+
+<h3>Fact: Generics in Go</h3>
+
+<p>
+Before Go 1.18, the generic functionalities in Go were limited to built-in types and functions.
+Since Go 1.18, custom generics has already been supported.
+Please read the <a href="generic.html">generics in Go</a> article for built-in generics
+and the <a href="https://go101.org/generics/101.html">Go Generics 101</a> book for custom generics.
+</p>
+
+
+
+<hr>
+
+<div class="text-center"><a href="#i-type-system-overview.html">Index↡</a></div>
+
+
+
+<hr>
+
+<div id="contact" class="alert alert-success"><small>
+
+<p>
+The <b><i>Go 101</i></b> 프로젝트는 <a href="https://github.com/go101/go101">Github</a>
+에서 호스팅됩니다.
+오타, 문법 오류, 부정확한 표현, 설명 결함, 코드 버그, 끊어진 링크와 같은 모든
+종류의 실수에 대한 수정 사항을 제출하여 Go 101을 개선을 돕는 것은 언제나 환영합니다.
+</p>
+
+<p>
+주기적으로 Go에 대한 깊이 있는 정보를 얻고 싶다면 Go 101의 공식 트위터 계정인
+<a href="https://twitter.com/go100and1">@go100and1</a>을 팔로우하거나
+<a href="https://join.slack.com/t/go-101/shared_invite/zt-y2pvwg00-Oz7lDDJu44l~hZsFRUApiA">Go 101 슬랙 채널</a>에j가입해주세요.
+</p>
+
+</small></div>
+
+<div class="alert alert-warning"><small>
+
+
+<div id="ebooks">
+이 책의 디지털 버전은 아래와 같은 곳을 통해서 구매할 수 있습니다.
+<ul>
+<li>
+	<a href="https://leanpub.com/go101">Leanpub</a>,
+	<i>최소 19.99 달러</i>.
+</li>
+<li>
+	
+	아마존 킨들 스토어, <i>(현재는 사용 불가)</i>.
+</li>
+<li>
+	<a href="https://books.apple.com/book/id1459984231">애플 북 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://play.google.com/store/books/details?id=Dc1wEAAAQBAJ">구글 플레이 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://github.com/go101/go101/releases">무료 전자책</a>,
+	pdf, epub과 azw3 포맷을 지원
+</li>
+</ul>
+	</div>
+<div>
+
+Go 101의 저자인 Tapir는 2016년 7월부터 Go 101 시리즈 책들을 집필하고 go101.org 웹사이트를 유지 관리하고 있습니다.
+새로운 콘텐츠는 책과 웹사이트에 수시로 추가될 예정입니다.
+Tapir는 인디 게임 개발자이기도 합니다.
+<a href="https://www.tapirgames.com">Tapir의 게임</a>을 플레이하여 Go 101을 지원할 수도 있습니다.
+(안드로이드와 아이폰/아이패드용):
+<ul>
+<li>
+	<a href="https://www.tapirgames.com/App/Color-Infection">Color Infection</a> (★★★★★), 140개 이상의 단계로 이루어진 물리 기반의 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Rectangle-Pushers">Rectangle Pushers</a> (★★★★★), 2가지 모드와 104개 이상의 단계로 이루어진 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Let-Us-Play-With-Particles">Let's Play With Particles</a>, 세가지 미니 게임이 있는 캐주얼 액션 게임
+</li>
+</ul>
+</div>
+
+<a href="https://paypal.me/tapirliu">페이팔</a>을 통한 개인 기부도 환영합니다.</small></div>
+
+<hr>
+색인:
+
+
+<div id="book-index">
+
+<!-- kindle starts: 1 -->
+
+<ul class="index part">
+	<li><a class="index" href="101-about.html">Go 101에 대해</a> - 이 책이 쓰여진 이유</li>
+	<li><a class="index" href="acknowledgements.html">감사의 말</a></li>
+</ul>
+
+<ul class="index part">
+	<li><a class="index" href="introduction.html">Go 소개</a> - Go를 배우는 가치</li>
+	<li><a class="index" href="go-toolchain.html">Go 툴체인</a> - Go 프로그램을 컴파일하고 실행하는 방법</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 코드에 익숙해지기
+
+	<ul class="index chapters">
+	<li><a class="index" href="basic-code-elements-introduction.html">소스 코드 요소 소개</a></li>
+	<li><a class="index" href="keywords-and-identifiers.html">키워드와 식별자</a></li>
+	<li><a class="index" href="basic-types-and-value-literals.html">기본 자료형과 기본 값 리터럴</a></li>
+	<li><a class="index" href="constants-and-variables.html">상수와 변수</a> - 무형성(untyped) 값과 자료형 추론 소개를 포함</li>
+	<li><a class="index" href="operators.html">일반 연산자</a> - 더 많은 자료형 추론 규칙 소개를 포함</li>
+	<li><a class="index" href="function-declarations-and-calls.html">함수 선언과 호출</a></li>
+	<li><a class="index" href="packages-and-imports.html">코드 패키지와 패키지 들여오기</a></li>
+	<li><a class="index" href="expressions-and-statements.html">표현식, 구문과 단순 구문</a></li>
+	<li><a class="index" href="control-flows.html">기본 흐름 제어</a></li>
+	<li><a class="index" href="control-flows-more.html">고루틴, 지연된 함수 호출과 패닉/복구</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 자료형 체계
+
+	<ul class="index chapters">
+	<li><b class="index" id="i-type-system-overview.html">Go 자료형 체계 개요</b> - Go 프로그래밍 숙달을 위해 반드시 읽어봐야 하는</li>
+	<li><a class="index" href="pointer.html">포인터</a></li>
+	<li><a class="index" href="struct.html">구조체</a></li>
+	<li><a class="index" href="value-part.html">변수</a> - Go 변수에 대한 더 깊은 이해</li>
+	<li><a class="index" href="container.html">배열, 슬라이스와 맵</a> - 1급 객체 컨테이너 자료형</li>
+	<li><a class="index" href="string.html">문자열</a></li>
+	<li><a class="index" href="function.html">함수</a> - 함수 자료형과 값, 가변 인자 함수</li>
+	<li><a class="index" href="channel.html">채널</a> - Go에서 동시성 동기화를 하는 방법</li>
+	<li><a class="index" href="method.html">메서드</a></li>
+	<li><a class="index" href="interface.html">인터페이스</a> - 리플렉션과 다형성을 하는 값 상자</li>
+	<li><a class="index" href="type-embedding.html">자료형 임베딩</a> - 자료형을 확장하는 방법</li>
+	<li><a class="index" href="unsafe.html">자료형에 안전하지 않는 포인터</a></li>
+	<li><a class="index" href="generic.html">제네릭</a> - 합성 자료형의 사용과 읽는 법</li>
+	<li><a class="index" href="reflection.html">리플렉션</a> - <code>reflect</code> 표준 패키지</li>
+	</ul>
+</li>
+</ul>
+
+<!-- kindle ends: 1 -->
+
+<!-- kindle starts: 2 -->
+
+<ul class="index part">
+<li>
+특별 주제
+
+	<ul class="index chapters">
+	<li><a class="index" href="line-break-rules.html">개행 규칙</a></li>
+	<li><a class="index" href="defer-more.html">지연된 함수 호출 더 알아보기</a></li>
+	<li><a class="index" href="panic-and-recover-use-cases.html">패닉/복구 사용 사례</a></li>
+	<li><a class="index" href="panic-and-recover-more.html">패닉/복구 메커니즘에 대한 고찰</a> - 함수 호출 종료 단계를 포함</li>
+	<li><a class="index" href="blocks-and-scopes.html">코드 블록과 식별자 스코프</a></li>
+	<li><a class="index" href="evaluation-orders.html">표현식 평가 순서</a></li>
+	<li><a class="index" href="value-copy-cost.html">Go의 값 복사 비용</a></li>
+	<li><a class="index" href="bounds-check-elimination.html">경계 검사 제거(BCE)</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+동시성 프로그래밍
+
+	<ul class="index chapters">
+	<li><a class="index" href="concurrent-synchronization-overview.html">동시성 동기화 개요</a></li>
+	<li><a class="index" href="channel-use-cases.html">채널 사용 사례</a></li>
+	<li><a class="index" href="channel-closing.html">채널을 깔끔하게 닫는 방법</a></li>
+	<li><a class="index" href="concurrent-synchronization-more.html">기타 동시성 동기화 기술</a> - <code>sync</code> 표준 패키지</li>
+	<li><a class="index" href="concurrent-atomic-operation.html">원자적 연산</a> - <code>sync/atomic</code> 표준 패키지</li>
+	<li><a class="index" href="memory-model.html">Go의 메모리 순서 보장</a></li>
+	<li><a class="index" href="concurrent-common-mistakes.html">흔히들 저지르는 동시성 프로그래밍 실수들</a></li>
+	</ul>
+
+</li>
+</ul>
+
+
+<ul class="index part">
+<li>
+메모리 관련
+
+	<ul class="index chapters">
+	<li><a class="index" href="memory-block.html">메모리 블록</a></li>
+	<li><a class="index" href="memory-layout.html">메모리 레이아웃</a></li>
+	<li><a class="index" href="memory-leaking.html">메모리 누수 시나리오</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+일부 요약
+
+	<ul class="index chapters">
+	<li><a class="index" href="summaries.html">몇 가지 간단한 요약</a></li>
+	<li><a class="index" href="nil.html">Go의 <code>nil</code></a></li>
+	<li><a class="index" href="value-conversions-assignments-and-comparisons.html">값 변환, 할당과 비교 규칙</a></li>
+	<li><a class="index" href="exceptions.html">구문/의미 예외</a></li>
+	<!-- (to remove) for printing -->
+	<li><a class="index" href="details.html">Go Details 101</a></li>
+	<li><a class="index" href="unofficial-faq.html">Go FAQ 101</a></li>
+	<li><a class="index" href="tips.html">Go Tips 101</a></li>
+	<!-- (to remove) -->
+	</ul>
+
+</li>
+</ul>
+
+<!-- kindle ends: 2 -->
+
+<!-- kindle starts: 0 -->
+
+<ul class="index part">
+<li><a class="index" href="more.html">더 많은 토픽</a></li>
+</ul>
+
+<!-- kindle ends: 0 -->
+
+</div>
+
+
+
+
+
+
+
+
+		</div>
+	</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

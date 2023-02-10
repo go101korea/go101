@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Golang online books, articles, tools, etc.">
+		<meta name="author" content="">
+		<meta name="go-version" content="go1.20">
+		<link rel="icon" href="/static/go101/images/101-v1.ico">
+		<link rel="apple-touch-icon" sizes="152x152" href="/static/go101/images/iphone-v1.jpeg">
+	
+		<title>Structs in Go -Go 101</title><link id="css-bs" href="/static/bootstrap/v4.0.3-dark/css/bootstrap.min.css" rel="stylesheet">
+		<link id="css-go101" href="/static/go101/css/v991-dark.css" rel="stylesheet">
+		<link id="css-prism" href="/static/prism/2020-08-03-dark/prism.css" rel="stylesheet">
+		<script id="js-prism" src="/static/prism/2020-08-03-dark/prism.js"></script>
+
+
+		<script src="/static/jquery/jquery.min-v1.11.2.js"></script>
+		<script src="/static/go101/js/v5.js"></script>
+		
+		
+		<style>
+		div, p, ul, li, td, th {line-height: 1.55;}
+		</style>
+
+		<script>
+		var theme = ""
+		</script>
+	</head>
+
+	<body>
+		<div class="container">
+
+		<div class="row nav-bar-with-borders">
+	<div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/"><small>Home</small></a> <span class="new-text"><sup>new!</sup></span>
+	</div><div class="col-xs-6 col-sm-4 nav-item-active">
+		<a href="/article/101.html"><small>Go 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/generics/101.html"><small>Go Generics 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/details-and-tips/101.html"><small>Go Details &amp; Tips 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/optimizations/101.html"><small>Go Optimizations 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/quizzes/101.html"><small>Go Quizzes 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go HowTo 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Practices 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Agg 101</small></div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/blog/101.html"><small>Go 101 Blog</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/apps-and-libs/101.html"><small>Go 101 Apps &amp; Libs</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;" id="theme-switch"><small>테마: 다크/라이트</small></div>
+
+</div>
+
+<div class="alert alert-warning text-center"><small>
+현재 3권의 신간들인 <a href="/optimizations/101.html">Go Optimizations 101</a>,
+<a href="/details-and-tips/101.html">Go Details &amp; Tips 101</a>
+과 <a href="/generics/101.html">Go Generics 101</a>이 출간되어 있습니다.
+Leanpub 서점에서 <a href="https://leanpub.com/b/go-optimizations-details-generics">번들</a>을 모두 구입하시는 방법이 비용 대비 효율이 가장 좋습니다.
+<p></p>
+Go에 대한 많은 정보들과 Go 101 책들의 최신 소식을 얻으시려면 Go 101 트위터 계정인 <a href="https://twitter.com/go100and1">@Go100and1</a>을
+팔로잉 해주세요.
+</small></div>
+<p>
+</p>
+
+
+
+<h1>Structs in Go</h1>
+
+
+
+<p>
+Same as C, Go also supports struct types.
+This article will introduce the basic knowledge of struct types and values in Go.
+</p>
+
+<h3>Struct Types and Struct Type Literals</h3>
+
+<div>
+<p>
+Each unnamed struct type literal starts with a <code>struct</code> keyword
+which is followed by a sequence of field definitions enclosed in a <code>{}</code>.
+Generally, each field definition is composed of a name and a type.
+The number of fields of a struct type can be zero.
+</p>
+
+The following is an unnamed struct type literal:
+<pre class="line-numbers"><code class="language-go">struct {
+	title  string
+	author string
+	pages  int
+}
+</code></pre>
+
+<p>
+The above struct type has three fields. The types of the two fields
+<code>title</code> and <code>author</code> are both <code>string</code>.
+The type of the <code>pages</code> field is <code>int</code>.
+</p>
+
+<p>
+Some articles also call fields as member variables.
+</p>
+
+Consecutive fields with the same type can be declared together.
+<pre class="line-numbers"><code class="language-go">struct {
+	title, author string
+	pages         int
+}
+</code></pre>
+
+<p>
+The size of a struct type is the sum of the sizes of all its field types plus the number of some padding bytes.
+The padding bytes are used to align the memory addresses of some fields.
+We can learn padding and memory address alignments in <a href="memory-layout.html">a later article</a>.
+</p>
+
+<p>
+The size of a zero-field struct type is zero.
+</p>
+
+A tag may be bound to a struct field when the field is declared.
+Field tags are optional, the default value of each field tag is a blank string.
+The syntax allows either string literal forms for field tags.
+However, in practice, struct filed tags should present as key-value pairs,
+and each tag should present as raw string literals (<code>`...`</code>),
+whereas each value in a tag should present as interpreted string literals (<code>"..."</code>).
+For example:
+
+<pre class="line-numbers"><code class="language-go">struct {
+	Title  string `json:"title" myfmt:"s1"`
+	Author string `json:"author,omitempty" myfmt:"s2"`
+	Pages  int    `json:"pages,omitempty" myfmt:"n1"`
+	X, Y   bool   `myfmt:"b1"`
+}
+</code></pre>
+
+<p>
+Note, the tags of the <code>X</code> and <code>Y</code> fields in the above example
+are identical (though using field tags as this way is a bad practice).
+</p>
+
+<p>
+We can use the <a href="reflection.html#struct-field-tag">reflection</a> way to inspect field tag information.
+</p>
+
+<p>
+The purpose of each field tag is application dependent.
+In the above example, the field tags can help the functions in the
+<code>encoding/json</code> standard package to determine the field names in JSON texts,
+in the process of encoding struct values into JSON texts or decoding JSON texts into struct values.
+The functions in the <code>encoding/json</code> standard package will
+only encode and decode the exported struct fields, which is why
+the first letters of the field names in the above example are all upper cased.
+</p>
+
+<p>
+It is not a good idea to use field tags as comments.
+</p>
+
+<p>
+Unlike C language, Go structs don't support unions.
+</p>
+
+<p>
+All above shown struct types are unnamed.
+In practice, named struct types are more popular.
+</p>
+
+<p>
+Only exported fields of struct types shown up in a package
+can be used in other packages by importing the package.
+We can view non-exported struct fields as private/protected member variables.
+</p>
+
+<p>
+The field tags and the order of the field declarations in a struct type matter for the identity of the struct type.
+Two unnamed struct types are identical only if they have the same sequence of field declarations.
+Two field declarations are identical only if their respective names,
+their respective types and their respective tags are all identical.
+Please note, <b>two non-exported struct field names from
+different packages are always viewed as two different names.</b>
+</p>
+
+<p>
+A struct type can't have a field of the struct type itself, neither directly nor recursively.
+</p>
+
+<!--
+https://github.com/golang/go/issues/18640
+-->
+
+</div>
+
+<h3>Struct Value Literals and Struct Value Manipulations</h3>
+
+<p>
+In Go, the form <code>T{...}</code>,
+where <code>T</code> must be a type literal or a type name,
+is called a <b>composite literal</b> and
+is used as the value literals of some kinds of types,
+including struct types and the container types introduced later.
+</p>
+
+<p>
+Note, a type literal <code>T{...}</code> is a typed value, its type is <code>T</code>.
+</p>
+
+<div>
+Given a struct type <code>S</code> whose
+<a href="type-system-overview.html#underlying-type">underlying type</a>
+is <code>struct{x int; y bool}</code>,
+the zero value of <code>S</code> can be represented by the following
+two variants of struct composite literal forms:
+<ol>
+<li>
+	<code>S{0, false}</code>.
+	In this variant, no field names are present but all field values must be present
+	by the field declaration orders.
+</li>
+<li>
+	<code>S{x: 0, y: false}</code>, <code>S{y: false, x: 0}</code>,
+	<code>S{x: 0}</code>, <code>S{y: false}</code> and <code>S{}</code>.
+	In this variant, each field item is optional and the order of the field items is not important.
+	The values of the absent fields will be set as the zero values of their respective types.
+	But if a field item is present, it must be presented with the <code>FieldName: FieldValue</code> form.
+	The order of the field items in this form doesn't matter.
+	The form <code>S{}</code> is the most used zero value representation of type <code>S</code>.
+</li>
+</ol>
+
+<p>
+If <code>S</code> is a struct type imported from another package,
+it is recommended to use the second form, to maintain compatibility.
+Consider the case where the maintainer of the package adds
+a new field for type <code>S</code>, this will make the use of first form invalid.
+</p>
+
+<p>
+Surely, we can also use the struct composite literals to represent non-zero struct value.
+</p>
+
+<p>
+For a value <code>v</code> of type <code>S</code>, we can use
+<code>v.x</code> and <code>v.y</code>, which are called selectors (or selector expressions),
+to represent the field values of <code>v</code>.
+<code>v</code> is called the receiver of the selectors.
+
+Later, we call the dot <code>.</code> in a selector as the property selection operator.
+</p>
+
+An example:
+<pre class="line-numbers"><code class="language-go">package main
+
+import (
+	"fmt"
+)
+
+type Book struct {
+	title, author string
+	pages         int
+}
+
+func main() {
+	book := Book{"Go 101", "Tapir", 256}
+	fmt.Println(book) // {Go 101 Tapir 256}
+
+	// Create a book value with another form.
+	// All of the three fields are specified.
+	book = Book{author: "Tapir", pages: 256, title: "Go 101"}
+
+	// None of the fields are specified. The title and
+	// author fields are both "", pages field is 0.
+	book = Book{}
+
+	// Only specify the author field. The title field
+	// is "" and the pages field is 0.
+	book = Book{author: "Tapir"}
+
+	// Initialize a struct value by using selectors.
+	var book2 Book // <=> book2 := Book{}
+	book2.author = "Tapir Liu"
+	book2.pages = 300
+	fmt.Println(book2.pages) // 300
+}
+</code></pre>
+
+<p></p>
+
+The last <code>,</code> in a composite literal is optional
+if the last item in the literal and the closing <code>}</code>
+are at the same line.
+Otherwise, the last <code>,</code> is required.
+For more details, please read
+<a href="line-break-rules.html">line break rules in Go</a>.
+
+<pre class="line-numbers"><code class="language-go">var _ = Book {
+	author: "Tapir",
+	pages: 256,
+	title: "Go 101", // here, the "," must be present
+}
+
+// The last "," in the following line is optional.
+var _ = Book{author: "Tapir", pages: 256, title: "Go 101",}
+</code></pre>
+
+<p>
+</p>
+
+</div>
+
+<h3>About Struct Value Assignments</h3>
+
+<div>
+When a struct value is assigned to another struct value,
+the effect is the same as assigning each field one by one.
+<pre class="line-numbers"><code class="language-go">func f() {
+	book1 := Book{pages: 300}
+	book2 := Book{"Go 101", "Tapir", 256}
+
+	book2 = book1
+	// The above line is equivalent to the
+	// following lines.
+	book2.title = book1.title
+	book2.author = book1.author
+	book2.pages = book1.pages
+}
+</code></pre>
+
+<p>
+Two struct values can be assigned to each other only if
+their types are identical or the types of the two struct values
+have an identical underlying type (considering field tags)
+and at least one of the two types is an
+<a href="type-system-overview.html#named-type">unnamed type</a>.
+</p>
+</div>
+
+<a class="anchor" id="field-addressability"></a>
+<h3>Struct Field Addressability</h3>
+
+<div>
+<p>
+The fields of an addressable struct are also addressable.
+The fields of an unaddressable struct are also unaddressable.
+The fields of unaddressable structs can't be modified.
+All composite literals, including struct composite literals are unaddressable.
+</p>
+
+Example:
+<pre class="line-numbers"><code class="language-go">package main
+
+import "fmt"
+
+func main() {
+	type Book struct {
+		Pages int
+	}
+	var book = Book{} // book is addressable
+	p := &book.Pages
+	*p = 123
+	fmt.Println(book) // {123}
+
+	// The following two lines fail to compile, for
+	// Book{} is unaddressable, so is Book{}.Pages.
+	/*
+	Book{}.Pages = 123
+	p = &(Book{}.Pages) // <=> p = &Book{}.Pages
+	*/
+}
+</code></pre>
+
+<p>
+Note that the precedence of the property selection operator <code>.</code>
+in a selector is higher than the address-taking operator <code>&amp;</code>.
+</p>
+
+</div>
+
+<a class="anchor" id="take-composite-literal-address"></a>
+<h3>Composite Literals Are Unaddressable But Can Take Addresses</h3>
+
+<div>
+<p>
+Generally, only addressable values can take addresses.
+But there is a syntactic sugar in Go, which allows us to
+take addresses on composite literals.
+A syntactic sugar is an exception in syntax to make programming convenient.
+</p>
+
+For example,
+<pre class="line-numbers"><code class="language-go">package main
+
+func main() {
+	type Book struct {
+		Pages int
+	}
+	// Book{100} is unaddressable but can
+	// be taken address.
+	p := &Book{100} // <=> tmp := Book{100}; p := &tmp
+	p.Pages = 200
+}
+</code></pre>
+</div>
+
+<a class="anchor" id="use-pointer-as-struct"></a>
+<h3>In Field Selectors, Dereferences of Receivers Can Be Implicit</h3>
+
+<div>
+
+In the following example, for simplicity, <code>(*bookN).pages</code> could
+be written as <code>bookN.pages</code>. In other words, <code>bookN</code>
+is dereferenced in the simplified selectors.
+
+<pre class="line-numbers"><code class="language-go">package main
+
+func main() {
+	type Book struct {
+		pages int
+	}
+	book1 := &Book{100} // book1 is a struct pointer
+	book2 := new(Book)  // book2 is another struct pointer
+	// Use struct pointers as structs.
+	book2.pages = book1.pages
+	// This last line is equivalent to the above line.
+	// In other words, if the receiver is a pointer,
+	// it will be implicitly dereferenced.
+	(*book2).pages = (*book1).pages
+}
+</code></pre>
+
+<p>
+</p>
+
+</div>
+
+<a class="anchor" id="comparison"></a>
+<h3>About Struct Value Comparisons</h3>
+
+<p>
+A struct type is comparable only if none of the types of its fields
+(including the fields with names as the blank identifier <code>_</code>) are
+<a href="type-system-overview.html#types-not-support-comparison">incomparable</a>.
+</p>
+
+<p>
+Two struct values are comparable only if they can be assigned to each other and their types are both comparable.
+In other words, two struct values can be compared with each other only if
+the (comparable) types of the two struct values are identical or
+their underlying types are identical (considering field tags)
+and at least one of the two types is unnamed.
+</p>
+
+<p>
+When comparing two struct values of the same type,
+each pair of their corresponding fields will be compared (in the order shown in source code).
+The two struct values are equal only if all of their corresponding fields are equal.
+The comparison stops in advance when a pair of fields is found unequal
+or <a href="interface.html#comparison">a panic occurs</a>.
+In comparisons, fields with names as the blank identifier <code>_</code> will be ignored.
+</p>
+
+<h3>About Struct Value Conversions</h3>
+
+<div>
+<p>
+Values of two struct types <code>S1</code> and <code>S2</code> can be converted
+to each other's types, if <code>S1</code> and <code>S2</code> share
+the identical underlying type (by ignoring field tags).
+In particular if either <code>S1</code> or <code>S2</code> is an
+<a href="type-system-overview.html#named-type">unnamed type</a>
+and their underlying types are identical (considering field tags),
+then the conversions between the values of them can be implicit.
+</p>
+
+Given struct types <code>S0</code>, <code>S1</code>, <code>S2</code>,
+<code>S3</code> and <code>S4</code> in the following code snippet,
+<ul>
+<li>
+	values of type <code>S0</code> can't be converted to
+	the other four types, and vice versa,
+	because the corresponding field names are different.
+</li>
+<li>
+	two values of two different types among <code>S1</code>,
+	<code>S2</code>, <code>S3</code> and <code>S4</code>
+	can be converted to each other's type.
+</li>
+</ul>
+
+In particular,
+<ul>
+<li>
+	values of the type denoted by <code>S2</code> can be implicitly converted
+	to type <code>S3</code>, and vice versa.
+</li>
+<li>
+	values of the type denoted by <code>S2</code> can be implicitly converted
+	to type <code>S4</code>, and vice versa.
+</li>
+</ul>
+
+But,
+<ul>
+<li>
+	values of the type denoted by <code>S2</code> must be explicitly converted
+	to type <code>S1</code>, and vice versa.
+</li>
+<li>
+	values of type <code>S3</code> must be explicitly converted
+	to type <code>S4</code>, and vice versa.
+</li>
+</ul>
+
+<pre class="line-numbers"><code class="language-go">package main
+
+type S0 struct {
+	y int "foo"
+	x bool
+}
+
+// S1 is an alias of an unnamed type.
+type S1 = struct {
+	x int "foo"
+	y bool
+}
+
+// S2 is also an alias of an unnamed type.
+type S2 = struct {
+	x int "bar"
+	y bool
+}
+
+// If field tags are ignored, the underlying
+// types of S3(S4) and S1 are same. If field
+// tags are considered, the underlying types
+// of S3(S4) and S1 are different.
+type S3 S2 // S3 is a defined (so named) type
+type S4 S3 // S4 is a defined (so named) type
+
+var v0, v1, v2, v3, v4 = S0{}, S1{}, S2{}, S3{}, S4{}
+func f() {
+	v1 = S1(v2); v2 = S2(v1)
+	v1 = S1(v3); v3 = S3(v1)
+	v1 = S1(v4); v4 = S4(v1)
+	v2 = v3; v3 = v2 // the conversions can be implicit
+	v2 = v4; v4 = v2 // the conversions can be implicit
+	v3 = S3(v4); v4 = S4(v3)
+}
+</code></pre>
+
+<p>
+</p>
+
+<p>
+In fact, two struct values can be assigned (or compared) to each other
+only if one of them can be implicitly converted to the type of the other.
+</p>
+
+</div>
+
+<h3>Anonymous Struct Types Can Be Used in Field Declarations</h3>
+
+<div>
+<p>
+Anonymous struct types are allowed to be used as the types of the fields
+of another struct type.
+Anonymous struct type literals are also allowed to be used
+in composite literals.
+</p>
+
+An example:
+<pre class="line-numbers"><code class="language-go">var aBook = struct {
+	// The type of the author field is
+	// an anonymous struct type.
+	author struct {
+		firstName, lastName string
+		gender              bool
+	}
+	title string
+	pages int
+}{
+	author: struct { // an anonymous struct type
+		firstName, lastName string
+		gender              bool
+	}{
+		firstName: "Mark",
+		lastName: "Twain",
+	},
+	title: "The Million Pound Note",
+	pages: 96,
+}
+</code></pre>
+
+<p>
+Generally, for better readability, it is not recommended to
+use anonymous struct type literals in composite literals.
+</p>
+
+</div>
+
+<h3>More About Struct Types</h3>
+
+<p>
+There are some advanced topics which are related to struct types.
+They will be explained in <a href="type-embedding.html">type embedding</a>
+and <a href="memory-layout.html#size-and-padding">memory layouts</a> later.
+</p>
+
+
+<hr>
+
+<div class="text-center"><a href="#i-struct.html">Index↡</a></div>
+
+
+
+<hr>
+
+<div id="contact" class="alert alert-success"><small>
+
+<p>
+The <b><i>Go 101</i></b> 프로젝트는 <a href="https://github.com/go101/go101">Github</a>
+에서 호스팅됩니다.
+오타, 문법 오류, 부정확한 표현, 설명 결함, 코드 버그, 끊어진 링크와 같은 모든
+종류의 실수에 대한 수정 사항을 제출하여 Go 101을 개선을 돕는 것은 언제나 환영합니다.
+</p>
+
+<p>
+주기적으로 Go에 대한 깊이 있는 정보를 얻고 싶다면 Go 101의 공식 트위터 계정인
+<a href="https://twitter.com/go100and1">@go100and1</a>을 팔로우하거나
+<a href="https://join.slack.com/t/go-101/shared_invite/zt-y2pvwg00-Oz7lDDJu44l~hZsFRUApiA">Go 101 슬랙 채널</a>에j가입해주세요.
+</p>
+
+</small></div>
+
+<div class="alert alert-warning"><small>
+
+
+<div id="ebooks">
+이 책의 디지털 버전은 아래와 같은 곳을 통해서 구매할 수 있습니다.
+<ul>
+<li>
+	<a href="https://leanpub.com/go101">Leanpub</a>,
+	<i>최소 19.99 달러</i>.
+</li>
+<li>
+	
+	아마존 킨들 스토어, <i>(현재는 사용 불가)</i>.
+</li>
+<li>
+	<a href="https://books.apple.com/book/id1459984231">애플 북 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://play.google.com/store/books/details?id=Dc1wEAAAQBAJ">구글 플레이 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://github.com/go101/go101/releases">무료 전자책</a>,
+	pdf, epub과 azw3 포맷을 지원
+</li>
+</ul>
+	</div>
+<div>
+
+Go 101의 저자인 Tapir는 2016년 7월부터 Go 101 시리즈 책들을 집필하고 go101.org 웹사이트를 유지 관리하고 있습니다.
+새로운 콘텐츠는 책과 웹사이트에 수시로 추가될 예정입니다.
+Tapir는 인디 게임 개발자이기도 합니다.
+<a href="https://www.tapirgames.com">Tapir의 게임</a>을 플레이하여 Go 101을 지원할 수도 있습니다.
+(안드로이드와 아이폰/아이패드용):
+<ul>
+<li>
+	<a href="https://www.tapirgames.com/App/Color-Infection">Color Infection</a> (★★★★★), 140개 이상의 단계로 이루어진 물리 기반의 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Rectangle-Pushers">Rectangle Pushers</a> (★★★★★), 2가지 모드와 104개 이상의 단계로 이루어진 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Let-Us-Play-With-Particles">Let's Play With Particles</a>, 세가지 미니 게임이 있는 캐주얼 액션 게임
+</li>
+</ul>
+</div>
+
+<a href="https://paypal.me/tapirliu">페이팔</a>을 통한 개인 기부도 환영합니다.</small></div>
+
+<hr>
+색인:
+
+
+<div id="book-index">
+
+<!-- kindle starts: 1 -->
+
+<ul class="index part">
+	<li><a class="index" href="101-about.html">Go 101에 대해</a> - 이 책이 쓰여진 이유</li>
+	<li><a class="index" href="acknowledgements.html">감사의 말</a></li>
+</ul>
+
+<ul class="index part">
+	<li><a class="index" href="introduction.html">Go 소개</a> - Go를 배우는 가치</li>
+	<li><a class="index" href="go-toolchain.html">Go 툴체인</a> - Go 프로그램을 컴파일하고 실행하는 방법</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 코드에 익숙해지기
+
+	<ul class="index chapters">
+	<li><a class="index" href="basic-code-elements-introduction.html">소스 코드 요소 소개</a></li>
+	<li><a class="index" href="keywords-and-identifiers.html">키워드와 식별자</a></li>
+	<li><a class="index" href="basic-types-and-value-literals.html">기본 자료형과 기본 값 리터럴</a></li>
+	<li><a class="index" href="constants-and-variables.html">상수와 변수</a> - 무형성(untyped) 값과 자료형 추론 소개를 포함</li>
+	<li><a class="index" href="operators.html">일반 연산자</a> - 더 많은 자료형 추론 규칙 소개를 포함</li>
+	<li><a class="index" href="function-declarations-and-calls.html">함수 선언과 호출</a></li>
+	<li><a class="index" href="packages-and-imports.html">코드 패키지와 패키지 들여오기</a></li>
+	<li><a class="index" href="expressions-and-statements.html">표현식, 구문과 단순 구문</a></li>
+	<li><a class="index" href="control-flows.html">기본 흐름 제어</a></li>
+	<li><a class="index" href="control-flows-more.html">고루틴, 지연된 함수 호출과 패닉/복구</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 자료형 체계
+
+	<ul class="index chapters">
+	<li><a class="index" href="type-system-overview.html">Go 자료형 체계 개요</a> - Go 프로그래밍 숙달을 위해 반드시 읽어봐야 하는</li>
+	<li><a class="index" href="pointer.html">포인터</a></li>
+	<li><b class="index" id="i-struct.html">구조체</b></li>
+	<li><a class="index" href="value-part.html">변수</a> - Go 변수에 대한 더 깊은 이해</li>
+	<li><a class="index" href="container.html">배열, 슬라이스와 맵</a> - 1급 객체 컨테이너 자료형</li>
+	<li><a class="index" href="string.html">문자열</a></li>
+	<li><a class="index" href="function.html">함수</a> - 함수 자료형과 값, 가변 인자 함수</li>
+	<li><a class="index" href="channel.html">채널</a> - Go에서 동시성 동기화를 하는 방법</li>
+	<li><a class="index" href="method.html">메서드</a></li>
+	<li><a class="index" href="interface.html">인터페이스</a> - 리플렉션과 다형성을 하는 값 상자</li>
+	<li><a class="index" href="type-embedding.html">자료형 임베딩</a> - 자료형을 확장하는 방법</li>
+	<li><a class="index" href="unsafe.html">자료형에 안전하지 않는 포인터</a></li>
+	<li><a class="index" href="generic.html">제네릭</a> - 합성 자료형의 사용과 읽는 법</li>
+	<li><a class="index" href="reflection.html">리플렉션</a> - <code>reflect</code> 표준 패키지</li>
+	</ul>
+</li>
+</ul>
+
+<!-- kindle ends: 1 -->
+
+<!-- kindle starts: 2 -->
+
+<ul class="index part">
+<li>
+특별 주제
+
+	<ul class="index chapters">
+	<li><a class="index" href="line-break-rules.html">개행 규칙</a></li>
+	<li><a class="index" href="defer-more.html">지연된 함수 호출 더 알아보기</a></li>
+	<li><a class="index" href="panic-and-recover-use-cases.html">패닉/복구 사용 사례</a></li>
+	<li><a class="index" href="panic-and-recover-more.html">패닉/복구 메커니즘에 대한 고찰</a> - 함수 호출 종료 단계를 포함</li>
+	<li><a class="index" href="blocks-and-scopes.html">코드 블록과 식별자 스코프</a></li>
+	<li><a class="index" href="evaluation-orders.html">표현식 평가 순서</a></li>
+	<li><a class="index" href="value-copy-cost.html">Go의 값 복사 비용</a></li>
+	<li><a class="index" href="bounds-check-elimination.html">경계 검사 제거(BCE)</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+동시성 프로그래밍
+
+	<ul class="index chapters">
+	<li><a class="index" href="concurrent-synchronization-overview.html">동시성 동기화 개요</a></li>
+	<li><a class="index" href="channel-use-cases.html">채널 사용 사례</a></li>
+	<li><a class="index" href="channel-closing.html">채널을 깔끔하게 닫는 방법</a></li>
+	<li><a class="index" href="concurrent-synchronization-more.html">기타 동시성 동기화 기술</a> - <code>sync</code> 표준 패키지</li>
+	<li><a class="index" href="concurrent-atomic-operation.html">원자적 연산</a> - <code>sync/atomic</code> 표준 패키지</li>
+	<li><a class="index" href="memory-model.html">Go의 메모리 순서 보장</a></li>
+	<li><a class="index" href="concurrent-common-mistakes.html">흔히들 저지르는 동시성 프로그래밍 실수들</a></li>
+	</ul>
+
+</li>
+</ul>
+
+
+<ul class="index part">
+<li>
+메모리 관련
+
+	<ul class="index chapters">
+	<li><a class="index" href="memory-block.html">메모리 블록</a></li>
+	<li><a class="index" href="memory-layout.html">메모리 레이아웃</a></li>
+	<li><a class="index" href="memory-leaking.html">메모리 누수 시나리오</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+일부 요약
+
+	<ul class="index chapters">
+	<li><a class="index" href="summaries.html">몇 가지 간단한 요약</a></li>
+	<li><a class="index" href="nil.html">Go의 <code>nil</code></a></li>
+	<li><a class="index" href="value-conversions-assignments-and-comparisons.html">값 변환, 할당과 비교 규칙</a></li>
+	<li><a class="index" href="exceptions.html">구문/의미 예외</a></li>
+	<!-- (to remove) for printing -->
+	<li><a class="index" href="details.html">Go Details 101</a></li>
+	<li><a class="index" href="unofficial-faq.html">Go FAQ 101</a></li>
+	<li><a class="index" href="tips.html">Go Tips 101</a></li>
+	<!-- (to remove) -->
+	</ul>
+
+</li>
+</ul>
+
+<!-- kindle ends: 2 -->
+
+<!-- kindle starts: 0 -->
+
+<ul class="index part">
+<li><a class="index" href="more.html">더 많은 토픽</a></li>
+</ul>
+
+<!-- kindle ends: 0 -->
+
+</div>
+
+
+
+
+
+
+
+
+		</div>
+	</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Golang online books, articles, tools, etc.">
+		<meta name="author" content="">
+		<meta name="go-version" content="go1.20">
+		<link rel="icon" href="/static/go101/images/101-v1.ico">
+		<link rel="apple-touch-icon" sizes="152x152" href="/static/go101/images/iphone-v1.jpeg">
+	
+		<title>GoTV -Go 101</title><link id="css-bs" href="/static/bootstrap/v4.0.3-dark/css/bootstrap.min.css" rel="stylesheet">
+		<link id="css-go101" href="/static/go101/css/v991-dark.css" rel="stylesheet">
+		<link id="css-prism" href="/static/prism/2020-08-03-dark/prism.css" rel="stylesheet">
+		<script id="js-prism" src="/static/prism/2020-08-03-dark/prism.js"></script>
+
+
+		<script src="/static/jquery/jquery.min-v1.11.2.js"></script>
+		<script src="/static/go101/js/v5.js"></script>
+		
+		
+		<style>
+		div, p, ul, li, td, th {line-height: 1.55;}
+		</style>
+
+		<script>
+		var theme = ""
+		</script>
+	</head>
+
+	<body>
+		<div class="container">
+
+		<div class="row nav-bar-with-borders">
+	<div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/"><small>Home</small></a> <span class="new-text"><sup>new!</sup></span>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/article/101.html"><small>Go 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/generics/101.html"><small>Go Generics 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/details-and-tips/101.html"><small>Go Details &amp; Tips 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/optimizations/101.html"><small>Go Optimizations 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/quizzes/101.html"><small>Go Quizzes 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go HowTo 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Practices 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Agg 101</small></div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/blog/101.html"><small>Go 101 Blog</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-active">
+		<a href="/apps-and-libs/101.html"><small>Go 101 Apps &amp; Libs</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;" id="theme-switch"><small>테마: 다크/라이트</small></div>
+
+</div>
+
+<div class="alert alert-warning text-center"><small>
+현재 3권의 신간들인 <a href="/optimizations/101.html">Go Optimizations 101</a>,
+<a href="/details-and-tips/101.html">Go Details &amp; Tips 101</a>
+과 <a href="/generics/101.html">Go Generics 101</a>이 출간되어 있습니다.
+Leanpub 서점에서 <a href="https://leanpub.com/b/go-optimizations-details-generics">번들</a>을 모두 구입하시는 방법이 비용 대비 효율이 가장 좋습니다.
+<p></p>
+Go에 대한 많은 정보들과 Go 101 책들의 최신 소식을 얻으시려면 Go 101 트위터 계정인 <a href="https://twitter.com/go100and1">@Go100and1</a>을
+팔로잉 해주세요.
+</small></div>
+<p>
+</p>
+
+
+
+<h1>GoTV</h1>
+
+
+
+<p><strong>GoTV</strong> is an abbreviation of <strong>Go</strong> <strong>T</strong>oolchain <strong>V</strong>ersion.
+It is a tool used to manage and use multiple coexisting installations of official Go toolchain versions harmoniously and conveniently.</p>
+
+<p>Project page: <a href="https://github.com/go101/gotv">https://github.com/go101/gotv</a></p>
+
+<p>Please follow <a href="https://twitter.com/go100and1">@Go100and1</a> to get the latest news of GoTV
+(and all kinds of Go details/facts/tips/...).</p>
+
+<h2>Installation</h2>
+
+<p>Run</p>
+
+<pre><code>go install go101.org/gotv@latest
+</code></pre>
+
+<p>to install GoTV.</p>
+
+<p>A 1.17+ toolchain version is needed to finish the installation.
+The toolchain version may be uninstalled after pinning a suitable toolchain version (see below).</p>
+
+<h2>Usage</h2>
+
+<p>Run <code>gotv</code> without any arguments to show help messages.</p>
+
+<p>Most <code>gotv</code> commands are in the following format:</p>
+
+<pre><code>gotv ToolchainVersion [go-arguments...]
+</code></pre>
+
+<p>During running the first such a command, the Go git repository will be cloned (which needs several minutes to finish).</p>
+
+<p><code>ToolchainVersion</code> might be</p>
+
+<ul>
+<li>a Go release version, such as <code>1.17.13</code>, <code>1.18</code>, <code>1.19rc1</code>,
+which mean the release tags <code>go1.17.13</code>, <code>go1.18</code>, <code>go1.19rc1</code>, respectively,
+in the Go git repository.
+Note:
+
+<ul>
+<li><code>1.N.</code> means the latest release of <code>1.N</code>.</li>
+<li><code>1.</code> means the latest Go 1 release version.</li>
+<li><code>.</code> means the latest Go release version.</li>
+</ul></li>
+<li><code>:1.N</code>, which means the local latest <code>release-branch.go1.N</code> branch in the Go git repository.</li>
+<li><code>:tip</code>, which means the local latest <code>master</code> branch in the Go git repository.</li>
+<li>a version suffixed with <code>!</code> means to fetch remote versions (by running <code>gotv fetch-versions</code>) firstly.</li>
+</ul>
+
+<p>Examples:</p>
+
+<pre><code>$ gotv 1.17. version
+[Run]: $HOME/.cache/gotv/tag_go1.17.13/bin/go version
+go version go1.17.13 linux/amd64
+
+$ gotv 1.18.3 version
+[Run]: $HOME/.cache/gotv/tag_go1.18.3/bin/go version
+go version go1.18.3 linux/amd64
+
+$ cat main.go
+package main
+
+const A = 3
+
+func main() {
+	const (
+		A = A + A
+		B
+	)
+	println(A, B)
+}
+
+$ gotv 1.17. run main.go
+[Run]: $HOME/.cache/gotv/tag_go1.17.13/bin/go run main.go
+6 6
+
+$ gotv 1.18.3 run main.go
+[Run]: $HOME/.cache/gotv/tag_go1.18.3/bin/go run main.go
+6 12
+</code></pre>
+
+<p>Other <code>gotv</code> commands:</p>
+
+<pre><code># sync the local Go git repository with remote
+gotv fetch-versions
+
+# list all versions seen locally
+gotv list-versions
+
+# build and cache some toolchain versions
+gotv cache-version ToolchainVersion [ToolchainVersion ...]
+
+# uncache some toolchain versions to save disk space
+gotv uncache-version ToolchainVersion [ToolchainVersion ...]
+
+# pin a specified toolchain version at a stable path
+gotv pin-version ToolchainVersion
+
+# unpin the current pinned toolchain version
+gotv unpin-version
+</code></pre>
+
+<h2>Pin a toolchain version</h2>
+
+<p>We can use the <code>gotv pin-version</code> command to pin a specific toolchain version to a stable path.
+After adding the stable path to the <code>PATH</code> environment veriable,
+we can use the official <code>go</code> command directly.
+And after doing these, the toolchain versions installed through ways other than GoTV
+may be safely uninstalled.</p>
+
+<p>It is recommanded to pin a 1.17+ version for <a href="https://github.com/golang/go/issues/44505">bootstrap purpose</a> now.
+The following example shows how to pin Go toolchain version 1.17.13:</p>
+
+<pre><code>$ gotv pin-version 1.17.
+[Run]: cp -r $HOME/.cache/gotv/tag_go1.17.13 $HOME/.cache/gotv/pinned-toolchain
+
+Please put the following shown pinned toolchain path in
+your PATH environment variable to use go commands directly:
+
+	/home/username/.cache/gotv/pinned-toolchain/bin
+</code></pre>
+
+<p>After the prompted path is added to the PATH environment variable,
+open a new terminal window:</p>
+
+<pre><code>$ go version
+go version go1.17.13 linux/amd64
+</code></pre>
+
+<p>The command <code>gotv pin-version .!</code> will upgrade the pinned toolchain to the latest release version
+(which may be a beta or rc version).</p>
+
+<h2>Set a bootstrap toolchain version</h2>
+
+<p>To build a toolchain verision, another already built toolchain version is needed to be used in the building process.
+The other toolchain version is called the bootstrap version.</p>
+
+<p>Some facts:</p>
+
+<ul>
+<li>Toolchain versions &lt;= 1.12.17 are unable to be built with toochain versions &gt;= 1.16;</li>
+<li>Toolchain versions &lt;= 1.5.4 are uanable to be built with toolchain versions &gt;= 1.6;</li>
+<li>It is planned to <a href="https://github.com/golang/go/issues/44505">require a 1.17+ toolchain version to build 1.20+ toolchain versions</a>;</li>
+<li>It is proposed to <a href="https://github.com/golang/go/issues/54265">require a 1.20+ toolchain verison to build 1.22+ toolchain verisons</a>.</li>
+</ul>
+
+<p>Currently, GoTV uses the toolchain set in the <code>PATH</code> environment variable as the bootstrap version by default.
+If <code>GOROOT_BOOTSTRAP</code> environment variable is set, then its value will be used.</p>
+
+
+<hr>
+
+<div id="contact" class="alert alert-success"><small>
+
+<p>
+The <b><i>Go 101</i></b> 프로젝트는 <a href="https://github.com/go101/go101">Github</a>
+에서 호스팅됩니다.
+오타, 문법 오류, 부정확한 표현, 설명 결함, 코드 버그, 끊어진 링크와 같은 모든
+종류의 실수에 대한 수정 사항을 제출하여 Go 101을 개선을 돕는 것은 언제나 환영합니다.
+</p>
+
+<p>
+주기적으로 Go에 대한 깊이 있는 정보를 얻고 싶다면 Go 101의 공식 트위터 계정인
+<a href="https://twitter.com/go100and1">@go100and1</a>을 팔로우하거나
+<a href="https://join.slack.com/t/go-101/shared_invite/zt-y2pvwg00-Oz7lDDJu44l~hZsFRUApiA">Go 101 슬랙 채널</a>에j가입해주세요.
+</p>
+
+</small></div>
+
+<div class="alert alert-warning"><small>
+
+
+<div id="ebooks"></div>
+<div>
+
+Go 101의 저자인 Tapir는 2016년 7월부터 Go 101 시리즈 책들을 집필하고 go101.org 웹사이트를 유지 관리하고 있습니다.
+새로운 콘텐츠는 책과 웹사이트에 수시로 추가될 예정입니다.
+Tapir는 인디 게임 개발자이기도 합니다.
+<a href="https://www.tapirgames.com">Tapir의 게임</a>을 플레이하여 Go 101을 지원할 수도 있습니다.
+(안드로이드와 아이폰/아이패드용):
+<ul>
+<li>
+	<a href="https://www.tapirgames.com/App/Color-Infection">Color Infection</a> (★★★★★), 140개 이상의 단계로 이루어진 물리 기반의 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Rectangle-Pushers">Rectangle Pushers</a> (★★★★★), 2가지 모드와 104개 이상의 단계로 이루어진 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Let-Us-Play-With-Particles">Let's Play With Particles</a>, 세가지 미니 게임이 있는 캐주얼 액션 게임
+</li>
+</ul>
+</div>
+
+<a href="https://paypal.me/tapirliu">페이팔</a>을 통한 개인 기부도 환영합니다.</small></div>
+
+
+
+
+
+
+		</div>
+	</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

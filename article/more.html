@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Golang online books, articles, tools, etc.">
+		<meta name="author" content="">
+		<meta name="go-version" content="go1.20">
+		<link rel="icon" href="/static/go101/images/101-v1.ico">
+		<link rel="apple-touch-icon" sizes="152x152" href="/static/go101/images/iphone-v1.jpeg">
+	
+		<title>More Go Related Topics -Go 101</title><link id="css-bs" href="/static/bootstrap/v4.0.3-dark/css/bootstrap.min.css" rel="stylesheet">
+		<link id="css-go101" href="/static/go101/css/v991-dark.css" rel="stylesheet">
+		<link id="css-prism" href="/static/prism/2020-08-03-dark/prism.css" rel="stylesheet">
+		<script id="js-prism" src="/static/prism/2020-08-03-dark/prism.js"></script>
+
+
+		<script src="/static/jquery/jquery.min-v1.11.2.js"></script>
+		<script src="/static/go101/js/v5.js"></script>
+		
+		
+		<style>
+		div, p, ul, li, td, th {line-height: 1.55;}
+		</style>
+
+		<script>
+		var theme = ""
+		</script>
+	</head>
+
+	<body>
+		<div class="container">
+
+		<div class="row nav-bar-with-borders">
+	<div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/"><small>Home</small></a> <span class="new-text"><sup>new!</sup></span>
+	</div><div class="col-xs-6 col-sm-4 nav-item-active">
+		<a href="/article/101.html"><small>Go 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/generics/101.html"><small>Go Generics 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/details-and-tips/101.html"><small>Go Details &amp; Tips 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/optimizations/101.html"><small>Go Optimizations 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/quizzes/101.html"><small>Go Quizzes 101</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go HowTo 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Practices 101</small></div>
+	
+	<div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;"><small>Go Agg 101</small></div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/blog/101.html"><small>Go 101 Blog</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive">
+		<a href="/apps-and-libs/101.html"><small>Go 101 Apps &amp; Libs</small></a>
+	</div><div class="col-xs-6 col-sm-4 nav-item-inactive" style="color: #777;" id="theme-switch"><small>테마: 다크/라이트</small></div>
+
+</div>
+
+<div class="alert alert-warning text-center"><small>
+현재 3권의 신간들인 <a href="/optimizations/101.html">Go Optimizations 101</a>,
+<a href="/details-and-tips/101.html">Go Details &amp; Tips 101</a>
+과 <a href="/generics/101.html">Go Generics 101</a>이 출간되어 있습니다.
+Leanpub 서점에서 <a href="https://leanpub.com/b/go-optimizations-details-generics">번들</a>을 모두 구입하시는 방법이 비용 대비 효율이 가장 좋습니다.
+<p></p>
+Go에 대한 많은 정보들과 Go 101 책들의 최신 소식을 얻으시려면 Go 101 트위터 계정인 <a href="https://twitter.com/go100and1">@Go100and1</a>을
+팔로잉 해주세요.
+</small></div>
+<p>
+</p>
+
+
+
+<h1>More Go Related Topics</h1>
+
+
+
+<p>
+Go 101 articles mainly focus on syntax and semantics in Go.
+There are some other Go related topics which are not covered in Go 101.
+The remaining of the current article will make simple introductions
+to those topics and provide some web links for readers to dig more into them.
+</p>
+
+<h3>Profiling, Benchmarks and Unit/Fuzzing Tests </h3>
+
+<div>
+We can use <code>go test</code> command in Go Toolchain to run tests and benchmarks.
+Test source file names must end with <code>_test.go</code>.
+Go Toolchain also supports profiling Go programs.
+Please read the following articles for more details.
+<ul>
+<li>
+	<a href="https://github.com/golang/go/wiki/Performance">Profiling Go programs</a>.
+</li>
+<li>
+	<a href="https://golang.org/pkg/testing/">The testing standard package</a>.
+</li>
+<li>
+	<a href="https://blog.golang.org/examples">Write testable examples</a>.
+</li>
+<li>
+	<a href="https://blog.golang.org/subtests">Using subtests and sub-benchmarks</a>.
+</li>
+<li>
+	<a href="https://golang.org/cmd/go/#hdr-Test_packages"><code>go test</code> command options</a>.
+</li>
+<li>
+	<a href="https://go.dev/doc/fuzz/">Go Fuzzing</a>.
+</li>
+</ul>
+</div>
+
+<h3>gccgo</h3>
+
+<p>
+<a href="https://github.com/golang/gofrontend">gccgo</a> is another Go compiler maintained by the Go core team.
+It is mainly used to verify the correctness of the standard Go compiler (gc).
+We can use the <code>-compiler=gccgo</code> build option in several Go Toolchain
+commands to use the gccgo compiler instead of the gc compiler.
+For example, <code>go run -compiler=gccgo main.go</code>.
+This option requires the gccgo program is installed.
+Once the gccgo program is installed,
+we can also <a href="https://golang.org/doc/install/gccgo#Using_gccgo">use the <code>gccgo</code> command directly to compile Go code</a>.
+</p>
+
+<h3>The <code>go/*</code> Standard Packages</h3>
+
+<p>
+The <code>go/*</code> standard packages provide functionalities of
+parsing Go source files, which are very useful to write custom Go tools.
+Please read <a href="https://github.com/golang/example/tree/master/gotypes"><code>go/types</code>: The Go Type Checker</a>
+and <a href="https://golang.org/pkg/go/">package documentation</a> for how to use these packages.
+</p>
+
+<h3>System Calls</h3>
+
+<p>
+We can make system calls by call the functions exported by the
+<code>syscall</code> standard package.
+Please beware that, different from other standard packages,
+the functions in the <code>syscall</code> standard package are operating system dependent.
+</p>
+
+<h3>Go Assembly</h3>
+
+<p>
+Go functions can be implemented with Go assembly language.
+Go assembly language is a cross-architectures (though not 100%) assembly language.
+Go assembly language is often used to implement some functions
+which are critical for Go program execution performances.
+</p>
+
+<div>
+For more details, please follow the following links.
+<ul>
+<li>
+	<a href="https://golang.org/doc/asm">A quick guide to Go's assembler</a>
+</li>
+<li>
+	<a href ="https://talks.golang.org/2016/asm.slide">The Design of the Go assembler</a>
+</li>
+</ul>
+
+</div>
+
+<h3>cgo</h3>
+
+<div>
+We can call C code from Go code, and vice versa, through the cgo mechanism.
+Please follow the following links for details.
+<ul>
+<li>
+	<a href="https://golang.org/cmd/cgo/">cgo official documentation</a>
+</li>
+<li>
+	<a href="https://blog.golang.org/c-go-cgo">C? Go? Cgo!</a>
+</li>
+<li>
+	<a href="https://github.com/golang/go/wiki/cgo">cgo on Go wiki</a>
+</li>
+</ul>
+
+<p>
+It is possible to use C++ libraries through cgo by wrapping C++ libraries as C functions.
+</p>
+
+<p>
+Please note that using cgo in code may make it is hard to maintain
+cross-platform compatibility of Go programs,
+and the calls between Go and C code are some less efficient than Go-Go and C-C calls.
+</p>
+</div>
+
+<a class="anchor" id="cross-platform-compiling"></a>
+<h3>Cross-Platform Compiling</h3>
+
+<div>
+The standard Go compiler supports cross-platform compiling.
+By setting the <code>GOOS</code> and <code>GOARCH</code> environments
+before running the <code>go build</code> command,
+we can build a Windows executable on a Linux machine, and vice versa.
+Please read the following articles for details.
+<ul>
+<li>
+	<a href="https://github.com/golang/go/wiki/WindowsCrossCompiling">Building windows go programs on linux</a>.
+</li>
+<li>
+	<a href="https://golang.org/doc/install/source#environment">The current supported target operating systems and compilation architectures</a>.
+</li>
+</ul>
+
+In particular, since Go 1.11, Go Toolchain starts to support WebAssembly as a new kind of GOARCH.
+Please read <a href="https://github.com/golang/go/wiki/WebAssembly">this wiki article</a> for details.
+</div>
+
+<h3>Compiler Directives</h3>
+
+<p>
+The standard Go compiler supports several
+<a href="https://golang.org/cmd/compile/#hdr-Compiler_Directives">compiler directives</a>.
+A directive appears as a comment line like <code>//go:DirectiveName args</code>.
+For examples, we can use the <a href="https://blog.golang.org/generate">go:generate</a> directive
+to generate code and use the <a href="https://golang.org/pkg/embed/">go:embed</a> directive
+(introduced in Go 1.16) to embed some data files in code.
+</p>
+
+<h3>Build Constraints (Tags)</h3>
+
+<p>
+We can use <a href="https://golang.org/pkg/go/build/">build constraints</a>
+to let compilers build source files selectively (a.k.a., ignore some source files).
+A build constraint is also called a build tag.
+A build constraint can appear as a comment line like <code>// +build constraints</code>
+or appear as the suffix in the base name of a source file.
+Please note: the new <a href="https://go.googlesource.com/proposal/+/master/design/draft-gobuild.md"><code>//go:build</code>
+directive</a> <a href="https://github.com/golang/go/issues/41184">introduced in Go 1.17</a>
+will retire the old <code>// +build</code> constraints lines eventually.
+</p>
+
+<h3>More Build Modes</h3>
+
+<p>
+The <code>go build</code> command in Go Toolchain supports several build modes.
+Please run <code>go help buildmode</code> to show the available build modes
+or read the explanations for <a href="https://golang.org/cmd/go/#hdr-Build_modes">-buildmode option</a> instead.
+Except the <b>default</b> build mode, the most used build mode may be the <b>plugin</b> build mode.
+We can use the functions in <a href="https://golang.org/pkg/plugin/">the <code>plugin</code> standard package</a>
+to load and use the Go plugin files outputted by using the <b>plugin</b> build mode.
+</p>
+
+
+
+
+<hr>
+
+<div class="text-center"><a href="#i-more.html">Index↡</a></div>
+
+
+
+<hr>
+
+<div id="contact" class="alert alert-success"><small>
+
+<p>
+The <b><i>Go 101</i></b> 프로젝트는 <a href="https://github.com/go101/go101">Github</a>
+에서 호스팅됩니다.
+오타, 문법 오류, 부정확한 표현, 설명 결함, 코드 버그, 끊어진 링크와 같은 모든
+종류의 실수에 대한 수정 사항을 제출하여 Go 101을 개선을 돕는 것은 언제나 환영합니다.
+</p>
+
+<p>
+주기적으로 Go에 대한 깊이 있는 정보를 얻고 싶다면 Go 101의 공식 트위터 계정인
+<a href="https://twitter.com/go100and1">@go100and1</a>을 팔로우하거나
+<a href="https://join.slack.com/t/go-101/shared_invite/zt-y2pvwg00-Oz7lDDJu44l~hZsFRUApiA">Go 101 슬랙 채널</a>에j가입해주세요.
+</p>
+
+</small></div>
+
+<div class="alert alert-warning"><small>
+
+
+<div id="ebooks">
+이 책의 디지털 버전은 아래와 같은 곳을 통해서 구매할 수 있습니다.
+<ul>
+<li>
+	<a href="https://leanpub.com/go101">Leanpub</a>,
+	<i>최소 19.99 달러</i>.
+</li>
+<li>
+	
+	아마존 킨들 스토어, <i>(현재는 사용 불가)</i>.
+</li>
+<li>
+	<a href="https://books.apple.com/book/id1459984231">애플 북 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://play.google.com/store/books/details?id=Dc1wEAAAQBAJ">구글 플레이 스토어</a>,
+	<i>19.99 달러</i>.
+</li>
+<li>
+	<a href="https://github.com/go101/go101/releases">무료 전자책</a>,
+	pdf, epub과 azw3 포맷을 지원
+</li>
+</ul>
+	</div>
+<div>
+
+Go 101의 저자인 Tapir는 2016년 7월부터 Go 101 시리즈 책들을 집필하고 go101.org 웹사이트를 유지 관리하고 있습니다.
+새로운 콘텐츠는 책과 웹사이트에 수시로 추가될 예정입니다.
+Tapir는 인디 게임 개발자이기도 합니다.
+<a href="https://www.tapirgames.com">Tapir의 게임</a>을 플레이하여 Go 101을 지원할 수도 있습니다.
+(안드로이드와 아이폰/아이패드용):
+<ul>
+<li>
+	<a href="https://www.tapirgames.com/App/Color-Infection">Color Infection</a> (★★★★★), 140개 이상의 단계로 이루어진 물리 기반의 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Rectangle-Pushers">Rectangle Pushers</a> (★★★★★), 2가지 모드와 104개 이상의 단계로 이루어진 캐주얼 퍼즐 게임
+</li>
+<li>
+	<a href="https://www.tapirgames.com/App/Let-Us-Play-With-Particles">Let's Play With Particles</a>, 세가지 미니 게임이 있는 캐주얼 액션 게임
+</li>
+</ul>
+</div>
+
+<a href="https://paypal.me/tapirliu">페이팔</a>을 통한 개인 기부도 환영합니다.</small></div>
+
+<hr>
+색인:
+
+
+<div id="book-index">
+
+<!-- kindle starts: 1 -->
+
+<ul class="index part">
+	<li><a class="index" href="101-about.html">Go 101에 대해</a> - 이 책이 쓰여진 이유</li>
+	<li><a class="index" href="acknowledgements.html">감사의 말</a></li>
+</ul>
+
+<ul class="index part">
+	<li><a class="index" href="introduction.html">Go 소개</a> - Go를 배우는 가치</li>
+	<li><a class="index" href="go-toolchain.html">Go 툴체인</a> - Go 프로그램을 컴파일하고 실행하는 방법</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 코드에 익숙해지기
+
+	<ul class="index chapters">
+	<li><a class="index" href="basic-code-elements-introduction.html">소스 코드 요소 소개</a></li>
+	<li><a class="index" href="keywords-and-identifiers.html">키워드와 식별자</a></li>
+	<li><a class="index" href="basic-types-and-value-literals.html">기본 자료형과 기본 값 리터럴</a></li>
+	<li><a class="index" href="constants-and-variables.html">상수와 변수</a> - 무형성(untyped) 값과 자료형 추론 소개를 포함</li>
+	<li><a class="index" href="operators.html">일반 연산자</a> - 더 많은 자료형 추론 규칙 소개를 포함</li>
+	<li><a class="index" href="function-declarations-and-calls.html">함수 선언과 호출</a></li>
+	<li><a class="index" href="packages-and-imports.html">코드 패키지와 패키지 들여오기</a></li>
+	<li><a class="index" href="expressions-and-statements.html">표현식, 구문과 단순 구문</a></li>
+	<li><a class="index" href="control-flows.html">기본 흐름 제어</a></li>
+	<li><a class="index" href="control-flows-more.html">고루틴, 지연된 함수 호출과 패닉/복구</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+Go 자료형 체계
+
+	<ul class="index chapters">
+	<li><a class="index" href="type-system-overview.html">Go 자료형 체계 개요</a> - Go 프로그래밍 숙달을 위해 반드시 읽어봐야 하는</li>
+	<li><a class="index" href="pointer.html">포인터</a></li>
+	<li><a class="index" href="struct.html">구조체</a></li>
+	<li><a class="index" href="value-part.html">변수</a> - Go 변수에 대한 더 깊은 이해</li>
+	<li><a class="index" href="container.html">배열, 슬라이스와 맵</a> - 1급 객체 컨테이너 자료형</li>
+	<li><a class="index" href="string.html">문자열</a></li>
+	<li><a class="index" href="function.html">함수</a> - 함수 자료형과 값, 가변 인자 함수</li>
+	<li><a class="index" href="channel.html">채널</a> - Go에서 동시성 동기화를 하는 방법</li>
+	<li><a class="index" href="method.html">메서드</a></li>
+	<li><a class="index" href="interface.html">인터페이스</a> - 리플렉션과 다형성을 하는 값 상자</li>
+	<li><a class="index" href="type-embedding.html">자료형 임베딩</a> - 자료형을 확장하는 방법</li>
+	<li><a class="index" href="unsafe.html">자료형에 안전하지 않는 포인터</a></li>
+	<li><a class="index" href="generic.html">제네릭</a> - 합성 자료형의 사용과 읽는 법</li>
+	<li><a class="index" href="reflection.html">리플렉션</a> - <code>reflect</code> 표준 패키지</li>
+	</ul>
+</li>
+</ul>
+
+<!-- kindle ends: 1 -->
+
+<!-- kindle starts: 2 -->
+
+<ul class="index part">
+<li>
+특별 주제
+
+	<ul class="index chapters">
+	<li><a class="index" href="line-break-rules.html">개행 규칙</a></li>
+	<li><a class="index" href="defer-more.html">지연된 함수 호출 더 알아보기</a></li>
+	<li><a class="index" href="panic-and-recover-use-cases.html">패닉/복구 사용 사례</a></li>
+	<li><a class="index" href="panic-and-recover-more.html">패닉/복구 메커니즘에 대한 고찰</a> - 함수 호출 종료 단계를 포함</li>
+	<li><a class="index" href="blocks-and-scopes.html">코드 블록과 식별자 스코프</a></li>
+	<li><a class="index" href="evaluation-orders.html">표현식 평가 순서</a></li>
+	<li><a class="index" href="value-copy-cost.html">Go의 값 복사 비용</a></li>
+	<li><a class="index" href="bounds-check-elimination.html">경계 검사 제거(BCE)</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+동시성 프로그래밍
+
+	<ul class="index chapters">
+	<li><a class="index" href="concurrent-synchronization-overview.html">동시성 동기화 개요</a></li>
+	<li><a class="index" href="channel-use-cases.html">채널 사용 사례</a></li>
+	<li><a class="index" href="channel-closing.html">채널을 깔끔하게 닫는 방법</a></li>
+	<li><a class="index" href="concurrent-synchronization-more.html">기타 동시성 동기화 기술</a> - <code>sync</code> 표준 패키지</li>
+	<li><a class="index" href="concurrent-atomic-operation.html">원자적 연산</a> - <code>sync/atomic</code> 표준 패키지</li>
+	<li><a class="index" href="memory-model.html">Go의 메모리 순서 보장</a></li>
+	<li><a class="index" href="concurrent-common-mistakes.html">흔히들 저지르는 동시성 프로그래밍 실수들</a></li>
+	</ul>
+
+</li>
+</ul>
+
+
+<ul class="index part">
+<li>
+메모리 관련
+
+	<ul class="index chapters">
+	<li><a class="index" href="memory-block.html">메모리 블록</a></li>
+	<li><a class="index" href="memory-layout.html">메모리 레이아웃</a></li>
+	<li><a class="index" href="memory-leaking.html">메모리 누수 시나리오</a></li>
+	</ul>
+
+</li>
+</ul>
+
+<ul class="index part">
+<li>
+일부 요약
+
+	<ul class="index chapters">
+	<li><a class="index" href="summaries.html">몇 가지 간단한 요약</a></li>
+	<li><a class="index" href="nil.html">Go의 <code>nil</code></a></li>
+	<li><a class="index" href="value-conversions-assignments-and-comparisons.html">값 변환, 할당과 비교 규칙</a></li>
+	<li><a class="index" href="exceptions.html">구문/의미 예외</a></li>
+	<!-- (to remove) for printing -->
+	<li><a class="index" href="details.html">Go Details 101</a></li>
+	<li><a class="index" href="unofficial-faq.html">Go FAQ 101</a></li>
+	<li><a class="index" href="tips.html">Go Tips 101</a></li>
+	<!-- (to remove) -->
+	</ul>
+
+</li>
+</ul>
+
+<!-- kindle ends: 2 -->
+
+<!-- kindle starts: 0 -->
+
+<ul class="index part">
+<li><b class="index" id="i-more.html">더 많은 토픽</b></li>
+</ul>
+
+<!-- kindle ends: 0 -->
+
+</div>
+
+
+
+
+
+
+
+
+		</div>
+	</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
