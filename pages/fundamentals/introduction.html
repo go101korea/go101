@@ -1,190 +1,181 @@
-﻿<h1>An Introduction of Go</h1>
+﻿<h1>Go 소개</h1>
 
 <p>
-Go is a compiled and static typed programming language born from Google.
-Many of the core Go design and tool development team members have many years
-of experience in the field of programming language research.
+Go는 구글에서 만든 컴파일된 정적 타입 프로그래밍 언어 입니다.
+Go 디자인 및 도구 개발 팀의 많은 핵심 팀원들은 프로그래밍 언어 연구 분야에서 수년간의 경험을 가지고 있습니다.
 </p>
 
 <div>
-Go has many features. Some are unique, some are borrowed from other programming languages:
+Go는 많은 기능이 있습니다. 일부는 고유하게 작성된 것이고 일부는 다른 언어에서 차용하였습니다
 <ul>
 <li>
-	built-in concurrent programming support
+	내장 동시 프로그래밍 지원
 	<ul>
 	<li>
-		goroutines (green threads) and start new goroutines easily.
+		쉽게 사용할 수 있는 그린 스레드인 고루틴
 	</li>
 	<li>
-		channels (based on CSP model) and select mechanisms to do synchronizations between goroutines.
+    채널(CSP 모델 기반) 및 고루틴 간 동기화를 위한 <code>select</code> 메커니즘
 	</li>
 	</ul>
 </li>
 <li>
-	the container types <code>map</code> and <code>slice</code> are first-class citizens.
+	컨테이너 타입의 <code>map</code> 과 <code>slice</code> 는 일급 객체입니다.
 </li>
 <li>
-	polymorphism through interfaces.
+	인터페이스를 통한 다형성
 </li>
 <li>
-	value boxing and reflection through interfaces.
+	인터페이스를 통한 박싱 및 리플렉션
 </li>
 <li>
-	pointers.
+	포인터
 </li>
 <li>
-	function closures.
+	함수 클로저
 </li>
 <li>
-	methods.
+	메서드
 </li>
 <li>
-	deferred function calls.
+	디퍼드 함수 호출
 </li>
 <li>
-	type embedding.
+	타입 임베딩
 </li>
 <li>
-	type deduction.
+	타입 추론
 </li>
 <li>
-	memory safety.
+	메모리 안정성
 </li>
 <li>
-	automatic garbage collection.
+	자동 쓰레기 수집기(garbage collection)
 </li>
 <li>
-	great cross-platform compatibility.
+	크로스 플랫폼 호환성
 </li>
 <li>
-	custom generics (since Go 1.18).
+	사용자 정의 제네릭(Go 1.18 이상)
 </li>
 </ul>
 
-Besides the above features, further highlights are:
+위의 기능 외에도 추가 하이라이트는 다음과 같습니다
 <ul>
 <li>
-	The syntax of Go is deliberately designed to be simple, clean,
-	and similar to other popular programming languages.
-	This makes Go programming easy to pick up.
+	Go는 다른 프로그래밍 언어와 구문이 유사하고, 단순하고 깔끔하도록 설계되었습니다.
+	이를 통해 Go 프로그래밍을 쉽게 익힐 수 있습니다.
 </li>
 <li>
-	Go comes with a great set of standard code packages which provide all kinds of
-	common functionalities. Most of the packages are cross-platform.
+	Go는 모든 종류의 공통 기능을 제공하는 훌륭한 표준 코드 패키지 세트와 함께 제공됩니다.
+	대부분의 패키지는 크로스 플랫폼입니다.
 </li>
 <li>
-	Go also has an active community, and there are
-	<a href="https://github.com/avelino/awesome-go">plenty of
-	high quality third party Go packages and projects</a> to import and use.
+	Go에는 활발한 커뮤니티도 있고
+	<a href="https://github.com/avelino/awesome-go">많은
+	고품질의 타사 Go 패키지 및 프로젝트</a>를 가져와서 사용할 수 있습니다.
 </li>
 </ul>
 
 </div>
 
 <p>
-Go programmers are often called gophers.
+Go 프로그래머는 고퍼들(Gophers)이라고 불립니다.
 </p>
 
 <p>
-In fact, although Go is a compiled and static typed programming language,
-Go also has many features which are usually only available in dynamic script languages.
-It is hard to combine these two kinds into one language, but Go did it.
-In other words, Go owns both the strictness of static languages
-and the flexibility of dynamic languages.
-I can't say there are not any compromises between the two,
-but the effect of the compromises is much weaker than the benefits of the combination in Go.
+실제로 Go는 컴파일되고 정적 타입의 프로그래밍 언어이지만 Go에서는 일반적으로 동적 스크립트 언어에서만 사용할 수 있는 많은 기능도 있습니다.
+두 종류를 하나의 언어로 합치는 것은 어렵지만 Go에서는 해냈습니다.
+즉, Go는 정적 언어의 엄격함과 동적 언어의 유연성을 모두 가지고 있습니다. 둘 사이에 문제가 없었다고 말할 수는 없지만 Go에서의 이점 보다 훨씬 덜합니다.
 </p>
 
 <p>
-Readability is an important factor which affects the design of Go heavily.
-It is not hard for a gopher to understand the Go code written by other gophers.
+Go의 디자인에서 가독성은 크게 영향을 미치는 중요한 요소입니다.
+고퍼가 다른 고퍼가 작성한 Go 코드를 이해하는 것은 어렵지 않습니다.
 </p>
 
 <p>
-Currently, the most popular Go compiler is written in Go and maintained by the Go design team.
-Later we shall call it the standard Go compiler, or <code>gc</code>
-(an abbreviation for Go compiler, not for garbage collection GC).
-The Go design team also maintains a second Go compiler, <code>gccgo</code>.
-Nowadays it's use is less popular than <code>gc</code>, but it always serves as a reference,
-and both compilers are in active development.
-As of now the Go team focuses on the improvement of <code>gc</code>.
+현재 가장 인기 있는 Go 컴파일러는 Go로 작성되었으며 Go 디자인 팀에서 유지 관리합니다.
+이후로 이를 표준 Go 컴파일러 또는 <code>gc</code>라고 부릅니다.
+(가비지 컬렉션 GC가 아닌 Go 컴파일러의 약자).
+Go 디자인 팀은 두 번째 Go 컴파일러인 <code>gccgo</code>도 유지 관리합니다.
+요즘에는 <code>gc</code>보다 사용 빈도가 낮지만 항상 참조용으로 사용됩니다.
+두 컴파일러 모두 활발하게 개발 중입니다.
+현재 Go 팀은 <code>gc</code>의 개선에 집중하고 있습니다.
 </p>
 
 <p>
-<code>gc</code> is provided in Go Toolchain
-(a set of tools for Go development maintained by Go team).
-Go Toolchain 1.0 was released in March, 2012.
-The version of Go is consistent with the version of Go Toolchain.
-There were/are two major versions released each year.
+<code>gc</code>는 Go Toolchain에서 제공됩니다.
+(Go 팀에서 관리하는 Go 개발용 도구 세트).
+Go Toolchain 1.0은 2012년 3월에 출시되었습니다.
+Go 버전은 Go Toolchain 버전과 일치합니다.
+매년 두 개의 주요 버전이 릴리즈됩니다.
 </p>
 
 <p>
-Since the release of Go 1.0, the syntax of Go has changed a little,
-but there were/are many improvements for the tools in Go Toolchain, from version to version,
-especially for <code>gc</code>.
-For example, noticeable lags caused by garbage collecting is a common
-criticism for languages with automatic memory management.
-But since Go 1.8, improvements made for the concurrent garbage collection implementation
-in <code>gc</code> basically eliminated the lag problem.
+Go 1.0 출시 이후 Go의 구문은 거의 바뀌지 않았지만
+Go Toolchain의 도구는 버전마다 변경이 있었고, 특히 <code>gc</code>에 대해 많은 개선이 있었습니다.
+예를 들어 쓰레기 수집으로 인한 지연은 자동 메모리 관리가 있는 언어에 대한 일반적인 문제입니다.
+그러나 Go 1.8 이후로<code>gc</code>의 동시 쓰레기 수집에 대한 개선 사항은 기본적으로 지연 문제를 해결했습니다.
 </p>
 
 <p>
-<code>gc</code> supports cross-platform compilation.
-For example, we can build a Windows executable on a Linux OS, and vice versa.
+<code>gc</code>는 크로스 플랫폼 컴파일을 지원합니다.
+예를 들어 Linux OS에서 Windows 실행 파일을 빌드할 수 있으며 그 반대도 가능합니다.
 </p>
 
 <p>
-Programs written in go language mostly compile very fast.
-Compilation time is an important factor for the happiness in development.
-Short build time is one reason why many programmers like programming with Go.
+Go 언어로 작성된 프로그램은 대부분 매우 빠르게 컴파일됩니다.
+컴파일 시간은 개발의 즐거움을 위한 중요한 요소입니다.
+짧은 빌드 시간은 많은 프로그래머가 Go로 프로그래밍하는 것을 좋아하는 이유 중 하나입니다.
 </p>
 
 <div>
-Advantages of Go executables are:
+Go 실행 파일의 장점은 다음과 같습니다
 <ul>
 <li>
-	small memory footprint
+	작은 메모리 사용량
 </li>
 <li>
-	fast code execution
+	빠른 코드 실행
 </li>
 <li>
-	short warm-up duration (so great deployment experience)
+	짧은 준비 시간(훌륭한 배포 경험)
 </li>
 </ul>
 
-Some other compiled languages, such as C/C++/Rust may also have these three advantages
-(and they may have their respective advantages compared to Go),
-but they lack three important characteristics of Go:
+C/C++/Rust와 같은 일부 다른 컴파일된 언어도 이러한 세 가지 이점을 가질 수 있습니다.
+(그리고 그들은 Go에 비해 각각의 장점이 있을 수 있습니다),
+그러나 그들은 Go의 세 가지 중요한 특성이 부족합니다.
 <ul>
 <li>
-	fast compilation results in happy local development experience
-	and short deployment iteration cycles
+	빠른 컴파일로 만족스러운 로컬 개발 경험
+	및 짧은 배포 반복 주기 제공
 </li>
 <li>
-	flexible, like dynamic languages
+	동적언어와 같은 유연성
 </li>
 <li>
-	built-in concurrent programming support
+	내장 동시 프로그래밍 지원
 </li>
 </ul>
 </div>
 
 <p>
-All the above advantages combined make Go an outstanding language
-and a good choice for many kinds of projects.
-Currently, Go is popularly used in network, system tools,
-database development and block chain development areas.
-With the introduction of custom generics in Go 1.18,
-it is expected that Go will be used more and more in some other areas,
-such as gui/game, big data and AI.
+위의 모든 이점이 결합되어 Go를 뛰어난 언어로 만듭니다.
+많은 종류의 프로젝트에 적합한 선택입니다.
+현재 Go는 네트워크, 시스템 도구,
+데이터베이스 개발 및 블록체인 개발 분야.
+Go 1.18에 사용자 정의 제네릭이 도입되면서
+일부 다른 영역에서 Go가 점점 더 많이 사용될 것으로 예상됩니다.
+GUI/게임, 빅데이터, AI 등.
 </p>
 
 <p>
-Finally, Go is not perfect in all aspects.
-There are certain trade-offs in Go design.
-And Go really has some shortcomings.
-For example, Go doesn't support arbitrary immutable values now, which leads to that
-many values which are not intended to be modified in standard packages are declared as variables.
-This is a potential security weak point for some Go programs.
+마지막으로 Go는 모든 측면에서 완벽하지는 않습니다.
+Go 디자인에는 확실히 트레이드오프가 있습니다.
+그리고 Go에는 실제로 몇 가지 단점이 있습니다.
+예를 들어 Go는 이제 임의의 불변 값을 지원하지 않으므로
+표준 패키지에서 수정할 의도가 없는 많은 값이 변수로 선언됩니다.
+이 문제는 일부 Go 프로그램에서 잠재적인 보안 약점이 될 수 있습니다.
 </p>
